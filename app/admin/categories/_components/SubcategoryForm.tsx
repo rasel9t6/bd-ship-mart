@@ -234,7 +234,7 @@ const SubcategoryDialogForm = ({
         </div>
 
         <div className='flex justify-end gap-4'>
-          <Button type='submit'>Add Subcategory</Button>
+          <Button type='button'>Add Subcategory</Button>
         </div>
       </form>
     </Form>

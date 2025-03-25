@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
-
+import dotenv from 'dotenv';
+dotenv.config();
 const MONGODB_URI = process.env.MONGODB_URI!;
 
 if (!MONGODB_URI) {
@@ -21,7 +22,7 @@ export async function connectToDB() {
 
   if (!cached.promise) {
     const opts = {
-      dbName: 'bd-ship-mart',
+      dbName: 'bd-ship-mart-db',
     };
 
     cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {

@@ -2,12 +2,6 @@
   "name": "bdshipmart",
   "version": "0.1.0",
   "private": true,
-  "overrides": {
-    "react-drag-drop-files": {
-      "react": "^19.0.0",
-      "react-dom": "^19.0.0"
-    }
-  },
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",

@@ -235,7 +235,7 @@ const CategoryForm = ({ initialData }: CategoryFormProps) => {
       toast.success(
         `Category ${initialData ? 'updated' : 'created'} successfully`
       );
-      router.push('/categories');
+      router.push('/admin/categories');
       router.refresh();
     } catch (error) {
       toast.error(

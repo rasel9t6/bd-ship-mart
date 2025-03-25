@@ -16,7 +16,7 @@ export default function LeftSideBar() {
       <div className='flex flex-col p-6'>
         {/* Logo */}
         <Link
-          href='/'
+          href='/admin'
           className='mb-10 flex justify-center'
         >
           <Image

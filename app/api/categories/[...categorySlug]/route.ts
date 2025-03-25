@@ -8,8 +8,6 @@ import mongoose from 'mongoose';
 import Category from '@/models/Category';
 import Product from '@/models/Product';
 import Subcategory from '@/models/Subcategory';
-import { error, error } from 'console';
-import { string } from 'zod';
 
 export const GET = async (
   req: NextRequest,
@@ -74,7 +72,7 @@ export const GET = async (
       { error: 'Invalid category path' },
       { status: 400 }
     );
-  } catch (error: { error: { message: unknown } }) {
+  } catch (error) {
     console.error('[CATEGORY_GET]', error);
     return NextResponse.json(
       { error: error.message || 'Failed to fetch category' },

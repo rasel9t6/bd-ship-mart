@@ -1,5 +1,5 @@
-import CategoryForm from '@/components/categories/CategoryForm';
 import { Metadata } from 'next';
+import CategoryForm from '../_components/CategoryForm';
 
 // Types
 interface CategoryParams {
