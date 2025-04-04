@@ -1,5 +1,5 @@
 import type { Config } from 'tailwindcss';
-import animate from 'tailwindcss-animate';
+
 const config: Config = {
   content: [
     './pages/**/*.{js,ts,jsx,tsx,mdx}',
@@ -72,8 +72,60 @@ const config: Config = {
             fontWeight: '500',
           },
         ],
+        'small-bold': [
+          '14px',
+          {
+            lineHeight: '140%',
+            fontWeight: '700',
+          },
+        ],
+        'small-medium': [
+          '14px',
+          {
+            lineHeight: '140%',
+            fontWeight: '500',
+          },
+        ],
+      },
+      fontFamily: {
+        Noto_Sans_Bengali: ['var(--font-notosansbangla)', 'sans-serif'],
+      },
+      backgroundImage: {
+        // #003366
+        'custom-radial': 'radial-gradient(circle, #00ADB5, #00888F)',
       },
       colors: {
+        'bondi-blue': {
+          DEFAULT: '#00ABB3',
+          50: '#99FAFF',
+          100: '#80F9FF',
+          200: '#4DF7FF',
+          300: '#1AF5FF',
+          400: '#00DBE6',
+          500: '#00ABB3',
+          600: '#00888F',
+          700: '#00436B',
+          800: '#002147',
+          900: '#000A24',
+          950: '#000412',
+        },
+        'blaze-orange': {
+          DEFAULT: '#FE6C08',
+          50: '#FFD9BF',
+          100: '#FFCDAB',
+          200: '#FEB582',
+          300: '#FE9C59',
+          400: '#FE8431',
+          500: '#FE6C08',
+          600: '#CD5401',
+          700: '#953D01',
+          800: '#5D2600',
+          900: '#250F00',
+          950: '#0A0400',
+        },
+        'custom-gray': {
+          DEFAULT: '#616161',
+        },
         'white-1': '#F8F8F8',
         'gray-1': '#616161',
         'gray-2': '#E5E7EB',
@@ -127,8 +179,17 @@ const config: Config = {
         md: 'calc(var(--radius) - 2px)',
         sm: 'calc(var(--radius) - 4px)',
       },
+      keyframes: {
+        'fade-in': {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
+      },
+      animation: {
+        'fade-in': 'fade-in 0.5s ease-in',
+      },
     },
   },
-  plugins: [animate],
 };
+
 export default config;

@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -8,12 +8,14 @@ import { z } from 'zod';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 import { Button } from '@/ui/button';
+import MediaUpload from '@/ui/custom/MediaUpload';
+
 import {
   Card,
   CardHeader,
   CardTitle,
-  CardDescription,
   CardContent,
+  CardFooter,
 } from '@/ui/card';
 import {
   Form,
@@ -24,28 +26,12 @@ import {
   FormMessage,
 } from '@/ui/form';
 import { Input } from '@/ui/input';
-import { ImageIcon, Plus, Trash2, X } from 'lucide-react';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/ui/dialog';
-import Image from 'next/image';
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/ui/accordion';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/ui/tabs';
 import { Textarea } from '@/ui/textarea';
-import { Switch } from '@/ui/switch';
-import SubcategoryDialogForm from './SubcategoryForm';
-import MediaUpload from '@/ui/custom/MediaUpload';
+import { Separator } from '@radix-ui/react-dropdown-menu';
+import Delete from '@/ui/custom/Delete';
+import { Checkbox } from '@/ui/checkbox';
 
-// Types and Schemas (unchanged from original)
+// Types matching MongoDB Schema
 type Subcategory = {
   shippingCharge: {
     byAir: { min: number; max: number };
@@ -81,6 +67,7 @@ interface CategoryFormProps {
   } | null;
 }
 
+// Schemas matching MongoDB requirements
 const subcategorySchema = z.object({
   name: z.string().min(1, 'Name is required'),
   title: z.string().min(1, 'Title is required'),
@@ -160,7 +147,11 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 const CategoryForm = ({ initialData }: CategoryFormProps) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
+  const [isSubcategoryVisible, setIsSubcategoryVisible] = useState(
+    (initialData?.subcategories?.length ?? 0) > 0
+  );
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -198,19 +189,35 @@ const CategoryForm = ({ initialData }: CategoryFormProps) => {
     mode: 'onChange',
   });
 
-  const { fields, append, remove } = useFieldArray({
+  const { fields, append, remove, replace } = useFieldArray({
     control: form.control,
     name: 'subcategories',
   });
 
+  if (fields.length === 0 && initialData?.subcategories?.length) {
+    replace(
+      initialData.subcategories.map((sub) => ({
+        ...sub,
+        parentId: initialData._id,
+        shippingCharge: sub.shippingCharge || {
+          byAir: { min: 0, max: 0 },
+          bySea: { min: 0, max: 0 },
+        },
+      }))
+    );
+  }
+
   const handleFormSubmit = async (values: FormValues) => {
     try {
+      setIsSubmitting(true);
+
+      // Format the data for the API
       const formattedData = {
         ...values,
         subcategories: values.subcategories.map((sub, index) => ({
           ...sub,
           sortOrder: index,
-          parentId: initialData?._id || '',
+          parentId: initialData?._id || '', // Will be set by API for new categories
         })),
       };
 
@@ -235,7 +242,7 @@ const CategoryForm = ({ initialData }: CategoryFormProps) => {
       toast.success(
         `Category ${initialData ? 'updated' : 'created'} successfully`
       );
-      router.push('/admin/categories');
+      router.push('/categories');
       router.refresh();
     } catch (error) {
       toast.error(
@@ -243,262 +250,99 @@ const CategoryForm = ({ initialData }: CategoryFormProps) => {
       );
       console.error('Category submission error:', error);
     } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <div className='container mx-auto px-4 py-8 lg:pl-72'>
-      <Card className='w-full max-w-4xl mx-auto'>
-        <CardHeader>
-          <CardTitle>
-            {initialData ? 'Edit Category' : 'Create Category'}
-          </CardTitle>
-          <CardDescription>
-            Manage your category details and shipping information
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Form {...form}>
-            <form
-              onSubmit={form.handleSubmit(handleFormSubmit)}
-              className='space-y-8'
-            >
-              {/* Main category form fields (same as original) */}
-              {/* ... (previous fields remain the same) ... */}
-              <div className='grid md:grid-cols-2 gap-6'>
-                <FormField
-                  control={form.control}
-                  name='name'
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Name</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder='Enter category name'
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name='title'
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Title</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder='Enter category title'
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+    <Card className='bg-white shadow-sm'>
+      <CardHeader className='flex flex-row items-center justify-between'>
+        <CardTitle>
+          {initialData ? 'Edit Category' : 'Create Category'}
+        </CardTitle>
+        {initialData && (
+          <Delete
+            id={initialData.slug}
+            item='category'
+          />
+        )}
+      </CardHeader>
 
-              {/* Description */}
-              <FormField
-                control={form.control}
-                name='description'
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Description</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder='Describe your category'
-                        className='min-h-[120px]'
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+      <Separator />
 
-              {/* Shipping Charges */}
-              <Accordion
-                type='single'
-                collapsible
-              >
-                <AccordionItem value='shipping-charges'>
-                  <AccordionTrigger>Shipping Charges (BDT)</AccordionTrigger>
-                  <AccordionContent>
-                    <Tabs defaultValue='air'>
-                      <TabsList className='grid w-full grid-cols-2'>
-                        <TabsTrigger
-                          value='air'
-                          className='data-[state=active]:bg-blue-500 data-[state=active]:text-white transition-all duration-300'
-                        >
-                          By Air
-                        </TabsTrigger>
-                        <TabsTrigger
-                          value='sea'
-                          className='data-[state=active]:bg-blue-500 data-[state=active]:text-white transition-all duration-300'
-                        >
-                          By Sea
-                        </TabsTrigger>
-                      </TabsList>
-                      <TabsContent value='air'>
-                        <div className='grid md:grid-cols-2 gap-4 mt-4'>
-                          <FormField
-                            control={form.control}
-                            name='shippingCharge.byAir.min'
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Min Charge</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    type='number'
-                                    placeholder='Minimum air charge'
-                                    {...field}
-                                    onChange={(e) =>
-                                      field.onChange(Number(e.target.value))
-                                    }
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name='shippingCharge.byAir.max'
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Max Charge</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    type='number'
-                                    placeholder='Maximum air charge'
-                                    {...field}
-                                    onChange={(e) =>
-                                      field.onChange(Number(e.target.value))
-                                    }
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-                      </TabsContent>
-                      <TabsContent value='sea'>
-                        <div className='grid md:grid-cols-2 gap-4 mt-4'>
-                          <FormField
-                            control={form.control}
-                            name='shippingCharge.bySea.min'
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Min Charge</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    type='number'
-                                    placeholder='Minimum sea charge'
-                                    {...field}
-                                    onChange={(e) =>
-                                      field.onChange(Number(e.target.value))
-                                    }
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name='shippingCharge.bySea.max'
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Max Charge</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    type='number'
-                                    placeholder='Maximum sea charge'
-                                    {...field}
-                                    onChange={(e) =>
-                                      field.onChange(Number(e.target.value))
-                                    }
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-                      </TabsContent>
-                    </Tabs>
-                  </AccordionContent>
-                </AccordionItem>
-              </Accordion>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(handleFormSubmit)}>
+          <CardContent className='space-y-6 pt-6'>
+            {/* Main Category Fields */}
+            <FormField
+              control={form.control}
+              name='name'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Name</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder='Enter category name...'
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-              {/* Media Uploads */}
-              <div className='grid md:grid-cols-2 gap-6'>
+            <FormField
+              control={form.control}
+              name='title'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Title</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder='Enter category title...'
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name='description'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Description</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder='Describe your category...'
+                      className='min-h-32'
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Shipping Charge Section */}
+            <div className='space-y-4'>
+              <h2 className='text-lg font-semibold'>Shipping Charge (BDT)</h2>
+
+              {/* By Air */}
+              <div className='grid grid-cols-2 gap-4'>
                 <FormField
                   control={form.control}
-                  name='icon'
+                  name='shippingCharge.byAir.min'
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Icon</FormLabel>
-                      <FormControl>
-                        <MediaUpload
-                          value={
-                            field.value
-                              ? [{ url: field.value, type: 'image' }]
-                              : []
-                          }
-                          onChange={(url) => field.onChange(url)}
-                          onRemove={() => field.onChange('')}
-                          folderId='icons'
-                          multiple={false}
-                          accept={['image']} // Only allow images for icon
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name='thumbnail'
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Thumbnail</FormLabel>
-                      <FormControl>
-                        <MediaUpload
-                          value={
-                            field.value
-                              ? [{ url: field.value, type: 'image' }]
-                              : []
-                          }
-                          onChange={(url) => field.onChange(url)}
-                          onRemove={() => field.onChange('')}
-                          folderId='thumbnails'
-                          multiple={false}
-                          accept={['image']}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              {/* Additional Settings */}
-              <div className='grid md:grid-cols-2 gap-6'>
-                <FormField
-                  control={form.control}
-                  name='sortOrder'
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Sort Order</FormLabel>
+                      <FormLabel>By Air - Min</FormLabel>
                       <FormControl>
                         <Input
                           type='number'
-                          placeholder='Enter sort order'
+                          min={0}
+                          placeholder='Min charge for Air...'
                           {...field}
                           onChange={(e) =>
                             field.onChange(Number(e.target.value))
@@ -509,384 +353,497 @@ const CategoryForm = ({ initialData }: CategoryFormProps) => {
                     </FormItem>
                   )}
                 />
+
                 <FormField
                   control={form.control}
-                  name='isActive'
+                  name='shippingCharge.byAir.max'
                   render={({ field }) => (
-                    <FormItem className='flex flex-row items-center justify-between rounded-lg border p-4'>
-                      <FormLabel>Active Status</FormLabel>
+                    <FormItem>
+                      <FormLabel>By Air - Max</FormLabel>
                       <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
+                        <Input
+                          type='number'
+                          min={0}
+                          placeholder='Max charge for Air...'
+                          {...field}
+                          onChange={(e) =>
+                            field.onChange(Number(e.target.value))
+                          }
                         />
                       </FormControl>
+                      <FormMessage />
                     </FormItem>
                   )}
                 />
               </div>
-              {/* Subcategories Section */}
-              <div className='space-y-4'>
-                <div className='flex justify-between items-center'>
-                  <h2 className='text-xl font-semibold'>Subcategories</h2>
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button
-                        type='button'
-                        variant='outline'
-                        size='sm'
-                      >
-                        <Plus className='mr-2 h-4 w-4' /> Add Subcategory
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className='sm:max-w-[600px]'>
-                      <DialogHeader>
-                        <DialogTitle>Add Subcategory</DialogTitle>
-                      </DialogHeader>
-                      <SubcategoryDialogForm
-                        onSubmit={(subcategoryData) => {
-                          append(subcategoryData);
-                          // This will close the dialog automatically
-                        }}
-                      />
-                    </DialogContent>
-                  </Dialog>
-                </div>
 
-                {fields.map((field, index) => (
+              {/* By Sea */}
+              <div className='grid grid-cols-2 gap-4'>
+                <FormField
+                  control={form.control}
+                  name='shippingCharge.bySea.min'
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>By Sea - Min</FormLabel>
+                      <FormControl>
+                        <Input
+                          type='number'
+                          min={0}
+                          placeholder='Min charge for Sea...'
+                          {...field}
+                          onChange={(e) =>
+                            field.onChange(Number(e.target.value))
+                          }
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name='shippingCharge.bySea.max'
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>By Sea - Max</FormLabel>
+                      <FormControl>
+                        <Input
+                          type='number'
+                          min={0}
+                          placeholder='Max charge for Sea...'
+                          {...field}
+                          onChange={(e) =>
+                            field.onChange(Number(e.target.value))
+                          }
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
+
+            {/* Media Upload Section */}
+            <div className='grid grid-cols-1 gap-6 md:grid-cols-2'>
+              <FormField
+                control={form.control}
+                name='icon'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Icon</FormLabel>
+                    <FormControl>
+                      <MediaUpload
+                        value={
+                          field.value
+                            ? [{ url: field.value, type: 'image' }]
+                            : []
+                        }
+                        onChange={(url) => form.setValue('icon', url)}
+                        onRemove={() => form.setValue('icon', '')}
+                        folderId='icons'
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name='thumbnail'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Thumbnail</FormLabel>
+                    <FormControl>
+                      <MediaUpload
+                        value={
+                          field.value
+                            ? [{ url: field.value, type: 'image' }]
+                            : []
+                        }
+                        onChange={(url) => form.setValue('thumbnail', url)}
+                        onRemove={() => form.setValue('thumbnail', '')}
+                        folderId='thumbnails'
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <FormField
+              control={form.control}
+              name='sortOrder'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Sort Order</FormLabel>
+                  <FormControl>
+                    <Input
+                      type='number'
+                      placeholder='Enter sort order...'
+                      {...field}
+                      onChange={(e) => field.onChange(Number(e.target.value))}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name='isActive'
+              render={({ field }) => (
+                <FormItem className='flex flex-row items-center justify-between rounded-lg border p-4'>
+                  <FormLabel>Active Status</FormLabel>
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+
+            {/* Subcategories Section */}
+            <div className='space-y-4'>
+              <div className='flex items-center justify-between'>
+                <h2 className='text-xl font-semibold'>Subcategories</h2>
+                <div className='flex gap-2'>
+                  <Button
+                    type='button'
+                    variant='outline'
+                    onClick={() =>
+                      setIsSubcategoryVisible(!isSubcategoryVisible)
+                    }
+                  >
+                    {isSubcategoryVisible ? 'Hide' : 'Show'} Subcategories
+                  </Button>
+                  <Button
+                    type='button'
+                    variant='secondary'
+                    onClick={() => {
+                      setIsSubcategoryVisible(true);
+                      append({
+                        name: '',
+                        title: '',
+                        description: '',
+                        icon: '',
+                        thumbnail: '',
+                        isActive: true,
+                        sortOrder: fields.length,
+                        parentId: initialData?._id || '',
+                        shippingCharge: {
+                          byAir: { min: 0, max: 0 },
+                          bySea: { min: 0, max: 0 },
+                        },
+                      });
+                    }}
+                  >
+                    Add Subcategory
+                  </Button>
+                </div>
+              </div>
+
+              {isSubcategoryVisible &&
+                fields.map((field, index) => (
                   <Card
                     key={field.id}
-                    className='relative'
+                    className='border'
                   >
-                    <CardHeader>
-                      <CardTitle>Subcategory {index + 1}</CardTitle>
+                    <CardHeader className='flex flex-row items-center justify-between pb-2'>
+                      <h3 className='text-lg font-medium'>
+                        Subcategory {index + 1}
+                      </h3>
                       <Button
                         type='button'
-                        variant='destructive'
-                        size='icon'
-                        className='absolute top-4 right-4'
+                        variant='ghost'
                         onClick={() => remove(index)}
+                        className='text-red-600 hover:text-red-700 hover:bg-red-50'
                       >
-                        <Trash2 className='h-4 w-4' />
+                        Remove
                       </Button>
                     </CardHeader>
-                    <CardContent>
-                      <div className='grid md:grid-cols-2 gap-4'>
-                        <FormField
-                          control={form.control}
-                          name={`subcategories.${index}.name`}
-                          render={({ field: inputField }) => (
-                            <FormItem>
-                              <FormLabel>Subcategory Name</FormLabel>
-                              <FormControl>
-                                <Input
-                                  placeholder='Enter subcategory name'
-                                  {...inputField}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name={`subcategories.${index}.title`}
-                          render={({ field: inputField }) => (
-                            <FormItem>
-                              <FormLabel>Subcategory Title</FormLabel>
-                              <FormControl>
-                                <Input
-                                  placeholder='Enter subcategory title'
-                                  {...inputField}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        {/* Additional Subcategory Fields */}
-                        <FormField
-                          control={form.control}
-                          name={`subcategories.${index}.description`}
-                          render={({ field: inputField }) => (
-                            <FormItem className='md:col-span-2'>
-                              <FormLabel>Description</FormLabel>
-                              <FormControl>
-                                <Textarea
-                                  placeholder='Enter subcategory description'
-                                  {...inputField}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name={`subcategories.${index}.isActive`}
-                          render={({ field: inputField }) => (
-                            <FormItem className='flex flex-row items-center justify-between rounded-lg border p-4'>
-                              <FormLabel>Active Status</FormLabel>
-                              <FormControl>
-                                <Switch
-                                  checked={inputField.value}
-                                  onCheckedChange={inputField.onChange}
-                                />
-                              </FormControl>
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name={`subcategories.${index}.sortOrder`}
-                          render={({ field: inputField }) => (
-                            <FormItem>
-                              <FormLabel>Sort Order</FormLabel>
-                              <FormControl>
-                                <Input
-                                  type='number'
-                                  placeholder='Enter sort order'
-                                  {...inputField}
-                                  onChange={(e) =>
-                                    inputField.onChange(Number(e.target.value))
-                                  }
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-
-                      {/* Shipping Charges for Subcategory */}
-                      <Accordion
-                        type='single'
-                        collapsible
-                        className='mt-4'
-                      >
-                        <AccordionItem value='shipping-charges'>
-                          <AccordionTrigger>
-                            Shipping Charges (BDT)
-                          </AccordionTrigger>
-                          <AccordionContent>
-                            <Tabs defaultValue='air'>
-                              <TabsList className='grid w-full grid-cols-2'>
-                                <TabsTrigger value='air'>By Air</TabsTrigger>
-                                <TabsTrigger value='sea'>By Sea</TabsTrigger>
-                              </TabsList>
-                              <TabsContent value='air'>
-                                <div className='grid md:grid-cols-2 gap-4 mt-4'>
-                                  <FormField
-                                    control={form.control}
-                                    name={`subcategories.${index}.shippingCharge.byAir.min`}
-                                    render={({ field: inputField }) => (
-                                      <FormItem>
-                                        <FormLabel>Min Charge</FormLabel>
-                                        <FormControl>
-                                          <Input
-                                            type='number'
-                                            placeholder='Minimum air charge'
-                                            {...inputField}
-                                            onChange={(e) =>
-                                              inputField.onChange(
-                                                Number(e.target.value)
-                                              )
-                                            }
-                                          />
-                                        </FormControl>
-                                        <FormMessage />
-                                      </FormItem>
-                                    )}
-                                  />
-                                  <FormField
-                                    control={form.control}
-                                    name={`subcategories.${index}.shippingCharge.byAir.max`}
-                                    render={({ field: inputField }) => (
-                                      <FormItem>
-                                        <FormLabel>Max Charge</FormLabel>
-                                        <FormControl>
-                                          <Input
-                                            type='number'
-                                            placeholder='Maximum air charge'
-                                            {...inputField}
-                                            onChange={(e) =>
-                                              inputField.onChange(
-                                                Number(e.target.value)
-                                              )
-                                            }
-                                          />
-                                        </FormControl>
-                                        <FormMessage />
-                                      </FormItem>
-                                    )}
-                                  />
-                                </div>
-                              </TabsContent>
-                              <TabsContent value='sea'>
-                                <div className='grid md:grid-cols-2 gap-4 mt-4'>
-                                  <FormField
-                                    control={form.control}
-                                    name={`subcategories.${index}.shippingCharge.bySea.min`}
-                                    render={({ field: inputField }) => (
-                                      <FormItem>
-                                        <FormLabel>Min Charge</FormLabel>
-                                        <FormControl>
-                                          <Input
-                                            type='number'
-                                            placeholder='Minimum sea charge'
-                                            {...inputField}
-                                            onChange={(e) =>
-                                              inputField.onChange(
-                                                Number(e.target.value)
-                                              )
-                                            }
-                                          />
-                                        </FormControl>
-                                        <FormMessage />
-                                      </FormItem>
-                                    )}
-                                  />
-                                  <FormField
-                                    control={form.control}
-                                    name={`subcategories.${index}.shippingCharge.bySea.max`}
-                                    render={({ field: inputField }) => (
-                                      <FormItem>
-                                        <FormLabel>Max Charge</FormLabel>
-                                        <FormControl>
-                                          <Input
-                                            type='number'
-                                            placeholder='Maximum sea charge'
-                                            {...inputField}
-                                            onChange={(e) =>
-                                              inputField.onChange(
-                                                Number(e.target.value)
-                                              )
-                                            }
-                                          />
-                                        </FormControl>
-                                        <FormMessage />
-                                      </FormItem>
-                                    )}
-                                  />
-                                </div>
-                              </TabsContent>
-                            </Tabs>
-                          </AccordionContent>
-                        </AccordionItem>
-                      </Accordion>
-
-                      {/* Media Uploads for Subcategory */}
-                      <div className='grid md:grid-cols-2 gap-4 mt-4'>
+                    <CardContent className='space-y-4'>
+                      <FormField
+                        control={form.control}
+                        name={`subcategories.${index}.name`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Name</FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder='Enter subcategory name...'
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name={`subcategories.${index}.title`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Title</FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder='Enter subcategory title...'
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name={`subcategories.${index}.description`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Description</FormLabel>
+                            <FormControl>
+                              <Textarea
+                                placeholder='Describe your subcategory...'
+                                className='min-h-32'
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      {/* Media Upload for Subcategory */}
+                      <div className='grid grid-cols-1 gap-6 md:grid-cols-2'>
                         <FormField
                           control={form.control}
                           name={`subcategories.${index}.icon`}
-                          render={({ field: inputField }) => (
+                          render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Subcategory Icon</FormLabel>
+                              <FormLabel>Icon</FormLabel>
                               <FormControl>
-                                <div className='flex items-center space-x-4'>
-                                  {inputField.value ? (
-                                    <div className='relative'>
-                                      <Image
-                                        src={inputField.value}
-                                        alt='Subcategory Icon'
-                                        className='w-20 h-20 object-cover rounded-md'
-                                      />
-                                      <button
-                                        type='button'
-                                        onClick={() => inputField.onChange('')}
-                                        className='absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1'
-                                      >
-                                        <X className='w-4 h-4' />
-                                      </button>
-                                    </div>
-                                  ) : (
-                                    <Button
-                                      type='button'
-                                      variant='outline'
-                                      className='flex items-center gap-2'
-                                    >
-                                      <ImageIcon className='w-4 h-4' />
-                                      Upload Icon
-                                    </Button>
-                                  )}
-                                </div>
+                                <MediaUpload
+                                  value={
+                                    field.value
+                                      ? [{ url: field.value, type: 'image' }]
+                                      : []
+                                  }
+                                  onChange={(url) =>
+                                    form.setValue(
+                                      `subcategories.${index}.icon`,
+                                      url
+                                    )
+                                  }
+                                  onRemove={() =>
+                                    form.setValue(
+                                      `subcategories.${index}.icon`,
+                                      ''
+                                    )
+                                  }
+                                  folderId='icons'
+                                />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
                           )}
                         />
+
                         <FormField
                           control={form.control}
                           name={`subcategories.${index}.thumbnail`}
-                          render={({ field: inputField }) => (
+                          render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Subcategory Thumbnail</FormLabel>
+                              <FormLabel>Thumbnail</FormLabel>
                               <FormControl>
-                                <div className='flex items-center space-x-4'>
-                                  {inputField.value ? (
-                                    <div className='relative'>
-                                      <Image
-                                        src={inputField.value}
-                                        alt='Subcategory Thumbnail'
-                                        className='w-20 h-20 object-cover rounded-md'
-                                      />
-                                      <button
-                                        type='button'
-                                        onClick={() => inputField.onChange('')}
-                                        className='absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1'
-                                      >
-                                        <X className='w-4 h-4' />
-                                      </button>
-                                    </div>
-                                  ) : (
-                                    <Button
-                                      type='button'
-                                      variant='outline'
-                                      className='flex items-center gap-2'
-                                    >
-                                      <ImageIcon className='w-4 h-4' />
-                                      Upload Thumbnail
-                                    </Button>
-                                  )}
-                                </div>
+                                <MediaUpload
+                                  value={
+                                    field.value
+                                      ? [{ url: field.value, type: 'image' }]
+                                      : []
+                                  }
+                                  onChange={(url) =>
+                                    form.setValue(
+                                      `subcategories.${index}.thumbnail`,
+                                      url
+                                    )
+                                  }
+                                  onRemove={() =>
+                                    form.setValue(
+                                      `subcategories.${index}.thumbnail`,
+                                      ''
+                                    )
+                                  }
+                                  folderId='thumbnails'
+                                />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
                           )}
                         />
                       </div>
+                      {/* Shipping Charge Section for Subcategory */}
+                      <div className='space-y-4'>
+                        <h3 className='text-lg font-semibold'>
+                          Shipping Charge
+                        </h3>
+
+                        {/* By Air */}
+                        <div className='grid grid-cols-2 gap-4'>
+                          <FormField
+                            control={form.control}
+                            name={`subcategories.${index}.shippingCharge.byAir.min`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>By Air - Min</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    type='number'
+                                    min={0}
+                                    {...field}
+                                    onChange={(e) =>
+                                      field.onChange(Number(e.target.value))
+                                    }
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name={`subcategories.${index}.shippingCharge.byAir.max`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>By Air - Max</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    type='number'
+                                    min={0}
+                                    {...field}
+                                    onChange={(e) =>
+                                      field.onChange(Number(e.target.value))
+                                    }
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+
+                        {/* By Sea */}
+                        <div className='grid grid-cols-2 gap-4'>
+                          <FormField
+                            control={form.control}
+                            name={`subcategories.${index}.shippingCharge.bySea.min`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>By Sea - Min</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    type='number'
+                                    min={0}
+                                    {...field}
+                                    onChange={(e) =>
+                                      field.onChange(Number(e.target.value))
+                                    }
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name={`subcategories.${index}.shippingCharge.bySea.max`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>By Sea - Max</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    type='number'
+                                    min={0}
+                                    {...field}
+                                    onChange={(e) =>
+                                      field.onChange(Number(e.target.value))
+                                    }
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                      </div>
+                      <FormField
+                        control={form.control}
+                        name={`subcategories.${index}.isActive`}
+                        render={({ field }) => (
+                          <FormItem className='flex flex-row items-center justify-between rounded-lg border p-4'>
+                            <FormLabel>Active Status</FormLabel>
+                            <FormControl>
+                              <Checkbox
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                              />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name={`subcategories.${index}.sortOrder`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Sort Order</FormLabel>
+                            <FormControl>
+                              <Input
+                                type='number'
+                                placeholder='Enter sort order...'
+                                {...field}
+                                onChange={(e) =>
+                                  field.onChange(Number(e.target.value))
+                                }
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                     </CardContent>
                   </Card>
                 ))}
-              </div>
+            </div>
+          </CardContent>
 
-              {/* Action Buttons */}
-              <div className='flex justify-end gap-4'>
-                <Button
-                  type='button'
-                  variant='outline'
-                  asChild
-                >
-                  <Link href='/categories'>Cancel</Link>
-                </Button>
-                <Button
-                  type='submit'
-                  disabled={form.formState.isSubmitting}
-                >
-                  {form.formState.isSubmitting
-                    ? 'Saving...'
-                    : `Save ${initialData ? 'Changes' : 'Category'}`}
-                </Button>
-              </div>
-            </form>
-          </Form>
-        </CardContent>
-      </Card>
-    </div>
+          <CardFooter className='flex items-center gap-4 pt-4'>
+            <Button
+              type='submit'
+              disabled={isSubmitting}
+            >
+              {isSubmitting
+                ? 'Saving...'
+                : `Save ${initialData ? 'Changes' : 'Category'}`}
+            </Button>
+            <Link href='/admin/categories'>
+              <Button
+                type='button'
+                variant='outline'
+              >
+                Cancel
+              </Button>
+            </Link>
+          </CardFooter>
+        </form>
+      </Form>
+    </Card>
   );
 };
 

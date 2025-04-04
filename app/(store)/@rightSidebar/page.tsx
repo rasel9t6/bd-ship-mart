@@ -31,7 +31,6 @@ export default function RightSidebarPage() {
     cost: number;
   }
 
-  // eslint-disable-next-line no-unused-vars
   interface Category {
     name: string;
     cost: null;
@@ -51,13 +50,13 @@ export default function RightSidebarPage() {
     <motion.aside
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
-      className="custom-scrollbar sticky right-0 top-0 flex h-screen  flex-col  border-l  border-custom-gray/20 bg-white px-6 pt-28 max-md:hidden sm:w-1/3 lg:w-1/5"
+      className='custom-scrollbar sticky right-0 top-0 flex h-screen  flex-col  border-l  border-custom-gray/20 bg-white px-6 pt-28 max-md:hidden sm:w-1/3 lg:w-1/5'
     >
-      <div className="flex flex-col gap-2 py-4 pb-8">
+      <div className='flex flex-col gap-2 py-4 pb-8'>
         <motion.h2
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-4 text-lg font-bold"
+          className='mb-4 text-lg font-bold'
         >
           Shipping Costs
         </motion.h2>
@@ -68,7 +67,7 @@ export default function RightSidebarPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.2 }}
-            className="border-b border-custom-gray/20 pb-2"
+            className='border-b border-custom-gray/20 pb-2'
           >
             <motion.button
               whileHover={{ scale: 1.02 }}
@@ -102,7 +101,7 @@ export default function RightSidebarPage() {
                   animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }}
                   transition={{ duration: 0.2 }}
-                  className="ml-4 flex flex-col gap-2 overflow-hidden"
+                  className='ml-4 flex flex-col gap-2 overflow-hidden'
                 >
                   {Object.entries(category.subcategories).map(
                     ([subKey, subCategory], index) => (
@@ -111,14 +110,14 @@ export default function RightSidebarPage() {
                         initial={{ opacity: 0, x: -10 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: index * 0.1 }}
-                        className="flex items-center justify-between py-1 text-sm text-gray-600"
+                        className='flex items-center justify-between py-1 text-sm text-gray-600'
                       >
                         <span>{subCategory.name}</span>
-                        <span className="font-medium">
+                        <span className='font-medium'>
                           {subCategory.cost} Taka/KG
                         </span>
                       </motion.div>
-                    ),
+                    )
                   )}
                 </motion.div>
               )}
@@ -126,7 +125,7 @@ export default function RightSidebarPage() {
           </motion.div>
         ))}
       </div>
-      <div className="mb-6 mt-auto rounded-md bg-bondi-blue-50 p-2 text-center font-Noto_Sans_Bengali text-sm font-semibold text-gray-600">
+      <div className='mb-6 mt-auto rounded-md bg-bondi-blue-50 p-2 text-center font-Noto_Sans_Bengali text-sm font-semibold text-gray-600'>
         আমরাই দিচ্ছি দ্রুত শিপিংয়ের অঙ্গীকার
       </div>
     </motion.aside>

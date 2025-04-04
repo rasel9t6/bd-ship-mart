@@ -1,6 +1,8 @@
 import Customer from '@/models/Customer';
 import Order from '@/models/Order';
 import { connectToDB } from '../dbConnect';
+import Category from '@/models/Category';
+import Product from '@/models/Product';
 export const getTotalSales = async () => {
   try {
     await connectToDB();
@@ -58,4 +60,72 @@ export async function getCurrencyRate() {
   const res = await fetch(`${process.env.NEXT_PUBLIC_EXCHANGE_RATE_API_URL}`);
   const currencyRate = await res.json();
   return currencyRate?.conversion_rates?.BDT || 17.5;
+}
+export async function getCategories() {
+  try {
+    await connectToDB();
+    const category = await Category.find().populate('subcategories'); // Fix: Removed object wrapping for findById
+    return JSON.parse(JSON.stringify(category));
+  } catch (error) {
+    console.error(`${error.message}`);
+  }
+}
+export async function getCategory({ categorySlug }: { categorySlug: string }) {
+  try {
+    await connectToDB();
+    const category = await Category.findOne({ slug: categorySlug }); // Fix: Removed object wrapping for findById
+    return JSON.parse(JSON.stringify(category));
+  } catch (error) {
+    console.error(`${error.message}`);
+  }
+}
+
+export async function getProducts() {
+  try {
+    await connectToDB();
+    const products = await Product.find();
+    return JSON.parse(JSON.stringify(products));
+  } catch (error) {
+    console.error(`${error.message}`);
+  }
+}
+
+export async function getProduct({ productId }: { productId: string }) {
+  try {
+    await connectToDB();
+    const product = await Product.findById(productId); // Fix: Removed object wrapping for findById
+    return JSON.parse(JSON.stringify(product));
+  } catch (error) {
+    console.error(`${error.message}`);
+  }
+}
+
+export async function getOrders() {
+  try {
+    await connectToDB();
+    const orders = await Order.find();
+    return JSON.parse(JSON.stringify(orders));
+  } catch (error) {
+    console.error(`${error.message}`);
+  }
+}
+
+export async function getOrder({ orderId }: { orderId: string }) {
+  try {
+    await connectToDB();
+    const order = await Order.findById(orderId); // Fix: Removed object wrapping for findById
+    return JSON.parse(JSON.stringify(order));
+  } catch (error) {
+    console.error(`${error.message}`);
+  }
+}
+
+export async function getCustomers() {
+  try {
+    await connectToDB();
+    const customers = await Customer.find();
+    return JSON.parse(JSON.stringify(customers));
+  } catch (error) {
+    console.error(`${error.message}`);
+  }
 }

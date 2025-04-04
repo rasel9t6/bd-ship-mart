@@ -1,21 +1,15 @@
 import { connectToDB } from '@/lib/dbConnect';
-
 import { NextRequest, NextResponse } from 'next/server';
-
 import { revalidatePath } from 'next/cache';
-
 import mongoose from 'mongoose';
 import Category from '@/models/Category';
 import Product from '@/models/Product';
 import Subcategory from '@/models/Subcategory';
-
-export const GET = async (
-  req: NextRequest,
-  { params }: { params: { categorySlug: string[] } }
-) => {
+type Params = Promise<{ categorySlug: string }>;
+export const GET = async (req: NextRequest, { params }: { params: Params }) => {
   try {
     await connectToDB();
-    const slugPath = params.categorySlug;
+    const { categorySlug: slugPath } = await params;
 
     // If it's a top-level category
     if (slugPath.length === 1) {
@@ -83,12 +77,12 @@ export const GET = async (
 
 export const POST = async (
   req: NextRequest,
-  { params }: { params: { categorySlug: string[] } }
+  { params }: { params: Params }
 ) => {
   try {
     await connectToDB();
     const data = await req.json();
-    const slugPath = params.categorySlug;
+    const { categorySlug: slugPath } = await params;
 
     // We only support updating top-level categories via this endpoint
     if (slugPath.length !== 1) {
@@ -124,8 +118,8 @@ export const POST = async (
 
       // Create new subcategories with validation
       const subcategoryPromises = data.subcategories
-        .filter((sub: any) => sub.name && sub.title) // Basic validation
-        .map(async (sub: any) => {
+        .filter((sub: SubCategoryType) => sub.name && sub.title) // Basic validation
+        .map(async (sub: SubCategoryType) => {
           const subcategoryData = {
             name: sub.name,
             title: sub.title,
@@ -175,11 +169,11 @@ export const POST = async (
 
 export const DELETE = async (
   req: NextRequest,
-  { params }: { params: { categorySlug: string[] } }
+  { params }: { params: Params }
 ) => {
   try {
     await connectToDB();
-    const slugPath = params.categorySlug;
+    const { categorySlug: slugPath } = await params;
 
     // We only support deleting top-level categories via this endpoint
     if (slugPath.length !== 1) {

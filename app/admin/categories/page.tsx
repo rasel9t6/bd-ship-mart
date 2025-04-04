@@ -15,7 +15,7 @@ export default async function CategoriesPage() {
         <p className='text-heading2-bold'>Categories</p>
         <Link
           className='flex items-center rounded-lg bg-blue-1 p-3 text-body-semibold text-white'
-          href='/categories/new'
+          href='/admin/categories/new'
         >
           <FaPlus className='mr-2 size-4' />
           Create Categories

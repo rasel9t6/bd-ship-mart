@@ -5,8 +5,12 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { navLinks } from '@/lib/constant';
 import { Avatar, AvatarFallback, AvatarImage } from '../avatar';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../tooltip';
-
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '../tooltip';
 
 export default function LeftSideBar() {
   const pathname = usePathname();

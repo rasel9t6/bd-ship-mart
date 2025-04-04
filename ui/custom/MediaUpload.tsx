@@ -56,6 +56,7 @@ const MediaUpload: FC<MediaUploadProps> = ({
                 className='object-cover'
                 alt='Upload'
                 src={item.url}
+                
               />
             ) : (
               <div className='relative size-full'>
@@ -85,7 +86,9 @@ const MediaUpload: FC<MediaUploadProps> = ({
             </div>
           </div>
         ))}
-        {(!multiple || value.length === 0) && (
+
+        {/* Hide the upload option if not allowing multiple uploads and there is already an image uploaded */}
+        {!multiple && value.length === 0 && (
           <div
             onClick={() => setGalleryOpen(true)}
             className='flex size-[200px] cursor-pointer flex-col items-center justify-center gap-2 rounded-md border-2 border-dashed border-gray-200/20 bg-white p-2 text-gray-800 transition hover:border-gray-800'

@@ -1,29 +1,9 @@
 import { ProductType } from '@/lib/types';
 import ProductCard from '../products/_components/ProductCard';
-import { use } from 'react';
+import { getProducts } from '@/lib/actions/actions';
 
-async function fetchProducts() {
-  try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/products`,
-      {
-        next: { revalidate: 60 }, // Cache for 1 minute
-        cache: 'no-store', // Disable Next.js caching if needed
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch categories');
-    }
-
-    return response.json();
-  } catch (error) {
-    console.error('Categories fetch error:', error);
-    return [];
-  }
-}
-export default function ProductList() {
-  const products = use(fetchProducts());
+export default async function ProductList() {
+  const products = await getProducts();
   if (!products || products.length === 0) {
     return (
       <div className='flex flex-col items-center gap-4 px-5 py-8'>
