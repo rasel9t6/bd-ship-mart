@@ -28,7 +28,7 @@ export default function SidebarContent({
       animate={{ opacity: 1 }}
       className='flex size-full flex-col gap-1 p-2'
     >
-      {categories.map((category: CategoryType) => {
+      {categories.map((category) => {
         const isExpanded = hoveredCategory === category._id;
         const isActive = pathname.includes(`/categories/${category.slug}`);
 

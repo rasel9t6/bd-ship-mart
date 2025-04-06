@@ -3,6 +3,12 @@ import Order from '@/models/Order';
 import { connectToDB } from '../dbConnect';
 import Category from '@/models/Category';
 import Product from '@/models/Product';
+import User from '@/models/User';
+const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
+
+if (!apiUrl) {
+  throw new Error('NEXT_PUBLIC_API_URL is not found');
+}
 export const getTotalSales = async () => {
   try {
     await connectToDB();
@@ -64,10 +70,10 @@ export async function getCurrencyRate() {
 export async function getCategories() {
   try {
     await connectToDB();
-    const category = await Category.find().populate('subcategories'); // Fix: Removed object wrapping for findById
+    const category = await Category.find().populate('subcategories');
     return JSON.parse(JSON.stringify(category));
   } catch (error) {
-    console.error(`${error.message}`);
+    console.error(`${error}`);
   }
 }
 export async function getCategory({ categorySlug }: { categorySlug: string }) {
@@ -76,7 +82,7 @@ export async function getCategory({ categorySlug }: { categorySlug: string }) {
     const category = await Category.findOne({ slug: categorySlug }); // Fix: Removed object wrapping for findById
     return JSON.parse(JSON.stringify(category));
   } catch (error) {
-    console.error(`${error.message}`);
+    console.error(`${error}`);
   }
 }
 
@@ -86,7 +92,7 @@ export async function getProducts() {
     const products = await Product.find();
     return JSON.parse(JSON.stringify(products));
   } catch (error) {
-    console.error(`${error.message}`);
+    console.error(`${error}`);
   }
 }
 
@@ -96,7 +102,7 @@ export async function getProduct({ productId }: { productId: string }) {
     const product = await Product.findById(productId); // Fix: Removed object wrapping for findById
     return JSON.parse(JSON.stringify(product));
   } catch (error) {
-    console.error(`${error.message}`);
+    console.error(`${error}`);
   }
 }
 
@@ -106,7 +112,7 @@ export async function getOrders() {
     const orders = await Order.find();
     return JSON.parse(JSON.stringify(orders));
   } catch (error) {
-    console.error(`${error.message}`);
+    console.error(`${error}`);
   }
 }
 
@@ -116,7 +122,7 @@ export async function getOrder({ orderId }: { orderId: string }) {
     const order = await Order.findById(orderId); // Fix: Removed object wrapping for findById
     return JSON.parse(JSON.stringify(order));
   } catch (error) {
-    console.error(`${error.message}`);
+    console.error(`${error}`);
   }
 }
 
@@ -126,6 +132,25 @@ export async function getCustomers() {
     const customers = await Customer.find();
     return JSON.parse(JSON.stringify(customers));
   } catch (error) {
-    console.error(`${error.message}`);
+    console.error(`${error}`);
+  }
+}
+export async function getRelatedProducts({ productId }: { productId: string }) {
+  try {
+    const res = await fetch(`${apiUrl}/products/${productId}/related`);
+    const relatedProducts = await res.json();
+    return relatedProducts;
+  } catch (error) {
+    console.error(`${error}`);
+  }
+}
+
+export async function getUserOrders(userId: string | undefined) {
+  try {
+    const res = await User.findById(userId).populate('orders');
+    const user = JSON.parse(JSON.stringify(res));
+    return user.orders;
+  } catch (error) {
+    console.error(`${error}`);
   }
 }

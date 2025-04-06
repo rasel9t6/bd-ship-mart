@@ -24,7 +24,7 @@ export default function TopBar() {
       <div className='container mx-auto flex items-center justify-between px-4 py-3 lg:px-6'>
         {/* Logo */}
         <Link
-          href='/'
+          href='/admin'
           className='flex items-center'
         >
           <Image

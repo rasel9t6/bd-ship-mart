@@ -1,4 +1,4 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import mongoose, { CallbackError, Document, Schema } from 'mongoose';
 import slugify from 'slugify';
 import Category from './Category';
 
@@ -219,11 +219,10 @@ ProductSchema.pre<IProduct>('save', function (next) {
     }
     this.performCurrencyConversions();
     next();
-  } catch (error: any) {
+  } catch (error: CallbackError) {
     next(error);
   }
 });
-
 // Currency conversion logic
 ProductSchema.methods.performCurrencyConversions = function () {
   const convertCurrency = (inputValue: number, rate: number) =>

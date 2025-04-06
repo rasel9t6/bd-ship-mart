@@ -40,7 +40,7 @@ const NavLinks = ({ pathname, session }: any) => (
     {NAV_LINKS.map(({ path, icon }) => (
       <Link
         key={path}
-        href={session ? path : '/auth/signin'}
+        href={session ? path : '/auth/login'}
         className={`transition-all duration-300 hover:text-bondi-blue-400 ${
           pathname === path && 'text-white'
         }`}
@@ -186,7 +186,7 @@ export default function Navbar() {
             {NAV_LINKS.map(({ path, label, icon }) => (
               <Link
                 key={path}
-                href={session ? path : '/auth/signin'}
+                href={session ? path : '/auth/login'}
                 className='flex items-center gap-1 hover:text-bondi-blue'
               >
                 {icon}
@@ -219,7 +219,7 @@ export default function Navbar() {
               <CircleUserRound className='text-white' />
             )}
             <button
-              onClick={() => signOut({ callbackUrl: '/auth/signin' })}
+              onClick={() => signOut({ callbackUrl: '/auth/login' })}
               className='text-white hover:text-bondi-blue-400'
             >
               Sign Out

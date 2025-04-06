@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import User from '@/lib/models/User';
 
 // Config for admin API
-const NEXT_PUBLIC_ADMIN_API_URL = process.env.NEXT_PUBLIC_ADMIN_API_URL;
+const NEXT_PUBLIC_API_URL = process.env.NEXT_PUBLIC_API_URL;
 const ADMIN_API_KEY = process.env.ADMIN_API_KEY;
 
 export const GET = async () => {
@@ -29,7 +29,7 @@ export const GET = async () => {
     if (user.userId) {
       try {
         const response = await fetch(
-          `${NEXT_PUBLIC_ADMIN_API_URL}/customers/${user.userId}/orders`,
+          `${NEXT_PUBLIC_API_URL}/customers/${user.userId}/orders`,
           {
             headers: {
               Authorization: `Bearer ${ADMIN_API_KEY}`,
@@ -129,7 +129,7 @@ export const POST = async (req: NextRequest) => {
         // Skip the API call if no relevant fields were updated
         if (Object.keys(filteredUpdates).length > 0) {
           const response = await fetch(
-            `${NEXT_PUBLIC_ADMIN_API_URL}/customers/${updatedUser.userId}/orders`,
+            `${NEXT_PUBLIC_API_URL}/customers/${updatedUser.userId}/orders`,
             {
               method: 'PATCH',
               headers: {
@@ -150,7 +150,7 @@ export const POST = async (req: NextRequest) => {
 
         // After updating customer, fetch their orders
         const ordersResponse = await fetch(
-          `${NEXT_PUBLIC_ADMIN_API_URL}/customers/${updatedUser.userId}/orders`,
+          `${NEXT_PUBLIC_API_URL}/customers/${updatedUser.userId}/orders`,
           {
             headers: {
               Authorization: `Bearer ${ADMIN_API_KEY}`,

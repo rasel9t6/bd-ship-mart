@@ -69,7 +69,7 @@ export const GET = async (req: NextRequest, { params }: { params: Params }) => {
   } catch (error) {
     console.error('[CATEGORY_GET]', error);
     return NextResponse.json(
-      { error: error.message || 'Failed to fetch category' },
+      { error: error || 'Failed to fetch category' },
       { status: 500 }
     );
   }
@@ -118,8 +118,8 @@ export const POST = async (
 
       // Create new subcategories with validation
       const subcategoryPromises = data.subcategories
-        .filter((sub: SubCategoryType) => sub.name && sub.title) // Basic validation
-        .map(async (sub: SubCategoryType) => {
+        .filter((sub: any) => sub.name && sub.title) // Basic validation
+        .map(async (sub) => {
           const subcategoryData = {
             name: sub.name,
             title: sub.title,
@@ -155,12 +155,11 @@ export const POST = async (
     revalidatePath(`/categories/${slugPath[0]}`);
 
     return NextResponse.json(category);
-  } catch (error: any) {
+  } catch (error) {
     console.error('[CATEGORY_UPDATE]', error);
     return NextResponse.json(
       {
-        error: error.message || 'Failed to update category',
-        details: error.errors, // Mongoose validation error details
+        error: error || 'Failed to update category',
       },
       { status: 500 }
     );
@@ -219,10 +218,10 @@ export const DELETE = async (
 
     revalidatePath('/categories');
     return new NextResponse('Category deleted successfully', { status: 200 });
-  } catch (error: any) {
+  } catch (error) {
     console.error('[CATEGORY_DELETE]', error);
     return NextResponse.json(
-      { error: error.message || 'Failed to delete category' },
+      { error: error || 'Failed to delete category' },
       { status: 500 }
     );
   }

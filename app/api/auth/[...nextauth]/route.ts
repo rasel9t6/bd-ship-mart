@@ -88,7 +88,7 @@ export const authOptions: AuthOptions = {
   ],
 
   pages: {
-    signIn: '/auth/signin',
+    signIn: '/auth/login',
     error: '/auth/error',
     verifyRequest: '/auth/verify-request',
   },

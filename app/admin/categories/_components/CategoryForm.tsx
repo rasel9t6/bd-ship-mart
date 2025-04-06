@@ -1,5 +1,4 @@
 'use client';
-
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm, useFieldArray } from 'react-hook-form';
@@ -9,7 +8,6 @@ import Link from 'next/link';
 import toast from 'react-hot-toast';
 import { Button } from '@/ui/button';
 import MediaUpload from '@/ui/custom/MediaUpload';
-
 import {
   Card,
   CardHeader,

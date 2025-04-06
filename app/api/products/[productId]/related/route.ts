@@ -16,7 +16,7 @@ export const GET = async (
     }
 
     // Create a query to find related products based on category
-    const query: any = {
+    const query = {
       _id: { $ne: product._id }, // Exclude the current product
     };
 
@@ -33,7 +33,6 @@ export const GET = async (
       const price = product.price.bdt;
       const minPrice = price * 0.7; // 30% lower
       const maxPrice = price * 1.3; // 30% higher
-
       query['price.bdt'] = {
         $gte: minPrice,
         $lte: maxPrice,
@@ -50,10 +49,10 @@ export const GET = async (
     );
 
     return NextResponse.json(relatedProducts);
-  } catch (error: any) {
-    console.error('[RELATED_PRODUCTS_GET]', error.message || error);
+  } catch (error) {
+    console.error('[RELATED_PRODUCTS_GET]', error);
     return NextResponse.json(
-      { error: error.message || 'Failed to fetch related products' },
+      { error: error || 'Failed to fetch related products' },
       { status: 500 }
     );
   }

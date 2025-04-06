@@ -4,7 +4,7 @@ import Category from '@/models/Category';
 import Subcategory from '@/models/Subcategory';
 import { revalidatePath } from 'next/cache';
 import { connectToDB } from '@/lib/dbConnect';
-import { CategoryType, SubcategoryType } from '@/types/next-utils';
+import { CategoryType } from '@/types/next-utils';
 
 export const POST = async (req: NextRequest) => {
   try {
@@ -68,10 +68,7 @@ export const GET = async () => {
     await connectToDB();
 
     const categories = await Category.find()
-      .populate({
-        path: 'subcategories',
-        model: Subcategory,
-      })
+      .populate('subcategories')
       .sort({ sortOrder: 1 })
       .lean();
 

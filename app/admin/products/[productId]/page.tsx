@@ -1,13 +1,14 @@
-import ProductForm from '@/components/products/ProductForm';
+import { getProduct } from '@/lib/actions/actions';
+import ProductForm from '../_components/ProductForm';
 
 export default async function ProductPage({
   params,
 }: {
   params: { productId: string };
 }) {
-  const res = await fetch(` 
-    ${process.env.NEXT_PUBLIC_API_URL}/api/products/${params.productId}`);
-  const productDetails = await res.json();
+  const { productId } = params;
+  const productDetails = await getProduct({ productId });
+
   return (
     <>
       <ProductForm initialData={productDetails} />

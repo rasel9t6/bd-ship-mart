@@ -1,7 +1,6 @@
-import DataTable from '@/components/custom-ui/DataTable';
-import { columns } from '@/components/customers/CustomerColumns';
-
+import DataTable from '@/ui/custom/DataTable';
 import { Separator } from '@radix-ui/react-separator';
+import { columns } from './_components/CustomerColumns';
 export default async function CustomerPage() {
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/customers`);
   const customers = await res.json();

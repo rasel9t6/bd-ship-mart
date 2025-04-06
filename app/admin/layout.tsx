@@ -1,5 +1,3 @@
-
-
 import LeftSideBar from '@/ui/layout/LeftSideBar';
 import TopBar from '@/ui/layout/TopBar';
 import React from 'react';
@@ -9,15 +7,15 @@ export default function layout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  
   return (
     <html>
       <body>
-        <main className='flex text-gray-1 max-lg:flex-col'>
+        <main className='flex min-h-screen text-gray-1'>
           <LeftSideBar />
-          <TopBar />
-
-          <div className='flex-1 px-8 py-10'>{children}</div>
+          <div className='flex-1 lg:ml-64 flex flex-col'>
+            <TopBar />
+            <div className='flex-1'>{children}</div>
+          </div>
         </main>
       </body>
     </html>

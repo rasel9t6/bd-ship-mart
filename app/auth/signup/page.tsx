@@ -94,23 +94,14 @@ export default function SignUp() {
         throw new Error(errorData.error || 'Registration failed');
       }
 
-      // Sign in user
-      const signInResult = await signIn('credentials', {
-        redirect: false,
-        email: values.email.trim().toLowerCase(),
-        password: values.password,
-      });
-
-      if (signInResult?.error) {
-        throw new Error(
-          'Registration successful but sign-in failed. Please try signing in manually.'
-        );
-      }
-
-      // Redirect to home page or onboarding
-      router.push('/');
-      toast.success('Registration successful!');
+      // Registration successful
+      toast.success('Registration successful! Please verify your email.');
       toast.remove(loadingToast);
+
+      // Redirect to verification page with email pre-filled
+      router.push(
+        `/auth/verify?email=${encodeURIComponent(values.email.trim().toLowerCase())}`
+      );
     } catch (error: unknown) {
       // Handle errors
       const errorMessage =

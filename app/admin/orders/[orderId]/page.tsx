@@ -1,5 +1,5 @@
-import DataTable from '@/components/custom-ui/DataTable';
-import { columns } from '@/components/orderItems/OrderItemsColumns';
+import DataTable from '@/ui/custom/DataTable';
+import { columns } from '../_components/OrderItemsColumns';
 
 export default async function orderDetailsPage({
   params,

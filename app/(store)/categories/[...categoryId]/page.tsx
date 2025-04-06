@@ -13,7 +13,7 @@ export default async function CategoryDetailsPage({
     ? params.categoryId.join('/')
     : params.categoryId;
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_ADMIN_API_URL}/categories/${categoryIdString}`
+    `${process.env.NEXT_PUBLIC_API_URL}/categories/${categoryIdString}`
   );
   const categoryDetails = await res.json();
   const { title, description, thumbnail, products, name, subcategories } =
