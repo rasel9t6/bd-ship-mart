@@ -1,5 +1,5 @@
-import bcrypt from 'bcryptjs';
-import crypto from 'crypto';
+import bcrypt from "bcryptjs";
+import crypto from "crypto";
 
 export async function hashPassword(password: string): Promise<string> {
   const salt = await bcrypt.genSalt(10);
@@ -8,13 +8,13 @@ export async function hashPassword(password: string): Promise<string> {
 
 export async function comparePassword(
   plainPassword: string,
-  hashedPassword: string
+  hashedPassword: string,
 ): Promise<boolean> {
   return bcrypt.compare(plainPassword, hashedPassword);
 }
 
 export function generateResetToken(): string {
-  return crypto.randomBytes(32).toString('hex');
+  return crypto.randomBytes(32).toString("hex");
 }
 
 export function generateOTP(): string {
@@ -23,5 +23,5 @@ export function generateOTP(): string {
 
 // ✅ Add this function
 export function generateVerificationToken(): string {
-  return crypto.randomBytes(32).toString('hex');
+  return crypto.randomBytes(32).toString("hex");
 }

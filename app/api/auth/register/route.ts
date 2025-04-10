@@ -1,10 +1,10 @@
 // app/api/auth/register/route.ts
-import { NextResponse } from 'next/server';
+import { NextResponse } from "next/server";
 
-import User from '@/models/User';
-import { hashPassword, generateVerificationToken } from '@/lib/password-utils';
-import { sendVerificationEmail } from '@/lib/email-service';
-import { connectToDB } from '@/lib/dbConnect';
+import User from "@/models/User";
+import { hashPassword, generateVerificationToken } from "@/lib/password-utils";
+import { sendVerificationEmail } from "@/lib/email-service";
+import { connectToDB } from "@/lib/dbConnect";
 
 export async function POST(req: Request) {
   await connectToDB();
@@ -16,8 +16,8 @@ export async function POST(req: Request) {
     const existingUser = await User.findOne({ email: userData.email });
     if (existingUser) {
       return NextResponse.json(
-        { error: 'User already exists' },
-        { status: 400 }
+        { error: "User already exists" },
+        { status: 400 },
       );
     }
 
@@ -41,11 +41,11 @@ export async function POST(req: Request) {
     await sendVerificationEmail(newUser.email, verificationToken);
 
     return NextResponse.json({
-      message: 'User registered successfully',
+      message: "User registered successfully",
       userId: newUser._id,
     });
   } catch (error) {
-    console.error('Registration error:', error);
-    return NextResponse.json({ error: 'Registration failed' }, { status: 500 });
+    console.error("Registration error:", error);
+    return NextResponse.json({ error: "Registration failed" }, { status: 500 });
   }
 }

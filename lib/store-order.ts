@@ -1,10 +1,12 @@
+import { OrderType } from '@/types/next-utils';
+
 const STORE_API_URL = process.env.STORE_API_URL;
 const STORE_API_KEY = process.env.STORE_API_KEY;
 
 export async function updateStoreUserOrder(
   userId: string,
   orderId: string,
-  orderData: any
+  orderData: OrderType
 ) {
   console.log(
     `Updating order ${orderId} for user ${userId} in store system`,

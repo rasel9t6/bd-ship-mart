@@ -38,7 +38,7 @@ const ImageSlider: React.FC<ImageSliderProps> = ({
   );
 
   useEffect(() => {
-    let interval: any | null = null;
+    let interval: ReturnType<typeof setInterval> | null = null;
     if (isPlaying) {
       interval = setInterval(() => paginate(1), autoPlayInterval);
     }

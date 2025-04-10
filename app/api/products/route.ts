@@ -2,8 +2,9 @@ import { connectToDB } from '@/lib/dbConnect';
 import Category from '@/models/Category';
 import Product from '@/models/Product';
 import Subcategory from '@/models/Subcategory';
+import { ProductType } from '@/types/next-utils';
 
-import mongoose from 'mongoose';
+import mongoose, { FilterQuery } from 'mongoose';
 import { revalidatePath } from 'next/cache';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -34,9 +35,9 @@ export const POST = async (req: NextRequest) => {
     revalidatePath('/products');
     revalidatePath(`/products/${product._id}`);
     return NextResponse.json(product, { status: 201 });
-  } catch (error: any) {
+  } catch (error) {
     return NextResponse.json(
-      { error: error.message || 'Failed to create product' },
+      { error: error || 'Failed to create product' },
       { status: 400 }
     );
   }
@@ -61,19 +62,22 @@ export async function GET(req: NextRequest) {
     const searchTerm = searchParams.get('search');
 
     // Build query
-    const query: any = {};
+    const query: FilterQuery<ProductType> = {};
+
     if (category) {
-      // Assuming category is an ObjectId
       query.category = new mongoose.Types.ObjectId(category);
     }
+
     if (tags) {
       query.tags = { $in: tags };
     }
+
     if (minPrice || maxPrice) {
       query['price.cny'] = {};
       if (minPrice) query['price.cny'].$gte = parseFloat(minPrice);
       if (maxPrice) query['price.cny'].$lte = parseFloat(maxPrice);
     }
+
     if (searchTerm) {
       query.$or = [
         { title: { $regex: searchTerm, $options: 'i' } },
@@ -109,8 +113,8 @@ export async function GET(req: NextRequest) {
         pages: Math.ceil(total / limit),
       },
     });
-  } catch (error: any) {
-    console.error('[PRODUCTS_GET]', error.message || error);
+  } catch (error) {
+    console.error('[PRODUCTS_GET]', error);
     return NextResponse.json(
       { error: 'Failed to fetch products' },
       { status: 500 }

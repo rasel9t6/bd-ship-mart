@@ -1,17 +1,17 @@
-import NextAuth, { AuthOptions } from 'next-auth';
-import CredentialsProvider from 'next-auth/providers/credentials';
-import GoogleProvider from 'next-auth/providers/google';
-import User from '@/models/User';
-import { comparePassword, hashPassword } from '@/lib/password-utils';
-import { connectToDB } from '@/lib/dbConnect';
+import NextAuth, { AuthOptions } from "next-auth";
+import CredentialsProvider from "next-auth/providers/credentials";
+import GoogleProvider from "next-auth/providers/google";
+import User from "@/models/User";
+import { comparePassword, hashPassword } from "@/lib/password-utils";
+import { connectToDB } from "@/lib/dbConnect";
 
 export const authOptions: AuthOptions = {
   providers: [
     CredentialsProvider({
-      name: 'Credentials',
+      name: "Credentials",
       credentials: {
-        email: { label: 'Email', type: 'email' },
-        password: { label: 'Password', type: 'password' },
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
         // Ensure database connection
@@ -25,7 +25,7 @@ export const authOptions: AuthOptions = {
         // Find user by email
         const user = await User.findOne({
           email: credentials.email.toLowerCase(),
-        }).select('+password');
+        }).select("+password");
 
         if (!user) {
           return null;
@@ -34,7 +34,7 @@ export const authOptions: AuthOptions = {
         // Verify password
         const isValidPassword = await comparePassword(
           credentials.password,
-          user.password
+          user.password,
         );
 
         if (!isValidPassword) {
@@ -43,7 +43,7 @@ export const authOptions: AuthOptions = {
 
         // Check email verification (optional)
         if (!user.emailVerified) {
-          throw new Error('Please verify your email first');
+          throw new Error("Please verify your email first");
         }
 
         // Return user object for session
@@ -71,7 +71,7 @@ export const authOptions: AuthOptions = {
             name: profile.name,
             email: profile.email,
             emailVerified: true,
-            role: 'user',
+            role: "user",
             // Use a placeholder password or generate a random one
             password: await hashPassword(Math.random().toString(36).slice(-8)),
           });
@@ -88,9 +88,9 @@ export const authOptions: AuthOptions = {
   ],
 
   pages: {
-    signIn: '/auth/login',
-    error: '/auth/error',
-    verifyRequest: '/auth/verify-request',
+    signIn: "/auth/login",
+    error: "/auth/error",
+    verifyRequest: "/auth/verify-request",
   },
 
   callbacks: {
@@ -113,15 +113,15 @@ export const authOptions: AuthOptions = {
 
   events: {
     async signIn(message) {
-      console.log('Sign in event', message);
+      console.log("Sign in event", message);
     },
     async createUser(message) {
-      console.log('User created', message);
+      console.log("User created", message);
     },
   },
 
   session: {
-    strategy: 'jwt',
+    strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60,
   },
 

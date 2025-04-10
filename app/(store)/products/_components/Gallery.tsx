@@ -1,8 +1,8 @@
-'use client';
-import { useState } from 'react';
-import Image from 'next/image';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+"use client";
+import { useState } from "react";
+import Image from "next/image";
+import { motion, AnimatePresence } from "framer-motion";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 export default function Gallery({ productMedia }: { productMedia: string[] }) {
   const [mainImage, setMainImage] = useState(productMedia[0]);

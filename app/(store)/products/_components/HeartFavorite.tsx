@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
-import { FaHeart, FaRegHeart } from 'react-icons/fa6';
-import React, { useState, useEffect, useCallback } from 'react';
-import { ProductType, UserType } from '@/lib/types';
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { FaHeart, FaRegHeart } from "react-icons/fa6";
+import React, { useState, useEffect, useCallback } from "react";
+import { ProductType, UserType } from "@/types/next-utils";
 
 interface HeartFavoriteProps {
   product: ProductType;
-  // eslint-disable-next-line no-unused-vars
+
   updateSignedInUser?: (user: UserType) => void;
 }
 
@@ -23,12 +23,12 @@ export default function HeartFavorite({
 
   const getUser = useCallback(async () => {
     try {
-      const res = await fetch('/api/users');
+      const res = await fetch("/api/users");
       const user = await res.json();
       setIsLiked(user.wishlist.includes(product._id));
       setLoading(false);
     } catch (err) {
-      console.log('[users_GET]', err);
+      console.log("[users_GET]", err);
       setLoading(false);
     }
   }, [product._id]);
@@ -43,20 +43,20 @@ export default function HeartFavorite({
 
   const toggleWishlist = async () => {
     if (!session) {
-      return router.push('/auth/signin');
+      return router.push("/auth/signin");
     }
 
     try {
-      const res = await fetch('/api/users/wishlist', {
-        method: 'POST',
+      const res = await fetch("/api/users/wishlist", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ productId: product._id }),
       });
 
       if (!res.ok) {
-        throw new Error('Failed to toggle wishlist');
+        throw new Error("Failed to toggle wishlist");
       }
 
       const updatedUser = await res.json();
@@ -66,7 +66,7 @@ export default function HeartFavorite({
         updateSignedInUser(updatedUser);
       }
     } catch (err) {
-      console.log('[wishlist_POST]', err);
+      console.log("[wishlist_POST]", err);
     }
   };
 

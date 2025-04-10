@@ -1,10 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from "next/server";
 
-import Category from '@/models/Category';
-import Subcategory from '@/models/Subcategory';
-import { revalidatePath } from 'next/cache';
-import { connectToDB } from '@/lib/dbConnect';
-import { CategoryType } from '@/types/next-utils';
+import Category from "@/models/Category";
+import Subcategory from "@/models/Subcategory";
+import { revalidatePath } from "next/cache";
+import { connectToDB } from "@/lib/dbConnect";
+import { CategoryType } from "@/types/next-utils";
 
 export const POST = async (req: NextRequest) => {
   try {
@@ -49,16 +49,16 @@ export const POST = async (req: NextRequest) => {
       await category.save();
     }
 
-    revalidatePath('/admin/categories');
+    revalidatePath("/admin/categories");
     return NextResponse.json(category, { status: 201 });
   } catch (error: unknown) {
-    console.log('[Category_POST]', error);
+    console.log("[Category_POST]", error);
     if (error instanceof Error) {
       return new NextResponse(`Internal Server Error: ${error.message}`, {
         status: 500,
       });
     } else {
-      return new NextResponse('Internal Server Error', { status: 500 });
+      return new NextResponse("Internal Server Error", { status: 500 });
     }
   }
 };
@@ -68,7 +68,7 @@ export const GET = async () => {
     await connectToDB();
 
     const categories = await Category.find()
-      .populate('subcategories')
+      .populate("subcategories")
       .sort({ sortOrder: 1 })
       .lean();
 
@@ -76,25 +76,25 @@ export const GET = async () => {
       status: 200,
     });
   } catch (error: unknown) {
-    console.error('[Categories_GET]', error);
+    console.error("[Categories_GET]", error);
     if (error instanceof Error) {
       return new NextResponse(
         JSON.stringify({
-          error: error.message || 'Failed to fetch categories',
+          error: error.message || "Failed to fetch categories",
         }),
         {
           status: 500,
-        }
+        },
       );
     } else {
       return new NextResponse(
-        JSON.stringify({ error: 'An unknown error occurred' }),
+        JSON.stringify({ error: "An unknown error occurred" }),
         {
           status: 500,
-        }
+        },
       );
     }
   }
 };
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";

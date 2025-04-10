@@ -1,9 +1,9 @@
 // app/api/auth/reset-password/route.ts
-import { NextResponse } from 'next/server';
-import { connectToDB } from '@/lib/dbConnect';
-import User from '@/models/User';
-import { hashPassword, generateResetToken } from '@/lib/password-utils';
-import { sendPasswordResetEmail } from '@/lib/email-service';
+import { NextResponse } from "next/server";
+import { connectToDB } from "@/lib/dbConnect";
+import User from "@/models/User";
+import { hashPassword, generateResetToken } from "@/lib/password-utils";
+import { sendPasswordResetEmail } from "@/lib/email-service";
 
 export async function POST(req: Request) {
   await connectToDB();
@@ -14,7 +14,7 @@ export async function POST(req: Request) {
     // Find user
     const user = await User.findOne({ email });
     if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     // Generate reset token
@@ -29,13 +29,13 @@ export async function POST(req: Request) {
     await sendPasswordResetEmail(email, resetToken);
 
     return NextResponse.json({
-      message: 'Password reset link sent',
+      message: "Password reset link sent",
     });
   } catch (error) {
-    console.error('Password reset error:', error);
+    console.error("Password reset error:", error);
     return NextResponse.json(
-      { error: 'Password reset failed' },
-      { status: 500 }
+      { error: "Password reset failed" },
+      { status: 500 },
     );
   }
 }
@@ -54,8 +54,8 @@ export async function PATCH(req: Request) {
 
     if (!user) {
       return NextResponse.json(
-        { error: 'Invalid or expired reset token' },
-        { status: 400 }
+        { error: "Invalid or expired reset token" },
+        { status: 400 },
       );
     }
 
@@ -69,13 +69,13 @@ export async function PATCH(req: Request) {
     await user.save();
 
     return NextResponse.json({
-      message: 'Password reset successful',
+      message: "Password reset successful",
     });
   } catch (error) {
-    console.error('Password reset error:', error);
+    console.error("Password reset error:", error);
     return NextResponse.json(
-      { error: 'Password reset failed' },
-      { status: 500 }
+      { error: "Password reset failed" },
+      { status: 500 },
     );
   }
 }

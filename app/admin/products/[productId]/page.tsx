@@ -1,5 +1,5 @@
-import { getProduct } from '@/lib/actions/actions';
-import ProductForm from '../_components/ProductForm';
+import { getProduct } from "@/lib/actions/actions";
+import ProductForm from "../_components/ProductForm";
 
 export default async function ProductPage({
   params,

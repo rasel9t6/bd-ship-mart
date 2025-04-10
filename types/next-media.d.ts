@@ -1,6 +1,6 @@
- type MediaType = 'image' | 'video';
+type MediaType = "image" | "video";
 
- interface MediaItem {
+interface MediaItem {
   url: string;
   type: MediaType;
   id?: string; // Optional unique identifier
@@ -8,14 +8,14 @@
   size?: number; // Optional file size
 }
 
- interface MediaGalleryProps {
+interface MediaGalleryProps {
   visible: boolean;
   folderId: string;
   onClose: () => void;
   onSelect?: (url: string, type: MediaType) => void;
 }
 
- interface MediaUploadProps {
+interface MediaUploadProps {
   value?: MediaItem[];
   onChange: (url: string, type?: MediaType) => void;
   onRemove?: (url: string) => void;

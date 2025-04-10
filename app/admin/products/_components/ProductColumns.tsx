@@ -1,8 +1,8 @@
 'use client';
+import { ProductType } from '@/types/next-utils';
+import Delete from '@/ui/custom/Delete';
 import { ColumnDef } from '@tanstack/react-table';
-import Delete from '../custom-ui/Delete';
 import Link from 'next/link';
-import { ProductType } from '@/lib/types';
 
 export const columns: ColumnDef<ProductType>[] = [
   {
@@ -11,7 +11,7 @@ export const columns: ColumnDef<ProductType>[] = [
     cell: ({ row }) => (
       <Link
         href={`/products/${row.original.slug}`}
-        className="hover:text-red-1"
+        className='hover:text-red-1'
       >
         {row.original.title}
       </Link>
@@ -34,7 +34,7 @@ export const columns: ColumnDef<ProductType>[] = [
         row.original.category &&
         Array.isArray(row.original.category.subcategories)
           ? row.original.category.subcategories
-              .map((sub: any) => sub.name)
+              .map((sub) => sub.name)
               .join(', ')
           : 'N/A';
 
@@ -75,6 +75,11 @@ export const columns: ColumnDef<ProductType>[] = [
   {
     header: 'Action',
     id: 'actions',
-    cell: ({ row }) => <Delete item="product" id={row.original._id} />,
+    cell: ({ row }) => (
+      <Delete
+        item='product'
+        id={row.original._id}
+      />
+    ),
   },
 ];

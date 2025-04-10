@@ -1,13 +1,13 @@
-'use client';
-import useCart from '@/lib/hooks/useCart';
-import { MinusCircle, PlusCircle } from 'lucide-react';
-import { useState } from 'react';
-import HeartFavorite from './HeartFavorite';
-import { OrderItemType, ProductType } from '@/lib/types';
-import Image from 'next/image';
-import { motion, AnimatePresence } from 'framer-motion';
-import OrderModal from './order/OrderModal';
-import toast from 'react-hot-toast'; // Import toast
+"use client";
+import useCart from "@/lib/hooks/useCart";
+import { MinusCircle, PlusCircle } from "lucide-react";
+import { useState } from "react";
+import HeartFavorite from "./HeartFavorite";
+import { OrderItemType, ProductType } from "@/lib/types";
+import Image from "next/image";
+import { motion, AnimatePresence } from "framer-motion";
+import OrderModal from "./order/OrderModal";
+import toast from "react-hot-toast"; // Import toast
 
 type OrderItem = {
   color: string;
@@ -29,7 +29,7 @@ export default function ProductInfo({
   const [orderItems, setOrderItems] = useState<OrderItem[]>(
     productInfo.colors.map((color) => ({
       color,
-      size: productInfo.sizes[0] || 'Default',
+      size: productInfo.sizes[0] || "Default",
       quantity: 0,
     })),
   );
@@ -121,7 +121,7 @@ export default function ProductInfo({
       }
     });
 
-    toast.success('Added to cart!');
+    toast.success("Added to cart!");
     setOrderItems(orderItems.map((item) => ({ ...item, quantity: 0 })));
   };
 
@@ -178,7 +178,7 @@ export default function ProductInfo({
         transition={{ delay: 0.2 }}
       >
         <div>
-          <strong>SKU:</strong> {productInfo.sku || 'N/A'}
+          <strong>SKU:</strong> {productInfo.sku || "N/A"}
         </div>
         <div>
           <strong>Category:</strong> {productInfo.category.name}
@@ -192,7 +192,7 @@ export default function ProductInfo({
         animate={{ opacity: 1 }}
         transition={{ delay: 0.3 }}
       >
-        ৳ {selectedPrice}{' '}
+        ৳ {selectedPrice}{" "}
         <span className="text-sm text-gray-500">per unit</span>
       </motion.p>
 
@@ -215,7 +215,7 @@ export default function ProductInfo({
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+              transition={{ type: "spring", stiffness: 500, damping: 30 }}
             >
               Total savings: ৳ {totalDiscount} on {totalQuantity} units
             </motion.p>
@@ -238,7 +238,7 @@ export default function ProductInfo({
             </p>
             <p className="text-sm text-gray-600">
               {range.minQuantity}
-              {range.maxQuantity ? `-${range.maxQuantity}` : '+'} Pcs
+              {range.maxQuantity ? `-${range.maxQuantity}` : "+"} Pcs
             </p>
           </motion.div>
         ))}
@@ -307,7 +307,7 @@ export default function ProductInfo({
                     >
                       <MinusCircle
                         size={20}
-                        className={`${item.quantity <= 0 ? 'text-gray-400' : 'text-gray-700'}`}
+                        className={`${item.quantity <= 0 ? "text-gray-400" : "text-gray-700"}`}
                       />
                     </motion.button>
 
@@ -326,7 +326,7 @@ export default function ProductInfo({
                       initial={{ scale: 1 }}
                       animate={{ scale: 1 }}
                       whileFocus={{ scale: 1.05 }}
-                      transition={{ type: 'spring', stiffness: 300 }}
+                      transition={{ type: "spring", stiffness: 300 }}
                     />
 
                     <motion.button
@@ -354,8 +354,8 @@ export default function ProductInfo({
         <motion.button
           className={`w-full rounded-lg py-3 text-lg font-bold text-white transition md:w-1/2 ${
             totalQuantity < minOrderQty
-              ? 'cursor-not-allowed bg-gray-400'
-              : 'bg-blaze-orange hover:bg-blaze-orange-600'
+              ? "cursor-not-allowed bg-gray-400"
+              : "bg-blaze-orange hover:bg-blaze-orange-600"
           }`}
           onClick={addToCart}
           disabled={totalQuantity < minOrderQty}
@@ -367,8 +367,8 @@ export default function ProductInfo({
         <motion.button
           className={`w-full rounded-lg py-3 text-lg font-bold text-white transition md:w-1/2 ${
             totalQuantity < minOrderQty
-              ? 'cursor-not-allowed bg-gray-400'
-              : 'bg-bondi-blue-600 hover:bg-bondi-blue-700'
+              ? "cursor-not-allowed bg-gray-400"
+              : "bg-bondi-blue-600 hover:bg-bondi-blue-700"
           }`}
           onClick={handleOrderNow}
           disabled={totalQuantity < minOrderQty}

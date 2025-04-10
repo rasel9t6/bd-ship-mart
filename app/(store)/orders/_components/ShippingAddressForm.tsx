@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 interface AddressType {
   street: string;
@@ -10,7 +10,7 @@ interface AddressType {
 
 interface ShippingAddressFormProps {
   shippingAddress: AddressType;
-  onChange: any;
+  onChange: (name: string, e: string) => void;
 }
 
 const ShippingAddressForm: React.FC<ShippingAddressFormProps> = ({
@@ -24,7 +24,7 @@ const ShippingAddressForm: React.FC<ShippingAddressFormProps> = ({
         <input
           type="text"
           value={shippingAddress.street}
-          onChange={(e) => onChange('street', e.target.value)}
+          onChange={(e) => onChange("street", e.target.value)}
           placeholder="Street Address *"
           className="w-full rounded-md border p-2"
           required
@@ -33,7 +33,7 @@ const ShippingAddressForm: React.FC<ShippingAddressFormProps> = ({
           <input
             type="text"
             value={shippingAddress.city}
-            onChange={(e) => onChange('city', e.target.value)}
+            onChange={(e) => onChange("city", e.target.value)}
             placeholder="City *"
             className="w-full rounded-md border p-2"
             required
@@ -41,7 +41,7 @@ const ShippingAddressForm: React.FC<ShippingAddressFormProps> = ({
           <input
             type="text"
             value={shippingAddress.state}
-            onChange={(e) => onChange('state', e.target.value)}
+            onChange={(e) => onChange("state", e.target.value)}
             placeholder="State/Province *"
             className="w-full rounded-md border p-2"
             required
@@ -49,7 +49,7 @@ const ShippingAddressForm: React.FC<ShippingAddressFormProps> = ({
           <input
             type="text"
             value={shippingAddress.postalCode}
-            onChange={(e) => onChange('postalCode', e.target.value)}
+            onChange={(e) => onChange("postalCode", e.target.value)}
             placeholder="Postal Code *"
             className="w-full rounded-md border p-2"
             required
@@ -57,7 +57,7 @@ const ShippingAddressForm: React.FC<ShippingAddressFormProps> = ({
           <input
             type="text"
             value={shippingAddress.country}
-            onChange={(e) => onChange('country', e.target.value)}
+            onChange={(e) => onChange("country", e.target.value)}
             placeholder="Country *"
             className="w-full rounded-md border p-2"
             required

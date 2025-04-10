@@ -1,7 +1,9 @@
 import { connectToDB } from '@/lib/dbConnect';
+import User from '@/models/User';
+import { UserType } from '@/types/next-utils';
+
 import { getServerSession } from 'next-auth';
 import { NextRequest, NextResponse } from 'next/server';
-import User from '@/lib/models/User';
 
 // Config for admin API
 const NEXT_PUBLIC_API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -69,26 +71,33 @@ export const POST = async (req: NextRequest) => {
     const allowedFields = ['name', 'phone', 'image', 'address'];
 
     // Validate update data
-    const updates: any = {};
+    const updates: Partial<UserType> = {};
+
     Object.keys(updateData).forEach((key) => {
       if (allowedFields.includes(key)) {
         if (key === 'address') {
-          // Validate address fields
-          const addressFields = [
+          const addressFields: (keyof NonNullable<UserType['address']>)[] = [
             'street',
             'city',
             'state',
-            'postalCode',
+            'zipCode',
             'country',
           ];
-          updates.address = {};
+
+          // Ensure `updates.address` is initialized before assigning
+          if (!updates.address) {
+            updates.address = {};
+          }
+
           addressFields.forEach((field) => {
-            if (updateData.address?.[field]) {
-              updates.address[field] = updateData.address[field];
+            const addressValue = updateData.address?.[field];
+            if (addressValue !== undefined) {
+              (updates.address as NonNullable<UserType['address']>)[field] =
+                addressValue;
             }
           });
         } else {
-          updates[key] = updateData[key];
+          updates[key as keyof UserType] = updateData[key];
         }
       }
     });
@@ -105,7 +114,7 @@ export const POST = async (req: NextRequest) => {
         runValidators: true,
       }
     ).select('+userId');
-    console.log(updatedUser);
+
     if (!updatedUser) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
@@ -122,7 +131,7 @@ export const POST = async (req: NextRequest) => {
 
         // Only include fields that were actually updated
         const filteredUpdates = Object.fromEntries(
-          // eslint-disable-next-line no-unused-vars
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           Object.entries(customerUpdates).filter(([_, v]) => v !== undefined)
         );
 
@@ -153,7 +162,6 @@ export const POST = async (req: NextRequest) => {
           `${NEXT_PUBLIC_API_URL}/customers/${updatedUser.userId}/orders`,
           {
             headers: {
-              Authorization: `Bearer ${ADMIN_API_KEY}`,
               'Content-Type': 'application/json',
             },
           }
@@ -164,9 +172,9 @@ export const POST = async (req: NextRequest) => {
           // Attach orders to user response
           updatedUser._doc.orders = ordersData;
         }
-      } catch (apiError: any) {
+      } catch (apiError) {
         // Log error but don't fail the user update
-        console.error('[admin_api_error]', apiError.message);
+        console.error('[admin_api_error]', apiError);
       }
     }
 

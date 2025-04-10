@@ -1,6 +1,6 @@
-import nodemailer from 'nodemailer';
+import nodemailer from "nodemailer";
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  service: "gmail",
   auth: {
     user: process.env.EMAIL_SERVER_USER,
     pass: process.env.EMAIL_SERVER_PASSWORD,
@@ -9,14 +9,14 @@ const transporter = nodemailer.createTransport({
 
 export async function sendVerificationEmail(
   email: string,
-  verificationToken: string
+  verificationToken: string,
 ) {
   const verificationLink = `${process.env.NEXTAUTH_URL}/auth/verify-email?token=${verificationToken}`;
 
   await transporter.sendMail({
     from: process.env.EMAIL_FROM,
     to: email,
-    subject: 'Reset Your BD Shipmart Password',
+    subject: "Reset Your BD Shipmart Password",
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h2 style="color: #1a56db;">Password Reset Request</h2>
@@ -38,14 +38,14 @@ export async function sendVerificationEmail(
 
 export async function sendPasswordResetEmail(
   email: string,
-  resetToken: string
+  resetToken: string,
 ) {
   const resetLink = `${process.env.NEXTAUTH_URL}/reset-password?token=${resetToken}`;
 
   await transporter.sendMail({
     from: process.env.EMAIL_FROM,
     to: email,
-    subject: 'Password Reset',
+    subject: "Password Reset",
     html: `
       <p>Click the link to reset your password:</p>
       <a href="${resetLink}">Reset Password</a>

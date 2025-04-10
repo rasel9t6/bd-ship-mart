@@ -1,8 +1,8 @@
-'use client';
-import { useState, KeyboardEvent } from 'react';
-import { Input } from '../ui/input';
-import { Badge } from '../ui/badge';
-import { X } from 'lucide-react';
+"use client";
+import { useState, KeyboardEvent } from "react";
+import { Input } from "../ui/input";
+import { Badge } from "../ui/badge";
+import { X } from "lucide-react";
 
 interface MultiTextProps {
   placeholder: string;
@@ -17,7 +17,7 @@ export default function MultiText({
   onChange,
   onRemove,
 }: MultiTextProps) {
-  const [inputValue, setInputValue] = useState('');
+  const [inputValue, setInputValue] = useState("");
 
   const addValue = (item: string) => {
     // Trim the input and convert to lowercase/uppercase as needed
@@ -26,20 +26,20 @@ export default function MultiText({
     // Prevent adding empty or duplicate values
     if (processedItem && !value.includes(processedItem)) {
       onChange(processedItem);
-      setInputValue('');
+      setInputValue("");
     }
   };
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       e.preventDefault();
       addValue(inputValue);
     }
 
     // Optional: Allow adding with comma
-    if (e.key === ',') {
+    if (e.key === ",") {
       e.preventDefault();
-      addValue(inputValue.replace(',', ''));
+      addValue(inputValue.replace(",", ""));
     }
   };
 

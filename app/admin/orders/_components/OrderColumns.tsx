@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { Badge } from '@/ui/badge';
-import { ColumnDef } from '@tanstack/react-table';
-import { format } from 'date-fns';
+import { Badge } from "@/ui/badge";
+import { ColumnDef } from "@tanstack/react-table";
+import { format } from "date-fns";
 
-import Link from 'next/link';
+import Link from "next/link";
 
 interface OrderType {
   orderId: string;
@@ -26,24 +26,24 @@ interface OrderType {
 
 export const columns: ColumnDef<OrderType>[] = [
   {
-    accessorKey: 'orderId',
-    header: 'Order ID',
+    accessorKey: "orderId",
+    header: "Order ID",
     cell: ({ row }) => (
       <Link
         href={`/orders/${row.original.orderId}`}
-        className='text-primary hover:underline'
+        className="text-primary hover:underline"
       >
         {row.original.orderId}
       </Link>
     ),
   },
   {
-    accessorKey: 'customerInfo.name',
-    header: 'Customer',
+    accessorKey: "customerInfo.name",
+    header: "Customer",
   },
   {
-    accessorKey: 'products',
-    header: 'Products',
+    accessorKey: "products",
+    header: "Products",
     cell: ({ row }) => {
       const products = row.original.products;
       const totalItems = products.reduce((sum, p) => sum + p.quantity, 0);
@@ -51,20 +51,20 @@ export const columns: ColumnDef<OrderType>[] = [
     },
   },
   {
-    accessorKey: 'status',
-    header: 'Status',
+    accessorKey: "status",
+    header: "Status",
     cell: ({ row }) => {
-      const status = row.getValue('status') as string;
+      const status = row.getValue("status") as string;
       return (
         <Badge
           variant={
-            status === 'delivered'
-              ? 'outline'
-              : status === 'canceled'
-                ? 'destructive'
-                : status === 'pending'
-                  ? 'secondary'
-                  : 'default'
+            status === "delivered"
+              ? "outline"
+              : status === "canceled"
+                ? "destructive"
+                : status === "pending"
+                  ? "secondary"
+                  : "default"
           }
         >
           {status}
@@ -73,18 +73,18 @@ export const columns: ColumnDef<OrderType>[] = [
     },
   },
   {
-    accessorKey: 'paymentStatus',
-    header: 'Payment',
+    accessorKey: "paymentStatus",
+    header: "Payment",
     cell: ({ row }) => {
-      const status = row.getValue('paymentStatus') as string;
+      const status = row.getValue("paymentStatus") as string;
       return (
         <Badge
           variant={
-            status === 'paid'
-              ? 'outline'
-              : status === 'failed'
-                ? 'destructive'
-                : 'secondary'
+            status === "paid"
+              ? "outline"
+              : status === "failed"
+                ? "destructive"
+                : "secondary"
           }
         >
           {status}
@@ -93,27 +93,27 @@ export const columns: ColumnDef<OrderType>[] = [
     },
   },
   {
-    accessorKey: 'totalAmount',
-    header: 'Total',
+    accessorKey: "totalAmount",
+    header: "Total",
     cell: ({ row }) => {
-      const amount = parseFloat(row.getValue('totalAmount'));
-      const formatted = new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
+      const amount = parseFloat(row.getValue("totalAmount"));
+      const formatted = new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD",
       }).format(amount);
       return formatted;
     },
   },
   {
-    accessorKey: 'shippingMethod',
-    header: 'Shipping',
+    accessorKey: "shippingMethod",
+    header: "Shipping",
     cell: ({ row }) => {
-      const method = row.getValue('shippingMethod') as string;
-      const delivery = row.getValue('deliveryType') as string;
+      const method = row.getValue("shippingMethod") as string;
+      const delivery = row.getValue("deliveryType") as string;
       return (
-        <div className='flex flex-col'>
-          <span className='capitalize'>{method}</span>
-          <span className='text-xs capitalize text-muted-foreground'>
+        <div className="flex flex-col">
+          <span className="capitalize">{method}</span>
+          <span className="text-xs capitalize text-muted-foreground">
             {delivery}
           </span>
         </div>
@@ -121,10 +121,10 @@ export const columns: ColumnDef<OrderType>[] = [
     },
   },
   {
-    accessorKey: 'createdAt',
-    header: 'Date',
+    accessorKey: "createdAt",
+    header: "Date",
     cell: ({ row }) => {
-      return format(new Date(row.getValue('createdAt')), 'MMM dd, yyyy');
+      return format(new Date(row.getValue("createdAt")), "MMM dd, yyyy");
     },
   },
 ];

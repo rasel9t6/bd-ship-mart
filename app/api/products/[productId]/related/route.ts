@@ -1,10 +1,10 @@
-import { connectToDB } from '@/lib/dbConnect';
-import Product from '@/models/Product';
-import { NextRequest, NextResponse } from 'next/server';
+import { connectToDB } from "@/lib/dbConnect";
+import Product from "@/models/Product";
+import { NextRequest, NextResponse } from "next/server";
 
 export const GET = async (
   req: NextRequest,
-  { params }: { params: { productId: string } }
+  { params }: { params: { productId: string } },
 ) => {
   try {
     await connectToDB();
@@ -12,7 +12,7 @@ export const GET = async (
     const product = await Product.findOne({ slug: params.productId });
 
     if (!product) {
-      return NextResponse.json({ error: 'Product not found' }, { status: 404 });
+      return NextResponse.json({ error: "Product not found" }, { status: 404 });
     }
 
     // Create a query to find related products based on category
@@ -33,29 +33,29 @@ export const GET = async (
       const price = product.price.bdt;
       const minPrice = price * 0.7; // 30% lower
       const maxPrice = price * 1.3; // 30% higher
-      query['price.bdt'] = {
+      query["price.bdt"] = {
         $gte: minPrice,
         $lte: maxPrice,
       };
     }
 
-    console.log('Related products query:', query);
+    console.log("Related products query:", query);
 
     // Get related products, limit to 8
     const relatedProducts = await Product.find(query).limit(8).lean();
 
     console.log(
-      `Found ${relatedProducts.length} related products for: ${params.productId}`
+      `Found ${relatedProducts.length} related products for: ${params.productId}`,
     );
 
     return NextResponse.json(relatedProducts);
   } catch (error) {
-    console.error('[RELATED_PRODUCTS_GET]', error);
+    console.error("[RELATED_PRODUCTS_GET]", error);
     return NextResponse.json(
-      { error: error || 'Failed to fetch related products' },
-      { status: 500 }
+      { error: error || "Failed to fetch related products" },
+      { status: 500 },
     );
   }
 };
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";

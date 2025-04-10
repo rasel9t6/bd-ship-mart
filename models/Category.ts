@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 const categorySchema = new mongoose.Schema(
   {
@@ -34,13 +34,13 @@ const categorySchema = new mongoose.Schema(
     subcategories: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Subcategory',
+        ref: "Subcategory",
       },
     ],
     products: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Product',
+        ref: "Product",
       },
     ],
     shippingCharge: {
@@ -67,13 +67,13 @@ const categorySchema = new mongoose.Schema(
       default: {},
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 // Pre-save hook to generate slug from name
-categorySchema.pre('save', function (next) {
-  if (this.isModified('name')) {
-    this.slug = this.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+categorySchema.pre("save", function (next) {
+  if (this.isModified("name")) {
+    this.slug = this.name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
   }
   next();
 });
@@ -83,5 +83,5 @@ categorySchema.pre('save', function (next) {
 categorySchema.index({ sortOrder: 1 });
 
 const Category =
-  mongoose.models.Category || mongoose.model('Category', categorySchema);
+  mongoose.models.Category || mongoose.model("Category", categorySchema);
 export default Category;

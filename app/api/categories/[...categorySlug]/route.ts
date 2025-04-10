@@ -5,6 +5,7 @@ import mongoose from 'mongoose';
 import Category from '@/models/Category';
 import Product from '@/models/Product';
 import Subcategory from '@/models/Subcategory';
+import { SubcategoryType } from '@/types/next-utils';
 type Params = Promise<{ categorySlug: string }>;
 export const GET = async (req: NextRequest, { params }: { params: Params }) => {
   try {
@@ -118,8 +119,8 @@ export const POST = async (
 
       // Create new subcategories with validation
       const subcategoryPromises = data.subcategories
-        .filter((sub: any) => sub.name && sub.title) // Basic validation
-        .map(async (sub) => {
+        .filter((sub: SubcategoryType) => sub.name && sub.title) // Basic validation
+        .map(async (sub: SubcategoryType) => {
           const subcategoryData = {
             name: sub.name,
             title: sub.title,

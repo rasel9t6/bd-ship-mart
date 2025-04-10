@@ -1,7 +1,7 @@
 // app/api/auth/verify-email/route.ts
-import { NextResponse } from 'next/server';
-import { connectToDB } from '@/lib/dbConnect';
-import User from '@/models/User';
+import { NextResponse } from "next/server";
+import { connectToDB } from "@/lib/dbConnect";
+import User from "@/models/User";
 
 export async function POST(req: Request) {
   await connectToDB();
@@ -17,8 +17,8 @@ export async function POST(req: Request) {
 
     if (!user) {
       return NextResponse.json(
-        { error: 'Invalid or expired verification token' },
-        { status: 400 }
+        { error: "Invalid or expired verification token" },
+        { status: 400 },
       );
     }
 
@@ -28,10 +28,10 @@ export async function POST(req: Request) {
     await user.save();
 
     return NextResponse.json({
-      message: 'Email verified successfully',
+      message: "Email verified successfully",
     });
   } catch (error) {
-    console.error('Email verification error:', error);
-    return NextResponse.json({ error: 'Verification failed' }, { status: 500 });
+    console.error("Email verification error:", error);
+    return NextResponse.json({ error: "Verification failed" }, { status: 500 });
   }
 }

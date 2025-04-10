@@ -1,28 +1,28 @@
-'use client';
+"use client";
 
-import { CustomerType } from '@/lib/types';
-import { ColumnDef } from '@tanstack/react-table';
+import { CustomerType } from "@/lib/types";
+import { ColumnDef } from "@tanstack/react-table";
 
 export const columns: ColumnDef<CustomerType>[] = [
   {
-    accessorKey: 'customerId',
-    header: 'Customer ID',
+    accessorKey: "customerId",
+    header: "Customer ID",
   },
   {
-    accessorKey: 'name',
-    header: 'Name',
+    accessorKey: "name",
+    header: "Name",
   },
   {
-    accessorKey: 'email',
-    header: 'Email',
+    accessorKey: "email",
+    header: "Email",
   },
   {
-    accessorKey: 'phone',
-    header: 'Phone',
+    accessorKey: "phone",
+    header: "Phone",
   },
   {
-    accessorKey: 'address',
-    header: 'Address',
+    accessorKey: "address",
+    header: "Address",
     cell: ({ row }) => {
       const address = row.original.address;
       return address ? (
@@ -39,8 +39,8 @@ export const columns: ColumnDef<CustomerType>[] = [
     },
   },
   {
-    accessorKey: 'orders',
-    header: 'Orders',
+    accessorKey: "orders",
+    header: "Orders",
     cell: ({ row }) => {
       const orders = row.original.orders; // orders is an array of order IDs
       return orders && orders.length > 0 ? (

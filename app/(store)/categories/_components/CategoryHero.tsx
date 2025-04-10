@@ -1,11 +1,12 @@
-import React from 'react';
-import Image from 'next/image';
+import React from "react";
+import Image from "next/image";
+import { ProductType } from "@/types/next-utils";
 
 interface CategoryHeroProps {
   title: string;
   description: string;
   thumbnail: string;
-  products: any[];
+  products: ProductType[];
 }
 
 export default function CategoryHero({
@@ -14,7 +15,6 @@ export default function CategoryHero({
   thumbnail,
   products,
 }: CategoryHeroProps) {
-
   return (
     <>
       {/* Hero Section */}
@@ -52,8 +52,8 @@ export default function CategoryHero({
           {products && products.length > 0 ? (
             (() => {
               const validPrices = products
-                .map((p: any) => p?.price?.bdt) // ✅ Check if price & price.bdt exist
-                .filter((price) => typeof price === 'number'); // ✅ Remove undefined/null values
+                .map((p: ProductType) => p?.price?.bdt) // ✅ Check if price & price.bdt exist
+                .filter((price) => typeof price === "number"); // ✅ Remove undefined/null values
 
               return validPrices.length > 0 ? (
                 <p className="text-nowrap text-xl font-bold text-gray-900 sm:text-2xl md:text-3xl">

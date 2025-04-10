@@ -2,10 +2,11 @@
 
 import { useSession } from 'next-auth/react';
 import React, { useState, useEffect } from 'react';
-import { UserType } from '@/lib/types';
+
 import { Loader, Search } from 'lucide-react';
 import Image from 'next/image';
 import { toast } from 'react-hot-toast';
+import { OrderItem, OrderType, UserType } from '@/types/next-utils';
 
 export default function ProfilePage() {
   const { data: session } = useSession();
@@ -102,7 +103,7 @@ export default function ProfilePage() {
           {
             method: 'POST',
             body: formData,
-          },
+          }
         );
         const uploadData = await uploadRes.json();
         imageUrl = uploadData.secure_url;
@@ -130,18 +131,18 @@ export default function ProfilePage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <Loader className="animate-spin" />
+      <div className='flex min-h-screen items-center justify-center'>
+        <Loader className='animate-spin' />
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto p-6">
-      <h1 className="mb-8 text-3xl font-bold">My Profile</h1>
+    <div className='container mx-auto p-6'>
+      <h1 className='mb-8 text-3xl font-bold'>My Profile</h1>
 
       {/* Profile Navigation */}
-      <div className="mb-8 flex gap-4 border-b">
+      <div className='mb-8 flex gap-4 border-b'>
         <button
           className={`pb-2 ${
             activeTab === 'personal'
@@ -166,77 +167,80 @@ export default function ProfilePage() {
 
       {/* Personal Info Tab */}
       {activeTab === 'personal' && (
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form
+          onSubmit={handleSubmit}
+          className='space-y-6'
+        >
           {/* Profile Picture */}
-          <div className="flex items-center gap-4">
-            <div className="relative size-24 overflow-hidden rounded-full">
+          <div className='flex items-center gap-4'>
+            <div className='relative size-24 overflow-hidden rounded-full'>
               <Image
                 src={previewUrl || user?.image || '/default-avatar.png'}
-                alt="Profile"
+                alt='Profile'
                 fill
-                className="object-cover"
+                className='object-cover'
               />
             </div>
             <input
-              type="file"
-              accept="image/*"
+              type='file'
+              accept='image/*'
               onChange={handleImageChange}
-              className="cursor-pointer rounded-lg border p-2"
+              className='cursor-pointer rounded-lg border p-2'
             />
           </div>
 
           {/* Basic Info */}
-          <div className="grid gap-6 md:grid-cols-2">
+          <div className='grid gap-6 md:grid-cols-2'>
             <div>
-              <label className="block text-sm font-medium">Name</label>
+              <label className='block text-sm font-medium'>Name</label>
               <input
-                type="text"
+                type='text'
                 value={formData.name}
                 onChange={(e) =>
                   setFormData({ ...formData, name: e.target.value })
                 }
-                className="mt-1 w-full rounded-lg border p-2"
+                className='mt-1 w-full rounded-lg border p-2'
               />
             </div>
             <div>
-              <label className="block text-sm font-medium">Email</label>
+              <label className='block text-sm font-medium'>Email</label>
               <input
-                type="email"
+                type='email'
                 value={formData.email}
                 disabled
-                className="mt-1 w-full rounded-lg border bg-gray-100 p-2"
+                className='mt-1 w-full rounded-lg border bg-gray-100 p-2'
               />
             </div>
             <div>
-              <label className="block text-sm font-medium">Phone</label>
+              <label className='block text-sm font-medium'>Phone</label>
               <input
-                type="tel"
+                type='tel'
                 value={formData.phone}
                 onChange={(e) =>
                   setFormData({ ...formData, phone: e.target.value })
                 }
-                className="mt-1 w-full rounded-lg border p-2"
+                className='mt-1 w-full rounded-lg border p-2'
               />
             </div>
             <div>
-              <label className="block text-sm font-medium">User ID</label>
+              <label className='block text-sm font-medium'>User ID</label>
               <input
-                type="text"
+                type='text'
                 value={user?.userId}
                 disabled
-                className="mt-1 w-full rounded-lg border bg-gray-100 p-2"
+                className='mt-1 w-full rounded-lg border bg-gray-100 p-2'
               />
             </div>
           </div>
 
           {/* Address */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-medium">Address</h3>
-            <div className="grid gap-4 md:grid-cols-2">
+          <div className='space-y-4'>
+            <h3 className='text-lg font-medium'>Address</h3>
+            <div className='grid gap-4 md:grid-cols-2'>
               <div>
-                <label className="block text-sm font-medium">Street</label>
+                <label className='block text-sm font-medium'>Street</label>
                 <input
-                  type="text"
+                  type='text'
                   value={formData.address.street}
                   onChange={(e) =>
                     setFormData({
@@ -244,13 +248,13 @@ export default function ProfilePage() {
                       address: { ...formData.address, street: e.target.value },
                     })
                   }
-                  className="mt-1 w-full rounded-lg border p-2"
+                  className='mt-1 w-full rounded-lg border p-2'
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium">City</label>
+                <label className='block text-sm font-medium'>City</label>
                 <input
-                  type="text"
+                  type='text'
                   value={formData.address.city}
                   onChange={(e) =>
                     setFormData({
@@ -258,13 +262,13 @@ export default function ProfilePage() {
                       address: { ...formData.address, city: e.target.value },
                     })
                   }
-                  className="mt-1 w-full rounded-lg border p-2"
+                  className='mt-1 w-full rounded-lg border p-2'
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium">State</label>
+                <label className='block text-sm font-medium'>State</label>
                 <input
-                  type="text"
+                  type='text'
                   value={formData.address.state}
                   onChange={(e) =>
                     setFormData({
@@ -272,13 +276,13 @@ export default function ProfilePage() {
                       address: { ...formData.address, state: e.target.value },
                     })
                   }
-                  className="mt-1 w-full rounded-lg border p-2"
+                  className='mt-1 w-full rounded-lg border p-2'
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium">Postal Code</label>
+                <label className='block text-sm font-medium'>Postal Code</label>
                 <input
-                  type="text"
+                  type='text'
                   value={formData.address.postalCode}
                   onChange={(e) =>
                     setFormData({
@@ -289,13 +293,13 @@ export default function ProfilePage() {
                       },
                     })
                   }
-                  className="mt-1 w-full rounded-lg border p-2"
+                  className='mt-1 w-full rounded-lg border p-2'
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium">Country</label>
+                <label className='block text-sm font-medium'>Country</label>
                 <input
-                  type="text"
+                  type='text'
                   value={formData.address.country}
                   onChange={(e) =>
                     setFormData({
@@ -303,16 +307,16 @@ export default function ProfilePage() {
                       address: { ...formData.address, country: e.target.value },
                     })
                   }
-                  className="mt-1 w-full rounded-lg border p-2"
+                  className='mt-1 w-full rounded-lg border p-2'
                 />
               </div>
             </div>
           </div>
 
           <button
-            type="submit"
+            type='submit'
             disabled={loading}
-            className="rounded-lg bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 disabled:bg-blue-300"
+            className='rounded-lg bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 disabled:bg-blue-300'
           >
             {loading ? 'Saving...' : 'Save Changes'}
           </button>
@@ -323,38 +327,36 @@ export default function ProfilePage() {
       {activeTab === 'orders' && (
         <div>
           {/* Search Orders */}
-          <div className="mb-6 flex items-center gap-2">
-            <div className="relative flex-1">
+          <div className='mb-6 flex items-center gap-2'>
+            <div className='relative flex-1'>
               <input
-                type="text"
-                placeholder="Search orders by ID or status..."
+                type='text'
+                placeholder='Search orders by ID or status...'
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full rounded-lg border p-2 pl-10"
+                className='w-full rounded-lg border p-2 pl-10'
               />
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <Search className='absolute left-3 top-1/2 -translate-y-1/2 text-gray-400' />
             </div>
           </div>
 
           {/* Orders List */}
-          <div className="space-y-4">
+          <div className='space-y-4'>
             {orders
               .filter(
-                (order: any) =>
+                (order: OrderType) =>
                   order._id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                  order.status
-                    .toLowerCase()
-                    .includes(searchQuery.toLowerCase()),
+                  order.status.toLowerCase().includes(searchQuery.toLowerCase())
               )
-              .map((order: any) => (
+              .map((order: OrderType) => (
                 <div
                   key={order._id}
-                  className="rounded-lg border bg-white p-4 shadow-sm"
+                  className='rounded-lg border bg-white p-4 shadow-sm'
                 >
-                  <div className="flex items-center justify-between">
+                  <div className='flex items-center justify-between'>
                     <div>
-                      <p className="font-medium">Order #{order._id}</p>
-                      <p className="text-sm text-gray-500">
+                      <p className='font-medium'>Order #{order._id}</p>
+                      <p className='text-sm text-gray-500'>
                         {new Date(order.createdAt).toLocaleDateString()}
                       </p>
                     </div>
@@ -372,15 +374,15 @@ export default function ProfilePage() {
                       </span>
                     </div>
                   </div>
-                  <div className="mt-4">
-                    <p className="text-sm text-gray-600">
+                  <div className='mt-4'>
+                    <p className='text-sm text-gray-600'>
                       Total: ৳{order.total.toFixed(2)}
                     </p>
-                    <div className="mt-2 space-y-2">
-                      {order.items.map((item: any) => (
+                    <div className='mt-2 space-y-2'>
+                      {order.items.map((item: OrderItem) => (
                         <div
                           key={item._id}
-                          className="flex items-center justify-between text-sm"
+                          className='flex items-center justify-between text-sm'
                         >
                           <span>{item.title}</span>
                           <span>x{item.quantity}</span>

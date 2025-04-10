@@ -1,17 +1,17 @@
-'use client';
+"use client";
 
-import { type FC, useState, useEffect } from 'react';
-import { IoMdClose } from 'react-icons/io';
-import { FileUploader } from 'react-drag-drop-files';
-import { IoCloudUploadOutline } from 'react-icons/io5';
-import { useMediaStore } from '@/hooks/useMediaStore';
-import GalleryItem from './GalleryImage';
+import { type FC, useState, useEffect } from "react";
+import { IoMdClose } from "react-icons/io";
+import { FileUploader } from "react-drag-drop-files";
+import { IoCloudUploadOutline } from "react-icons/io5";
+import { useMediaStore } from "@/hooks/useMediaStore";
+import GalleryItem from "./GalleryImage";
 
 interface MediaGalleryProps {
   visible: boolean;
   folderId: string;
   onClose: () => void;
-  onSelect?: (url: string, type: 'image' | 'video') => void;
+  onSelect?: (url: string, type: "image" | "video") => void;
 }
 
 const MediaGallery: FC<MediaGalleryProps> = ({
@@ -30,39 +30,39 @@ const MediaGallery: FC<MediaGalleryProps> = ({
 
   if (!visible) return null;
 
-  const handleSelection = (item: { url: string; type: 'image' | 'video' }) => {
-    console.log('Item URL', item.url);
+  const handleSelection = (item: { url: string; type: "image" | "video" }) => {
+    console.log("Item URL", item.url);
     if (onSelect) onSelect(item.url, item.type);
     onClose();
   };
 
   const handleUpload = async (files: File[]) => {
-    console.log('Files received:', files);
-    console.log('Type of files:', Object.prototype.toString.call(files));
+    console.log("Files received:", files);
+    console.log("Type of files:", Object.prototype.toString.call(files));
 
     try {
       await uploadMedia(files, folderId);
     } catch (error) {
-      console.error('Upload failed:', error);
+      console.error("Upload failed:", error);
     }
   };
 
   const handleDelete = async (url: string) => {
-    if (confirm('Are you sure you want to delete this item?')) {
+    if (confirm("Are you sure you want to delete this item?")) {
       try {
         await removeItem(url);
       } catch (error) {
-        console.error('Delete failed:', error);
+        console.error("Delete failed:", error);
       }
     }
   };
 
-  const fileTypes = ['png', 'jpg', 'jpeg', 'webp', 'mp4', 'mov'];
+  const fileTypes = ["png", "jpg", "jpeg", "webp", "mp4", "mov"];
 
   return (
     <div
       onKeyDown={({ key }) => {
-        if (key === 'Escape') onClose();
+        if (key === "Escape") onClose();
       }}
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
     >

@@ -1,32 +1,6 @@
 // types/next-utils.d.ts
 
 import type { Document, Types } from 'mongoose';
-
-interface CategoryType extends Document {
-  name: string;
-  title: string;
-  slug: string;
-  description?: string;
-  icon: string;
-  thumbnail: string;
-  subcategories: Types.ObjectId[];
-  products: Types.ObjectId[];
-  shippingCharge?: {
-    byAir?: {
-      min?: number;
-      max?: number;
-    };
-    bySea?: {
-      min?: number;
-      max?: number;
-    };
-  };
-  isActive: boolean;
-  sortOrder: number;
-  metadata: Map<string, string>;
-  createdAt: Date;
-  updatedAt: Date;
-}
 interface SubcategoryType extends Document {
   name: string;
   title: string;
@@ -51,6 +25,32 @@ interface SubcategoryType extends Document {
   createdAt: Date;
   updatedAt: Date;
 }
+interface CategoryType extends Document {
+  name: string;
+  title: string;
+  slug: string;
+  description?: string;
+  icon: string;
+  thumbnail: string;
+  subcategories: SubcategoryType[];
+  products: Types.ObjectId[];
+  shippingCharge?: {
+    byAir?: {
+      min?: number;
+      max?: number;
+    };
+    bySea?: {
+      min?: number;
+      max?: number;
+    };
+  };
+  isActive: boolean;
+  sortOrder: number;
+  metadata: Map<string, string>;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 interface CustomerType extends Document {
   name: string;
   email: string;
@@ -61,25 +61,78 @@ interface CustomerType extends Document {
 }
 
 interface ProductType extends Document {
-  name: string;
+  title: string;
+  sku: string;
   description?: string;
-  price: number;
+  price: {
+    bdt: number;
+    cny: number;
+    usd: number;
+  };
   currency: 'BDT' | 'USD';
-  category: Types.ObjectId;
+  category: {
+    name: string;
+    subcategories: {
+      name: string;
+    };
+  };
   slug: string;
   priceInBDT: number;
   priceInUSD: number;
   createdAt: Date;
   updatedAt: Date;
+  media: string[];
+  expense: {
+    bdt: number;
+    cny: number;
+    usd: number;
+  };
 }
-
+interface ProductInfoType {
+  _id: string;
+  sku: string;
+  slug: string;
+  title?: string;
+  description: string;
+  price: {
+    bdt: number;
+    cny: number;
+    usd: number;
+  };
+  expense: {
+    bdt: number;
+    cny: number;
+    usd: number;
+  };
+  media: string[];
+  category: {
+    name: string;
+  };
+  category?: string[];
+  tags: string[];
+  sizes: string[];
+  colors: string[];
+  createdAt?: string;
+  updatedAt?: string;
+  minimumOrderQuantity: number;
+  inputCurrency: string;
+  quantityPricing: {
+    ranges: string[];
+  };
+  currencyRates: {
+    usdToBdt: number;
+    cnyToBdt: number;
+  };
+}
 interface OrderItem {
   product: Types.ObjectId;
   quantity: number;
+  _id: string;
+  title: string;
 }
 
 interface OrderType extends Document {
-  customer: Types.ObjectId;
+  customerId: Types.ObjectId;
   items: OrderItem[];
   totalAmount: number;
   currency: 'BDT' | 'USD';
@@ -87,11 +140,15 @@ interface OrderType extends Document {
   totalInUSD: number;
   createdAt: Date;
   updatedAt: Date;
+  status: string;
+  total: number;
 }
 
 interface UserType extends Document {
+  userId: string;
   name: string;
   email: string;
+  image: string;
   password: string;
   role: 'user' | 'admin' | 'super_admin';
   profilePicture?: string | null;
@@ -108,4 +165,5 @@ interface UserType extends Document {
   resetPasswordToken?: string | null;
   resetPasswordExpires?: Date | null;
   createdAt: Date;
+  updatedAt: Date;
 }

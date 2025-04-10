@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import toast from 'react-hot-toast';
-import { FaTrash } from 'react-icons/fa6';
+import { useState } from "react";
+import toast from "react-hot-toast";
+import { FaTrash } from "react-icons/fa6";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -13,16 +13,16 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from '../alert-dialog';
+} from "../alert-dialog";
 
 export default function Delete({ id, item }: { id: string; item: string }) {
   const [loading, setLoading] = useState(false);
   async function onDelete() {
     try {
       setLoading(true);
-      const itemType = item === 'product' ? 'products' : 'categories';
+      const itemType = item === "product" ? "products" : "categories";
       const res = await fetch(`/api/${itemType}/${id}`, {
-        method: 'DELETE',
+        method: "DELETE",
       });
 
       if (res.ok) {
@@ -34,7 +34,7 @@ export default function Delete({ id, item }: { id: string; item: string }) {
       }
     } catch (error) {
       console.error(`[${item}]_DELETE`, error);
-      toast.error('Something went wrong. Please try again.');
+      toast.error("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -43,13 +43,13 @@ export default function Delete({ id, item }: { id: string; item: string }) {
   return (
     <AlertDialog>
       <AlertDialogTrigger>
-        <span className='inline-flex h-10 items-center justify-center rounded-md bg-red-1 px-3 py-2 text-white'>
-          <FaTrash className='size-4' />
+        <span className="inline-flex h-10 items-center justify-center rounded-md bg-red-1 px-3 py-2 text-white">
+          <FaTrash className="size-4" />
         </span>
       </AlertDialogTrigger>
-      <AlertDialogContent className='bg-white text-gray-1'>
+      <AlertDialogContent className="bg-white text-gray-1">
         <AlertDialogHeader>
-          <AlertDialogTitle className='text-red-1'>
+          <AlertDialogTitle className="text-red-1">
             Are you absolutely sure?
           </AlertDialogTitle>
           <AlertDialogDescription>
@@ -59,11 +59,8 @@ export default function Delete({ id, item }: { id: string; item: string }) {
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction
-            className='bg-red-1 text-white'
-            onClick={onDelete}
-          >
-            {loading ? 'Deleting...' : `Delete`}
+          <AlertDialogAction className="bg-red-1 text-white" onClick={onDelete}>
+            {loading ? "Deleting..." : `Delete`}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

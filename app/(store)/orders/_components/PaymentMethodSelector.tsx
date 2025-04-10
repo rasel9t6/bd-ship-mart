@@ -10,7 +10,7 @@ type PaymentMethod =
 
 interface PaymentMethodSelectorProps {
   paymentMethod: PaymentMethod;
-  onChange: any;
+  onChange: (p: string) => void;
 }
 
 const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
@@ -27,9 +27,9 @@ const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
   ];
 
   return (
-    <div className="mt-6">
-      <h3 className="text-lg font-semibold">Payment Method</h3>
-      <div className="mt-2 grid grid-cols-2 gap-3 md:grid-cols-3">
+    <div className='mt-6'>
+      <h3 className='text-lg font-semibold'>Payment Method</h3>
+      <div className='mt-2 grid grid-cols-2 gap-3 md:grid-cols-3'>
         {paymentMethods.map((method) => (
           <label
             key={method.id}
@@ -40,12 +40,12 @@ const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
             }`}
           >
             <input
-              type="radio"
-              name="paymentMethod"
+              type='radio'
+              name='paymentMethod'
               value={method.id}
               checked={paymentMethod === method.id}
               onChange={() => onChange(method.id as PaymentMethod)}
-              className="sr-only"
+              className='sr-only'
             />
             <span>{method.label}</span>
           </label>

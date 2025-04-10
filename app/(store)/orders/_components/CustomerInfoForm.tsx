@@ -1,5 +1,5 @@
-import { Session } from 'next-auth';
-import React from 'react';
+import { Session } from "next-auth";
+import React from "react";
 
 interface AddressType {
   street: string;
@@ -16,8 +16,8 @@ interface CustomerInfoType {
 }
 interface CustomerInfoFormProps {
   customerInfo: CustomerInfoType;
-  onChange: any;
-  onAddressChange: any;
+  onChange: (name: string, e: string) => void;
+  onAddressChange: (s: string, b: string) => void;
   session: Session | null;
 }
 const CustomerInfoForm: React.FC<CustomerInfoFormProps> = ({
@@ -32,7 +32,7 @@ const CustomerInfoForm: React.FC<CustomerInfoFormProps> = ({
         <input
           type="text"
           value={customerInfo.name}
-          onChange={(e) => onChange('name', e.target.value)}
+          onChange={(e) => onChange("name", e.target.value)}
           placeholder="Full Name *"
           className="w-full rounded-md border p-2"
           required
@@ -41,7 +41,7 @@ const CustomerInfoForm: React.FC<CustomerInfoFormProps> = ({
         <input
           type="email"
           value={customerInfo.email}
-          onChange={(e) => onChange('email', e.target.value)}
+          onChange={(e) => onChange("email", e.target.value)}
           placeholder="Email Address *"
           className="w-full rounded-md border p-2"
           required
@@ -50,7 +50,7 @@ const CustomerInfoForm: React.FC<CustomerInfoFormProps> = ({
         <input
           type="tel"
           value={customerInfo.phone}
-          onChange={(e) => onChange('phone', e.target.value)}
+          onChange={(e) => onChange("phone", e.target.value)}
           placeholder="Phone Number *"
           className="w-full rounded-md border p-2"
           required

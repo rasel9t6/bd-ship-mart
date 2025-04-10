@@ -2,29 +2,29 @@ import {
   getSalesPerMonth,
   getTotalCustomers,
   getTotalSales,
-} from '@/lib/actions/actions';
-import { TbCoinTakaFilled } from 'react-icons/tb';
-import { HiShoppingBag } from 'react-icons/hi2';
-import { FaUserGroup } from 'react-icons/fa6';
-import React from 'react';
-import SalesChart from '@/ui/custom/SalesChart';
-import SectionSeparator from '@/ui/custom/SectionSeparator';
-import { Card, CardContent, CardHeader, CardTitle } from '@/ui/card';
+} from "@/lib/actions/actions";
+import { TbCoinTakaFilled } from "react-icons/tb";
+import { HiShoppingBag } from "react-icons/hi2";
+import { FaUserGroup } from "react-icons/fa6";
+import React from "react";
+import SalesChart from "@/ui/custom/SalesChart";
+import SectionSeparator from "@/ui/custom/SectionSeparator";
+import { Card, CardContent, CardHeader, CardTitle } from "@/ui/card";
 
 // Define card data structure
 const DASHBOARD_CARDS = [
   {
-    title: 'Total Revenue',
+    title: "Total Revenue",
     icon: TbCoinTakaFilled,
     getValue: (data: { totalRevenue: number }) => `৳ ${data.totalRevenue}`,
   },
   {
-    title: 'Total Orders',
+    title: "Total Orders",
     icon: HiShoppingBag,
     getValue: (data: { totalOrders: number }) => data.totalOrders,
   },
   {
-    title: 'Total Customers',
+    title: "Total Customers",
     icon: FaUserGroup,
     getValue: (data: { totalCustomers: number }) => data.totalCustomers,
   },
@@ -32,10 +32,10 @@ const DASHBOARD_CARDS = [
 
 // Separate error component
 const DashboardError = () => (
-  <div className='px-8 py-10'>
-    <p className='text-heading2-bold'>Dashboard</p>
+  <div className="px-8 py-10">
+    <p className="text-heading2-bold">Dashboard</p>
     <SectionSeparator />
-    <p className='text-red-600'>
+    <p className="text-red-600">
       Failed to load dashboard data. Please try again later.
     </p>
   </div>
@@ -51,13 +51,13 @@ const DashboardCard = ({
   value: string | number;
   Icon: React.ElementType;
 }) => (
-  <Card className='bg-white'>
-    <CardHeader className='flex flex-row items-center justify-between'>
+  <Card className="bg-white">
+    <CardHeader className="flex flex-row items-center justify-between">
       <CardTitle>{title}</CardTitle>
-      <Icon className='size-7 max-sm:hidden' />
+      <Icon className="size-7 max-sm:hidden" />
     </CardHeader>
     <CardContent>
-      <p className='text-body-bold'>{value}</p>
+      <p className="text-body-bold">{value}</p>
     </CardContent>
   </Card>
 );
@@ -76,11 +76,11 @@ export default async function HomePage() {
       totalCustomers,
     };
     return (
-      <div className='px-8 py-10'>
-        <p className='text-heading2-bold'>Dashboard</p>
+      <div className="px-8 py-10">
+        <p className="text-heading2-bold">Dashboard</p>
         <SectionSeparator />
 
-        <div className='mt-10 grid grid-cols-2 gap-10 md:grid-cols-3'>
+        <div className="mt-10 grid grid-cols-2 gap-10 md:grid-cols-3">
           {DASHBOARD_CARDS.map((card) => (
             <DashboardCard
               key={card.title}
@@ -91,7 +91,7 @@ export default async function HomePage() {
           ))}
         </div>
 
-        <Card className='mt-10 bg-white'>
+        <Card className="mt-10 bg-white">
           <CardHeader>
             <CardTitle>Sales Chart (৳)</CardTitle>
           </CardHeader>
@@ -102,7 +102,7 @@ export default async function HomePage() {
       </div>
     );
   } catch (error) {
-    console.error('Error loading dashboard data:', error);
+    console.error("Error loading dashboard data:", error);
     return <DashboardError />;
   }
 }

@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
 import {
   Command,
   CommandGroup,
   CommandInput,
   CommandItem,
-} from '@/components/ui/command';
-import { useState } from 'react';
-import { Badge } from '../ui/badge';
-import { X } from 'lucide-react';
+} from "@/components/ui/command";
+import { useState } from "react";
+import { Badge } from "../ui/badge";
+import { X } from "lucide-react";
 interface MultiSelectProps {
   placeholder: string;
   categories: string[];
@@ -24,7 +24,7 @@ export default function MultiSelect({
   onChange,
   onRemove,
 }: MultiSelectProps) {
-  const [inputValue, setInputValue] = useState('');
+  const [inputValue, setInputValue] = useState("");
   const [open, setOpen] = useState(false);
 
   let selected: any;
@@ -32,12 +32,12 @@ export default function MultiSelect({
     selected = [];
   } else {
     selected = value.map((id) =>
-      categories.find((collection: any) => collection._id === id)
+      categories.find((collection: any) => collection._id === id),
     );
   }
 
   const selectable = categories.filter(
-    (collection) => !selected.includes(collection)
+    (collection) => !selected.includes(collection),
   );
 
   return (
@@ -74,7 +74,7 @@ export default function MultiSelect({
                 onMouseDown={(e) => e.preventDefault()}
                 onSelect={() => {
                   onChange(collection._id);
-                  setInputValue('');
+                  setInputValue("");
                 }}
                 className="cursor-pointer hover:bg-gray-2"
               >

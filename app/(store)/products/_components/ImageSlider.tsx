@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence, PanInfo } from 'framer-motion';
-import { ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from "react";
+import { motion, AnimatePresence, PanInfo } from "motion/react";
+import { ChevronLeft, ChevronRight, Pause, Play } from "lucide-react";
 
 interface ImageSliderProps {
   images?: string[];
@@ -11,12 +11,12 @@ interface ImageSliderProps {
   hideControls?: boolean; // New prop to hide Chevron buttons
 }
 const images = [
-  '/banner.webp',
-  '/banner-1.webp',
-  '/banner-2.webp',
-  '/banner-3.webp',
-  '/banner-4.webp',
-  '/banner-5.webp',
+  "/banner.webp",
+  "/banner-1.webp",
+  "/banner-2.webp",
+  "/banner-3.webp",
+  "/banner-4.webp",
+  "/banner-5.webp",
 ];
 const ImageSlider: React.FC<ImageSliderProps> = ({
   autoPlayInterval = 5000,
@@ -38,7 +38,7 @@ const ImageSlider: React.FC<ImageSliderProps> = ({
   );
 
   useEffect(() => {
-    let interval: any | null = null;
+    let interval: ReturnType<typeof setInterval> | null = null;
     if (isPlaying) {
       interval = setInterval(() => paginate(1), autoPlayInterval);
     }
@@ -86,7 +86,7 @@ const ImageSlider: React.FC<ImageSliderProps> = ({
           animate="center"
           exit="exit"
           transition={{
-            x: { type: 'spring', stiffness: 300, damping: 30, mass: 1.8 },
+            x: { type: "spring", stiffness: 300, damping: 30, mass: 1.8 },
             opacity: { duration: 0.5 },
           }}
           drag="x"
@@ -108,7 +108,7 @@ const ImageSlider: React.FC<ImageSliderProps> = ({
           <button
             className="rounded-full bg-bondi-blue/80 p-2 shadow-lg hover:bg-bondi-blue"
             onClick={() => setIsPlaying((prev) => !prev)}
-            aria-label={isPlaying ? 'Pause slideshow' : 'Play slideshow'}
+            aria-label={isPlaying ? "Pause slideshow" : "Play slideshow"}
           >
             {isPlaying ? (
               <Pause className="size-4 text-white lg:size-6" />
@@ -127,14 +127,14 @@ const ImageSlider: React.FC<ImageSliderProps> = ({
       )}
       <div
         className={`absolute left-1/2 z-10 flex -translate-x-1/2 space-x-2 ${
-          hideControls ? 'bottom-4' : 'bottom-16'
+          hideControls ? "bottom-4" : "bottom-16"
         }`}
       >
         {images.map((_, index) => (
           <button
             key={index}
             className={`size-2 rounded-full ${
-              currentIndex === index ? 'bg-bondi-blue-400' : 'bg-bondi-blue/50'
+              currentIndex === index ? "bg-bondi-blue-400" : "bg-bondi-blue/50"
             }`}
             onClick={() => setPage([index, index > currentIndex ? 1 : -1])}
             aria-label={`Go to slide ${index + 1}`}

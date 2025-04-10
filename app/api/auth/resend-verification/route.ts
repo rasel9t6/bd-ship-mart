@@ -1,9 +1,9 @@
 // app/api/auth/resend-verification/route.ts
-import { NextResponse } from 'next/server';
-import { connectToDB } from '@/lib/dbConnect';
-import User from '@/models/User';
-import { generateVerificationToken } from '@/lib/password-utils';
-import { sendVerificationEmail } from '@/lib/email-service';
+import { NextResponse } from "next/server";
+import { connectToDB } from "@/lib/dbConnect";
+import User from "@/models/User";
+import { generateVerificationToken } from "@/lib/password-utils";
+import { sendVerificationEmail } from "@/lib/email-service";
 
 export async function POST(req: Request) {
   await connectToDB();
@@ -12,7 +12,7 @@ export async function POST(req: Request) {
     const { email } = await req.json();
 
     if (!email) {
-      return NextResponse.json({ error: 'Email is required' }, { status: 400 });
+      return NextResponse.json({ error: "Email is required" }, { status: 400 });
     }
 
     // Find user by email
@@ -20,16 +20,16 @@ export async function POST(req: Request) {
 
     if (!user) {
       return NextResponse.json(
-        { error: 'No account found with this email' },
-        { status: 404 }
+        { error: "No account found with this email" },
+        { status: 404 },
       );
     }
 
     // If already verified, no need to send verification
     if (user.emailVerified) {
       return NextResponse.json(
-        { message: 'Email is already verified' },
-        { status: 200 }
+        { message: "Email is already verified" },
+        { status: 200 },
       );
     }
 
@@ -44,13 +44,13 @@ export async function POST(req: Request) {
     await sendVerificationEmail(user.email, verificationToken);
 
     return NextResponse.json({
-      message: 'Verification email sent successfully',
+      message: "Verification email sent successfully",
     });
   } catch (error) {
-    console.error('Resend verification error:', error);
+    console.error("Resend verification error:", error);
     return NextResponse.json(
-      { error: 'Failed to send verification email' },
-      { status: 500 }
+      { error: "Failed to send verification email" },
+      { status: 500 },
     );
   }
 }

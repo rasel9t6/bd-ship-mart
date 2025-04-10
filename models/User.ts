@@ -1,5 +1,5 @@
 // models/User.ts
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -18,8 +18,8 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['user', 'admin', 'super_admin'],
-    default: 'user',
+    enum: ["user", "admin", "super_admin"],
+    default: "user",
   },
   profilePicture: {
     type: String,
@@ -56,9 +56,9 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-  orders: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Order' }],
+  orders: [{ type: mongoose.Schema.Types.ObjectId, ref: "Order" }],
 });
 
-const User = mongoose.models.User || mongoose.model('User', userSchema);
+const User = mongoose.models.User || mongoose.model("User", userSchema);
 
 export default User;

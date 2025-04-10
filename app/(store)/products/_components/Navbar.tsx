@@ -10,15 +10,20 @@ import { FaHeart } from 'react-icons/fa6';
 import { HiShoppingBag } from 'react-icons/hi2';
 import toast from 'react-hot-toast';
 import useCart from '@/hooks/useCart';
+import { Session } from 'next-auth';
 
 // Navigation links data
 const NAV_LINKS = [
   { path: '/wishlist', icon: <FaHeart size={24} />, label: 'Wishlist' },
   { path: '/orders', icon: <HiShoppingBag size={24} />, label: 'Orders' },
 ];
-
+interface SearchTypes {
+  query: string;
+  setQuery: (value: string) => void;
+  onSearch: () => void;
+}
 // Separate components for better organization
-const SearchBar = ({ query, setQuery, onSearch }: any) => (
+const SearchBar = ({ query, setQuery, onSearch }: SearchTypes) => (
   <div className='flex items-center gap-3 rounded-full bg-white px-3 py-1'>
     <input
       className='px-3 py-1 outline-none max-sm:max-w-[120px]'
@@ -35,7 +40,13 @@ const SearchBar = ({ query, setQuery, onSearch }: any) => (
   </div>
 );
 
-const NavLinks = ({ pathname, session }: any) => (
+const NavLinks = ({
+  pathname,
+  session,
+}: {
+  pathname: string;
+  session: Session | null;
+}) => (
   <nav className='flex items-center justify-center gap-4 text-base-bold text-white max-lg:hidden'>
     {NAV_LINKS.map(({ path, icon }) => (
       <Link
@@ -51,6 +62,7 @@ const NavLinks = ({ pathname, session }: any) => (
   </nav>
 );
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const CartButton = ({ cartItemsCount }: any) => (
   <Link
     title='Cart'

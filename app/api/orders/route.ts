@@ -4,11 +4,7 @@ import { connectToDB } from '@/lib/dbConnect';
 import Customer from '@/models/Customer';
 import Order from '@/models/Order';
 import Product from '@/models/Product';
-
-// Handle CORS for OPTIONS requests (Preflight requests)
-export async function OPTIONS() {
-  return new NextResponse(null, { status: 204 });
-}
+import { OrderType } from '@/types/next-utils';
 
 // Fetch all orders
 export const GET = async () => {
@@ -86,7 +82,7 @@ export const POST = async (req: NextRequest) => {
     const userOrders = await fetch(`${process.env.STORE_API_URL}/users`);
     const userOrdersData = await userOrders.json();
     const userOrder = userOrdersData.find(
-      (order: any) => order.customerId === orderData.userId
+      (order: OrderType) => order.customerId === orderData.userId
     );
     if (userOrder) {
       userOrder.orders.push(newOrder._id);

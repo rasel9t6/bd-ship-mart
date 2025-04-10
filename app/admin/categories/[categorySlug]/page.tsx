@@ -1,5 +1,5 @@
-import CategoryForm from '../_components/CategoryForm';
-import { getCategory } from '@/lib/actions/actions';
+import CategoryForm from "../_components/CategoryForm";
+import { getCategory } from "@/lib/actions/actions";
 
 // // Metadata generator
 // const generateCategoryMetadata = (category: CategoryType): Metadata => ({

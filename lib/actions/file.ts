@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 'use server';
 
 import { v2 as cloud, type UploadApiResponse } from 'cloudinary';

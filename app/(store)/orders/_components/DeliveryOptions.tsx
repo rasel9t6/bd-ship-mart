@@ -1,9 +1,9 @@
-import React from 'react';
+import React from "react";
 
 interface DeliveryOptionsProps {
-  deliveryType: 'door-to-door' | 'warehouse';
-  shippingMethod: 'air' | 'sea';
-  onChange: any;
+  deliveryType: "door-to-door" | "warehouse";
+  shippingMethod: "air" | "sea";
+  onChange: (delivery: string, location: string) => void;
 }
 
 const DeliveryOptions: React.FC<DeliveryOptionsProps> = ({
@@ -24,8 +24,8 @@ const DeliveryOptions: React.FC<DeliveryOptionsProps> = ({
               type="radio"
               name="deliveryType"
               value="door-to-door"
-              checked={deliveryType === 'door-to-door'}
-              onChange={() => onChange('deliveryType', 'door-to-door')}
+              checked={deliveryType === "door-to-door"}
+              onChange={() => onChange("deliveryType", "door-to-door")}
               className="size-4 border-gray-300 text-blue-600 focus:ring-blue-500"
             />
             <span>Door to Door</span>
@@ -35,8 +35,8 @@ const DeliveryOptions: React.FC<DeliveryOptionsProps> = ({
               type="radio"
               name="deliveryType"
               value="warehouse"
-              checked={deliveryType === 'warehouse'}
-              onChange={() => onChange('deliveryType', 'warehouse')}
+              checked={deliveryType === "warehouse"}
+              onChange={() => onChange("deliveryType", "warehouse")}
               className="size-4 border-gray-300 text-blue-600 focus:ring-blue-500"
             />
             <span>Warehouse Pickup</span>
@@ -53,8 +53,8 @@ const DeliveryOptions: React.FC<DeliveryOptionsProps> = ({
               type="radio"
               name="shippingMethod"
               value="air"
-              checked={shippingMethod === 'air'}
-              onChange={() => onChange('shippingMethod', 'air')}
+              checked={shippingMethod === "air"}
+              onChange={() => onChange("shippingMethod", "air")}
               className="size-4 border-gray-300 text-blue-600 focus:ring-blue-500"
             />
             <span>Air Freight (৳1500)</span>
@@ -64,8 +64,8 @@ const DeliveryOptions: React.FC<DeliveryOptionsProps> = ({
               type="radio"
               name="shippingMethod"
               value="sea"
-              checked={shippingMethod === 'sea'}
-              onChange={() => onChange('shippingMethod', 'sea')}
+              checked={shippingMethod === "sea"}
+              onChange={() => onChange("shippingMethod", "sea")}
               className="size-4 border-gray-300 text-blue-600 focus:ring-blue-500"
             />
             <span>Sea Freight (৳1000)</span>

@@ -1,5 +1,5 @@
-import React from 'react';
-import RightSidebarPage from '../../@rightSidebar/page';
+import React from "react";
+import RightSidebarPage from "../../@rightSidebar/page";
 
 export default function layout({ children }: { children: React.ReactNode }) {
   return (

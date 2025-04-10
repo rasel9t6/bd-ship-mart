@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { ProductType } from '@/lib/types';
-import { useSession } from 'next-auth/react';
-import { Loader } from 'lucide-react';
-import { useState, useEffect, useCallback } from 'react';
-import ProductCard from '../products/_components/ProductCard';
+import { ProductType } from "@/lib/types";
+import { useSession } from "next-auth/react";
+import { Loader } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import ProductCard from "../products/_components/ProductCard";
 
 export default function WishListPage() {
   const { data: session } = useSession();
@@ -15,12 +15,12 @@ export default function WishListPage() {
 
   const getUser = async () => {
     try {
-      const res = await fetch('/api/users');
+      const res = await fetch("/api/users");
       const data = await res.json();
       setSignedInUser(data);
       setLoading(false);
     } catch (err) {
-      console.log('[users_GET', err);
+      console.log("[users_GET", err);
     }
   };
 
@@ -39,7 +39,7 @@ export default function WishListPage() {
       signedInUser.wishlist.map(async (productId) => {
         const res = await getProductDetails(productId);
         return res;
-      })
+      }),
     );
 
     setWishlist(wishlistProducts);
@@ -59,11 +59,11 @@ export default function WishListPage() {
   return loading ? (
     <Loader />
   ) : (
-    <div className='px-10 py-5'>
-      <p className='my-10 text-heading3-bold'>Your Wishlist</p>
+    <div className="px-10 py-5">
+      <p className="my-10 text-heading3-bold">Your Wishlist</p>
       {wishlist.length === 0 && <p>No items in your wishlist</p>}
 
-      <div className='flex flex-wrap justify-center gap-16'>
+      <div className="flex flex-wrap justify-center gap-16">
         {wishlist.map((product) => (
           <ProductCard
             key={product._id}
@@ -75,4 +75,4 @@ export default function WishListPage() {
     </div>
   );
 }
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";

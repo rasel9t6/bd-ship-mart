@@ -1,7 +1,11 @@
 'use server';
 
 import { v2 as cloud, type UploadApiResponse } from 'cloudinary';
-
+type CloudinaryResource = {
+  public_id: string;
+  created_at: string;
+  [key: string]: string; // For other optional fields returned by Cloudinary
+};
 cloud.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
@@ -80,16 +84,19 @@ export async function readAllMedia(prefix?: string) {
       max_results: 50,
     });
 
-    // Combine results and add resource_type property to each item
-    const imageResources = imagesResult.resources.map((resource: any) => ({
-      ...resource,
-      resource_type: 'image',
-    }));
+    const imageResources = imagesResult.resources.map(
+      (resource: CloudinaryResource) => ({
+        ...resource,
+        resource_type: 'image',
+      })
+    );
 
-    const videoResources = videosResult.resources.map((resource: any) => ({
-      ...resource,
-      resource_type: 'video',
-    }));
+    const videoResources = videosResult.resources.map(
+      (resource: CloudinaryResource) => ({
+        ...resource,
+        resource_type: 'video',
+      })
+    );
 
     // Combine and sort by created_at (newest first)
     const allMedia = [...imageResources, ...videoResources].sort((a, b) => {

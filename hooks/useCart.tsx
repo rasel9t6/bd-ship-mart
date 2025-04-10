@@ -1,6 +1,6 @@
-import { create } from 'zustand';
-import { toast } from 'react-hot-toast';
-import { persist, createJSONStorage } from 'zustand/middleware';
+import { create } from "zustand";
+import { toast } from "react-hot-toast";
+import { persist, createJSONStorage } from "zustand/middleware";
 
 interface CartItem {
   item: {
@@ -33,18 +33,18 @@ const useCart = create(
         );
 
         if (isExisting) {
-          return toast('Item already in cart');
+          return toast("Item already in cart");
         }
 
         set({ cartItems: [...currentItems, { item, quantity, color, size }] });
-        toast.success('Item added to cart', { icon: '🛒' });
+        toast.success("Item added to cart", { icon: "🛒" });
       },
       removeItem: (idToRemove: String) => {
         const newCartItems = get().cartItems.filter(
           (cartItem) => cartItem.item._id !== idToRemove,
         );
         set({ cartItems: newCartItems });
-        toast.success('Item removed from cart');
+        toast.success("Item removed from cart");
       },
       increaseQuantity: (idToIncrease: String) => {
         const newCartItems = get().cartItems.map((cartItem) =>
@@ -53,7 +53,7 @@ const useCart = create(
             : cartItem,
         );
         set({ cartItems: newCartItems });
-        toast.success('Item quantity increased');
+        toast.success("Item quantity increased");
       },
       decreaseQuantity: (idToDecrease: String) => {
         const newCartItems = get().cartItems.map((cartItem) =>
@@ -62,12 +62,12 @@ const useCart = create(
             : cartItem,
         );
         set({ cartItems: newCartItems });
-        toast.success('Item quantity decreased');
+        toast.success("Item quantity decreased");
       },
       clearCart: () => set({ cartItems: [] }),
     }),
     {
-      name: 'cart-storage',
+      name: "cart-storage",
       storage: createJSONStorage(() => localStorage),
     },
   ),

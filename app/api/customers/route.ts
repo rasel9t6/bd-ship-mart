@@ -1,10 +1,9 @@
-import { verifyApiKey } from '@/lib/auth';
 import { connectToDB } from '@/lib/dbConnect';
 import Customer from '@/models/Customer';
 import { NextRequest, NextResponse } from 'next/server';
 
 // Fetch all customers
-export const GET = async (req: NextRequest) => {
+export const GET = async () => {
   try {
     await connectToDB();
     const customers = await Customer.find().sort({ createdAt: -1 });
@@ -22,11 +21,6 @@ export const GET = async (req: NextRequest) => {
 // Create or update a customer
 export const POST = async (req: NextRequest) => {
   try {
-    const authHeader = req.headers.get('authorization');
-    if (!verifyApiKey(authHeader)) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     const customerData = await req.json();
 
     // Validate required fields
@@ -68,8 +62,8 @@ export const POST = async (req: NextRequest) => {
       },
       { status: 201 }
     );
-  } catch (error: any) {
-    console.error('[CUSTOMER_CREATE_ERROR]', error.message);
+  } catch (error) {
+    console.error('[CUSTOMER_CREATE_ERROR]', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

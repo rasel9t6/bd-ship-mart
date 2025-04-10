@@ -38,10 +38,10 @@ export async function GET(
 
     revalidatePath(`/products/${params.productId}`);
     return NextResponse.json(product);
-  } catch (error: any) {
+  } catch (error) {
     console.error('Product fetch error:', error);
     return NextResponse.json(
-      { error: error.message || 'Failed to fetch product' },
+      { error: error || 'Failed to fetch product' },
       { status: 500 }
     );
   }

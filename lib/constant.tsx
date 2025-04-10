@@ -4,32 +4,32 @@ import {
   ShoppingBag,
   Tag,
   UsersRound,
-} from 'lucide-react';
+} from "lucide-react";
 
 export const navLinks = [
   {
-    url: '/admin',
+    url: "/admin",
     icon: <LayoutDashboard />,
-    label: 'Dashboard',
+    label: "Dashboard",
   },
   {
-    url: '/admin/categories',
+    url: "/admin/categories",
     icon: <Shapes />,
-    label: 'Categories',
+    label: "Categories",
   },
   {
-    url: '/admin/products',
+    url: "/admin/products",
     icon: <Tag />,
-    label: 'Products',
+    label: "Products",
   },
   {
-    url: '/admin/orders',
+    url: "/admin/orders",
     icon: <ShoppingBag />,
-    label: 'Orders',
+    label: "Orders",
   },
   {
-    url: '/admin/customers',
+    url: "/admin/customers",
     icon: <UsersRound />,
-    label: 'Customers',
+    label: "Customers",
   },
 ];

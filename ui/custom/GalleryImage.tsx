@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import { FC, ReactNode } from 'react';
-import Image from 'next/image';
-import { FaCheck, FaTrash } from 'react-icons/fa';
+import { FC, ReactNode } from "react";
+import Image from "next/image";
+import { FaCheck, FaTrash } from "react-icons/fa";
 
 interface GalleryItemProps {
   item: {
     url: string;
-    type: 'image' | 'video';
+    type: "image" | "video";
   };
   onSelectClick: () => void;
   onDeleteClick: () => void;
@@ -24,7 +24,7 @@ const GalleryItem: FC<GalleryItemProps> = ({
     <div className="group relative aspect-square overflow-hidden rounded border border-gray-300">
       {/* Media Content */}
       {children ||
-        (item.type === 'image' ? (
+        (item.type === "image" ? (
           <Image
             src={item.url}
             alt="Gallery item"
@@ -39,7 +39,7 @@ const GalleryItem: FC<GalleryItemProps> = ({
             controls={false}
             muted
             loop
-            poster={`${item.url.split('.').slice(0, -1).join('.')}.jpg`}
+            poster={`${item.url.split(".").slice(0, -1).join(".")}.jpg`}
           />
         ))}
 

@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import {
   ResponsiveContainer,
@@ -8,7 +8,7 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-} from 'recharts';
+} from "recharts";
 
 const SalesChart = ({ data }: { data: any[] }) => {
   return (
