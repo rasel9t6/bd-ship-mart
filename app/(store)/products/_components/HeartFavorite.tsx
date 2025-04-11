@@ -1,15 +1,14 @@
 'use client';
 
 import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
-import { FaHeart, FaRegHeart } from 'react-icons/fa6';
+import { FaHeart } from 'react-icons/fa6';
 import React, { useState, useEffect, useCallback } from 'react';
 import { ProductInfoType, ProductType, UserType } from '@/types/next-utils';
 import toast from 'react-hot-toast';
+import { Loader2 } from 'lucide-react';
 
 interface HeartFavoriteProps {
   product: ProductInfoType | ProductType;
-
   updateSignedInUser?: (user: UserType) => void;
 }
 
@@ -17,31 +16,36 @@ export default function HeartFavorite({
   product,
   updateSignedInUser,
 }: HeartFavoriteProps) {
-  const router = useRouter();
   const { data: session } = useSession();
   const [isWishlist, setIsWishlist] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  const checkWishlist = async () => {
+  const checkWishlist = useCallback(async () => {
     try {
       const res = await fetch('/api/users');
       const data = await res.json();
       const isInWishlist = data.wishlist.includes(product._id);
       setIsWishlist(isInWishlist);
       setLoading(false);
-    } catch (error) {
+    } catch (err) {
+      console.error('Error checking wishlist:', err);
       toast.error('Failed to check wishlist status');
       setLoading(false);
     }
-  };
+  }, [product._id]);
 
   useEffect(() => {
     if (session?.user) {
       checkWishlist();
     }
-  }, [session]);
+  }, [session, checkWishlist]);
 
   const handleWishlist = async () => {
+    if (!session?.user) {
+      toast.error('Please sign in to add to wishlist');
+      return;
+    }
+
     try {
       const res = await fetch('/api/users/wishlist', {
         method: 'POST',
@@ -56,9 +60,12 @@ export default function HeartFavorite({
 
       const data = await res.json();
       setIsWishlist(!isWishlist);
-      updateSignedInUser(data);
+      if (updateSignedInUser) {
+        updateSignedInUser(data);
+      }
       toast.success(isWishlist ? 'Removed from wishlist' : 'Added to wishlist');
-    } catch (error) {
+    } catch (err) {
+      console.error('Error updating wishlist:', err);
       toast.error('Failed to update wishlist');
     }
   };
@@ -66,7 +73,7 @@ export default function HeartFavorite({
   return (
     <div className='absolute top-2 right-2'>
       {loading ? (
-        <Loader />
+        <Loader2 className='w-6 h-6 animate-spin text-gray-500' />
       ) : (
         <button
           onClick={handleWishlist}

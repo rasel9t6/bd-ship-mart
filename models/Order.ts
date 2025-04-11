@@ -88,7 +88,7 @@ const orderSchema = new Schema({
     ref: 'Customer',
     required: true,
     index: true,
-    set: function (customerId: string) {
+    set: function (this: mongoose.Document, customerId: string) {
       toast.success(`Customer ${customerId} updated with order ${this._id}`);
       return customerId;
     },
