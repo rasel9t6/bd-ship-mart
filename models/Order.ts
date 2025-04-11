@@ -1,16 +1,17 @@
-import mongoose, { Schema } from "mongoose";
+import mongoose, { Schema } from 'mongoose';
+import toast from 'react-hot-toast';
 
 function generateSequentialNumber() {
   return Math.floor(Math.random() * 10000)
     .toString()
-    .padStart(4, "0");
+    .padStart(4, '0');
 }
 
 function generateOrderId() {
   const date = new Date();
   const year = date.getFullYear().toString().slice(-2); // Last 2 digits of year
-  const month = (date.getMonth() + 1).toString().padStart(2, "0");
-  const day = date.getDate().toString().padStart(2, "0");
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const day = date.getDate().toString().padStart(2, '0');
   const sequential = generateSequentialNumber();
   // Format: BSM-ORD-DD-MM-YY-XXXX
   return `BSM-ORD-${day}-${month}-${year}-${sequential}`;
@@ -28,21 +29,21 @@ const CurrencySchema = new Schema(
   {
     cny: {
       type: Number,
-      min: [0, "Value cannot be negative"],
+      min: [0, 'Value cannot be negative'],
       default: 0,
     },
     usd: {
       type: Number,
-      min: [0, "Value cannot be negative"],
+      min: [0, 'Value cannot be negative'],
       default: 0,
     },
     bdt: {
       type: Number,
-      min: [0, "Value cannot be negative"],
+      min: [0, 'Value cannot be negative'],
       default: 0,
     },
   },
-  { _id: false },
+  { _id: false }
 );
 
 interface IOrderProduct {
@@ -60,18 +61,18 @@ const OrderProductSchema = new Schema<IOrderProduct>(
   {
     product: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Product",
+      ref: 'Product',
       required: true,
     },
     quantity: {
       type: Number,
       required: true,
-      min: [1, "Quantity must be at least 1"],
+      min: [1, 'Quantity must be at least 1'],
     },
     unitPrice: CurrencySchema,
     totalPrice: CurrencySchema,
   },
-  { _id: false },
+  { _id: false }
 );
 
 // Main Order Schema
@@ -84,9 +85,13 @@ const orderSchema = new Schema({
   },
   customerId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Customer",
+    ref: 'Customer',
     required: true,
     index: true,
+    set: function (customerId: string) {
+      toast.success(`Customer ${customerId} updated with order ${this._id}`);
+      return customerId;
+    },
   },
   customerInfo: {
     name: String,
@@ -94,7 +99,7 @@ const orderSchema = new Schema({
     phone: String,
     customerType: {
       type: String,
-      enum: ["regular", "wholesale", "vip"],
+      enum: ['regular', 'wholesale', 'vip'],
     },
   },
   products: [OrderProductSchema],
@@ -135,21 +140,21 @@ const orderSchema = new Schema({
   paymentMethod: String, // "cash" or "card"
   paymentCurrency: {
     type: String,
-    enum: ["CNY", "USD", "BDT"],
-    default: "BDT",
+    enum: ['CNY', 'USD', 'BDT'],
+    default: 'BDT',
   },
   paymentDetails: {
     status: {
       type: String,
       enum: [
-        "pending",
-        "paid",
-        "failed",
-        "refunded",
-        "partially_refunded",
-        "partially_paid",
+        'pending',
+        'paid',
+        'failed',
+        'refunded',
+        'partially_refunded',
+        'partially_paid',
       ],
-      default: "pending",
+      default: 'pending',
     },
     transactions: [
       {
@@ -164,17 +169,17 @@ const orderSchema = new Schema({
   status: {
     type: String,
     enum: [
-      "pending",
-      "confirmed",
-      "processing",
-      "shipped",
-      "in-transit",
-      "out-for-delivery",
-      "delivered",
-      "canceled",
-      "returned",
+      'pending',
+      'confirmed',
+      'processing',
+      'shipped',
+      'in-transit',
+      'out-for-delivery',
+      'delivered',
+      'canceled',
+      'returned',
     ],
-    default: "pending",
+    default: 'pending',
   },
   trackingHistory: [
     {
@@ -202,27 +207,27 @@ const orderSchema = new Schema({
 });
 
 // Hooks for updating customer orders
-orderSchema.post("save", async function (doc) {
+orderSchema.post('save', async function (doc) {
   try {
-    const Customer = mongoose.model("Customer");
+    const Customer = mongoose.model('Customer');
     await Customer.findByIdAndUpdate(doc.customerId, {
       $addToSet: { orders: doc._id },
       updatedAt: new Date(),
     });
     console.log(`✅ Customer ${doc.customerId} updated with order ${doc._id}`);
   } catch (error) {
-    console.error("❌ Error updating Customer with order:", error);
+    console.error('❌ Error updating Customer with order:', error);
   }
 });
 
 // Add index for common queries
 orderSchema.index({ status: 1, createdAt: -1 });
 orderSchema.index({
-  "customerInfo.name": "text",
-  "customerInfo.email": "text",
+  'customerInfo.name': 'text',
+  'customerInfo.email': 'text',
 });
-orderSchema.index({ "products.sku": 1 });
-orderSchema.index({ "totalAmount.bdt": 1 });
+orderSchema.index({ 'products.sku': 1 });
+orderSchema.index({ 'totalAmount.bdt': 1 });
 
-const Order = mongoose.models.Order || mongoose.model("Order", orderSchema);
+const Order = mongoose.models.Order || mongoose.model('Order', orderSchema);
 export default Order;

@@ -1,5 +1,6 @@
 import { connectToDB } from '@/lib/dbConnect';
 import Product from '@/models/Product';
+import toast from 'react-hot-toast';
 
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -35,6 +36,7 @@ export const GET = async (
     });
 
     if (!product) {
+      toast.error('Product not found');
       return NextResponse.json({ error: 'Product not found' }, { status: 404 });
     }
 
@@ -74,7 +76,7 @@ export const GET = async (
 
     return NextResponse.json(relatedProducts);
   } catch (error) {
-    console.error('[RELATED_PRODUCTS_GET]', error);
+    toast.error('Failed to fetch related products');
     return NextResponse.json(
       { error: error || 'Failed to fetch related products' },
       { status: 500 }

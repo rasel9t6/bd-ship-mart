@@ -1,17 +1,18 @@
-"use client";
+'use client';
 
-import { type FC, useState, useEffect } from "react";
-import { IoMdClose } from "react-icons/io";
-import { FileUploader } from "react-drag-drop-files";
-import { IoCloudUploadOutline } from "react-icons/io5";
-import { useMediaStore } from "@/hooks/useMediaStore";
-import GalleryItem from "./GalleryImage";
+import { type FC, useState, useEffect, useCallback } from 'react';
+import { IoMdClose } from 'react-icons/io';
+import { FileUploader } from 'react-drag-drop-files';
+import { IoCloudUploadOutline } from 'react-icons/io5';
+import { useMediaStore } from '@/hooks/useMediaStore';
+import GalleryItem from './GalleryImage';
+import toast from 'react-hot-toast';
 
 interface MediaGalleryProps {
   visible: boolean;
   folderId: string;
   onClose: () => void;
-  onSelect?: (url: string, type: "image" | "video") => void;
+  onSelect?: (url: string, type: 'image' | 'video') => void;
 }
 
 const MediaGallery: FC<MediaGalleryProps> = ({
@@ -22,6 +23,7 @@ const MediaGallery: FC<MediaGalleryProps> = ({
 }) => {
   const { media, loading, uploadMedia, removeItem } = useMediaStore();
   const [localMedia, setLocalMedia] = useState(media);
+  const [files, setFiles] = useState<File[]>([]);
 
   // Sync local state with global media store
   useEffect(() => {
@@ -30,46 +32,56 @@ const MediaGallery: FC<MediaGalleryProps> = ({
 
   if (!visible) return null;
 
-  const handleSelection = (item: { url: string; type: "image" | "video" }) => {
-    console.log("Item URL", item.url);
+  const handleSelection = (item: { url: string; type: 'image' | 'video' }) => {
+    console.log('Item URL', item.url);
     if (onSelect) onSelect(item.url, item.type);
     onClose();
   };
 
+  const handleDrop = useCallback((acceptedFiles: File[]) => {
+    const files = acceptedFiles.map((file) =>
+      Object.assign(file, {
+        preview: URL.createObjectURL(file),
+      })
+    );
+    toast.success(`Successfully added ${files.length} files`);
+    setFiles((prevFiles) => [...prevFiles, ...files]);
+  }, []);
+
   const handleUpload = async (files: File[]) => {
-    console.log("Files received:", files);
-    console.log("Type of files:", Object.prototype.toString.call(files));
+    console.log('Files received:', files);
+    console.log('Type of files:', Object.prototype.toString.call(files));
 
     try {
       await uploadMedia(files, folderId);
     } catch (error) {
-      console.error("Upload failed:", error);
+      console.error('Upload failed:', error);
     }
   };
 
   const handleDelete = async (url: string) => {
-    if (confirm("Are you sure you want to delete this item?")) {
+    if (confirm('Are you sure you want to delete this item?')) {
       try {
         await removeItem(url);
       } catch (error) {
-        console.error("Delete failed:", error);
+        console.error('Delete failed:', error);
       }
     }
   };
 
-  const fileTypes = ["png", "jpg", "jpeg", "webp", "mp4", "mov"];
+  const fileTypes = ['png', 'jpg', 'jpeg', 'webp', 'mp4', 'mov'];
 
   return (
     <div
       onKeyDown={({ key }) => {
-        if (key === "Escape") onClose();
+        if (key === 'Escape') onClose();
       }}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+      className='fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm'
     >
-      <div className="relative size-4/5 max-w-[760px] overflow-y-auto rounded-md bg-white p-4">
+      <div className='relative size-4/5 max-w-[760px] overflow-y-auto rounded-md bg-white p-4'>
         {/* Close Button */}
         <button
-          className="absolute right-4 top-4 z-10 p-3 text-red-500"
+          className='absolute right-4 top-4 z-10 p-3 text-red-500'
           onClick={onClose}
         >
           <IoMdClose size={24} />
@@ -78,19 +90,22 @@ const MediaGallery: FC<MediaGalleryProps> = ({
         {/* Upload Section */}
         <FileUploader
           multiple
-          handleChange={handleUpload}
-          name="file"
+          handleChange={handleDrop}
+          name='file'
           types={fileTypes}
         >
-          <div className="flex w-full items-center justify-center">
-            <label className="flex h-64 w-full cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50">
-              <div className="flex flex-col items-center justify-center pb-6 pt-5">
-                <IoCloudUploadOutline size={30} className="text-gray-500" />
-                <p className="mb-2 text-sm text-gray-500">
-                  <span className="font-semibold">Click to upload</span> or drag
+          <div className='flex w-full items-center justify-center'>
+            <label className='flex h-64 w-full cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50'>
+              <div className='flex flex-col items-center justify-center pb-6 pt-5'>
+                <IoCloudUploadOutline
+                  size={30}
+                  className='text-gray-500'
+                />
+                <p className='mb-2 text-sm text-gray-500'>
+                  <span className='font-semibold'>Click to upload</span> or drag
                   and drop
                 </p>
-                <p className="text-xs text-gray-500">
+                <p className='text-xs text-gray-500'>
                   Supported: Images (PNG, JPG, JPEG, WEBP) and Videos (MP4, MOV)
                 </p>
               </div>
@@ -100,15 +115,15 @@ const MediaGallery: FC<MediaGalleryProps> = ({
 
         {/* No Media Message */}
         {!localMedia.length && !loading && (
-          <p className="p-4 text-center text-2xl font-semibold opacity-45">
+          <p className='p-4 text-center text-2xl font-semibold opacity-45'>
             No Media Available
           </p>
         )}
 
         {/* Media Grid */}
-        <div className="mt-4 grid grid-cols-2 gap-4 md:grid-cols-4">
+        <div className='mt-4 grid grid-cols-2 gap-4 md:grid-cols-4'>
           {loading && (
-            <div className="aspect-square w-full animate-pulse rounded bg-gray-200"></div>
+            <div className='aspect-square w-full animate-pulse rounded bg-gray-200'></div>
           )}
 
           {localMedia.map((item) => (

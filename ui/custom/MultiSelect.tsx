@@ -5,10 +5,11 @@ import { useState } from 'react';
 import { X } from 'lucide-react';
 import { Command, CommandGroup, CommandInput, CommandItem } from '../command';
 import { Badge } from '../badge';
-import { CategoryType } from '@/types/next-utils';
+import { SubcategoryType } from '@/types/next-utils';
+
 interface MultiSelectProps {
   placeholder: string;
-  categories: string[];
+  categories: SubcategoryType[];
   value: string[];
   onChange: (value: string) => void;
   onRemove: (value: string) => void;
@@ -24,23 +25,26 @@ export default function MultiSelect({
   const [inputValue, setInputValue] = useState('');
   const [open, setOpen] = useState(false);
 
-  let selected: any;
-  if (value.length === 0) {
-    selected = [];
-  } else {
-    selected = value.map((id) =>
-      categories.find((category: any) => category._id === id)
-    );
-  }
+  const selected =
+    value.length === 0
+      ? []
+      : value
+          .map((id) => categories.find((category) => category._id === id))
+          .filter(
+            (category): category is SubcategoryType => category !== undefined
+          );
 
   const selectable = categories.filter(
-    (category) => !selected.includes(category)
+    (category) =>
+      !selected.some(
+        (selectedCategory) => selectedCategory._id === category._id
+      )
   );
 
   return (
     <Command className='overflow-visible bg-white'>
       <div className='flex flex-wrap gap-1 rounded-md border border-gray-1/25'>
-        {selected.map((collection: CategoryType) => (
+        {selected.map((collection: SubcategoryType) => (
           <Badge key={collection?._id}>
             {collection?.name}
             <button
@@ -65,7 +69,7 @@ export default function MultiSelect({
       <div className='relative mt-2'>
         {open && (
           <CommandGroup className='absolute top-0 z-30 w-full overflow-auto rounded-md border border-gray-1/25 bg-white shadow-md'>
-            {selectable.map((category: any) => (
+            {selectable.map((category: SubcategoryType) => (
               <CommandItem
                 key={category._id}
                 onMouseDown={(e) => e.preventDefault()}

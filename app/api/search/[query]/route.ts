@@ -1,6 +1,7 @@
 import { connectToDB } from '@/lib/dbConnect';
 import Product from '@/models/Product';
 import { NextRequest, NextResponse } from 'next/server';
+import toast from 'react-hot-toast';
 
 export const GET = async (
   req: NextRequest,
@@ -19,7 +20,7 @@ export const GET = async (
 
     return NextResponse.json(searchedProducts, { status: 200 });
   } catch (err) {
-    console.log('[search_GET]', err);
+    toast.error(`Failed to perform search ${err}`);
     return new NextResponse('Internal Server Error', { status: 500 });
   }
 };

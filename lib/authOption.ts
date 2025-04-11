@@ -1,11 +1,10 @@
-import { AuthOptions } from "next-auth";
+import { AuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider from 'next-auth/providers/google';
 import User from '@/models/User';
 import { comparePassword, hashPassword } from '@/lib/password-utils';
 import { connectToDB } from '@/lib/dbConnect';
-
-
+import toast from 'react-hot-toast';
 
 export const authOptions: AuthOptions = {
   providers: [
@@ -114,11 +113,11 @@ export const authOptions: AuthOptions = {
   },
 
   events: {
-    async signIn(message) {
-      console.log('Sign in event', message);
+    async signIn() {
+      toast.success('Successfully signed in');
     },
-    async createUser(message) {
-      console.log('User created', message);
+    async createUser() {
+      toast.success('User account created successfully');
     },
   },
 

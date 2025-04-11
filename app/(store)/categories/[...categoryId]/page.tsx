@@ -4,8 +4,10 @@ import CategorySlider from '../_components/CategorySlider';
 import ProductCard from '../../products/_components/ProductCard';
 import { ProductType } from '@/types/next-utils';
 
-// Define params with categoryId as string array to capture all path segments
-type Params = Promise<{ categoryId: string[] }>;
+// Define params with categoryId as string array
+type Params = Promise<{
+  categoryId: string[];
+}>;
 
 export default async function CategoryDetailsPage({
   params,
@@ -32,7 +34,7 @@ export default async function CategoryDetailsPage({
     categoryDetails;
 
   // Determine if this is a subcategory page
-  const currentCategoryId = params.categoryId[params.categoryId.length - 1];
+  const currentCategoryId = categoryId[categoryId.length - 1];
 
   return (
     <div className='px-2 pt-20 sm:px-5 sm:pt-28'>
@@ -47,7 +49,7 @@ export default async function CategoryDetailsPage({
         {subcategories?.length > 0 && (
           <CategorySlider
             items={subcategories}
-            parentCategoryId={categoryPath} // If you still need to pass the full category path
+            parentCategoryId={categoryPath}
             currentCategoryId={currentCategoryId}
           />
         )}

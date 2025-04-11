@@ -5,6 +5,7 @@ import Subcategory from '@/models/Subcategory';
 import mongoose from 'mongoose';
 import { revalidatePath } from 'next/cache';
 import { NextRequest, NextResponse } from 'next/server';
+import toast from 'react-hot-toast';
 
 const handleError = (message: string, status: number = 500): NextResponse => {
   console.error(message);
@@ -61,21 +62,21 @@ export const POST = async (req: NextRequest) => {
     await product.validate();
     await product.save();
 
-    console.log(`✅ Product Created: ${product._id}`);
+    toast.success(`Product Created: ${product._id}`);
 
     // Update the category's products array
     if (body.category) {
       await Category.findByIdAndUpdate(body.category, {
         $addToSet: { products: product._id },
       });
-      console.log(`✅ Category Updated with Product: ${body.category}`);
+      toast.success(`Category Updated with Product: ${body.category}`);
     }
 
     return new NextResponse(JSON.stringify({ success: true, product }), {
       status: 201,
     });
   } catch (error) {
-    console.error('❌ Error creating product:', error);
+    toast.error(`Failed to create product | ${error}`);
     return handleError('Internal Server Error', 500);
   }
 };
@@ -153,11 +154,12 @@ export const DELETE = async (
     });
 
     revalidatePath('/products');
+    toast.success('Product deleted successfully');
     return new NextResponse(JSON.stringify({ message: 'Product deleted' }), {
       status: 200,
     });
-  } catch (err) {
-    console.log('[productId_DELETE]', err);
+  } catch (error) {
+    toast.error(`Failed to delete product | ${error}`);
     return new NextResponse('Internal error', { status: 500 });
   }
 };

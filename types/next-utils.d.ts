@@ -191,10 +191,20 @@ interface CategoryType extends Document {
 }
 
 interface CustomerType extends Document {
+  customerId: string;
   name: string;
   email: string;
   phone?: string;
-  address?: string;
+  address?: {
+    street?: string;
+    city?: string;
+    state?: string;
+    postalCode?: string;
+    country?: string;
+  };
+  orders?: Types.ObjectId[];
+  status?: 'active' | 'inactive';
+  customerType?: 'regular' | 'wholesale' | 'vip';
   createdAt: Date;
   updatedAt: Date;
 }
@@ -213,7 +223,7 @@ interface ProductType extends Document {
     name: string;
     subcategories: {
       name: string;
-    };
+    }[];
   };
   slug: string;
   priceInBDT: number;
@@ -225,6 +235,27 @@ interface ProductType extends Document {
     bdt: number;
     cny: number;
     usd: number;
+  };
+  subcategories?: string[];
+  tags?: string[];
+  sizes?: string[];
+  colors?: string[];
+  inputCurrency?: string;
+  minimumOrderQuantity?: number;
+  quantityPricing?: {
+    ranges: Array<{
+      minQuantity: number;
+      maxQuantity: number;
+      price: {
+        bdt: number;
+        cny: number;
+        usd: number;
+      };
+    }>;
+  };
+  currencyRates?: {
+    usdToBdt: number;
+    cnyToBdt: number;
   };
 }
 
@@ -295,6 +326,22 @@ interface UserType extends Document {
   verificationToken?: string | null;
   resetPasswordToken?: string | null;
   resetPasswordExpires?: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+  orders?: Types.ObjectId[];
+  wishlist: Types.ObjectId[];
+}
+
+interface CollectionType {
+  _id: string;
+  name: string;
+  title: string;
+  slug: string;
+  description?: string;
+  icon?: string;
+  thumbnail?: string;
+  isActive: boolean;
+  sortOrder: number;
   createdAt: Date;
   updatedAt: Date;
 }

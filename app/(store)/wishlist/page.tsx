@@ -1,78 +1,43 @@
-"use client";
+import { authOptions } from '@/lib/authOption';
 
-import { ProductType } from "@/lib/types";
-import { useSession } from "next-auth/react";
-import { Loader } from "lucide-react";
-import { useState, useEffect, useCallback } from "react";
-import ProductCard from "../products/_components/ProductCard";
+import { getServerSession } from 'next-auth';
+import { redirect } from 'next/navigation';
+import toast from 'react-hot-toast';
+import ProductCard from '../products/_components/ProductCard';
+import User from '@/models/User';
+import { ProductType } from '@/types/next-utils';
 
-export default function WishListPage() {
-  const { data: session } = useSession();
-
-  const [loading, setLoading] = useState(true);
-  const [signedInUser, setSignedInUser] = useState<UserType | null>(null);
-  const [wishlist, setWishlist] = useState<ProductType[]>([]);
-
-  const getUser = async () => {
-    try {
-      const res = await fetch("/api/users");
-      const data = await res.json();
-      setSignedInUser(data);
-      setLoading(false);
-    } catch (err) {
-      console.log("[users_GET", err);
+export default async function WishlistPage() {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session) {
+      toast.error('Please sign in to view your wishlist');
+      return redirect('/sign-in');
     }
-  };
 
-  useEffect(() => {
-    if (session?.user) {
-      getUser();
+    const user = await User.findById(session.user.id).populate('wishlist');
+    if (!user) {
+      toast.error('User not found');
+      return redirect('/');
     }
-  }, [session]);
 
-  const getWishlistProducts = useCallback(async () => {
-    setLoading(true);
-
-    if (!signedInUser) return;
-
-    const wishlistProducts = await Promise.all(
-      signedInUser.wishlist.map(async (productId) => {
-        const res = await getProductDetails(productId);
-        return res;
-      }),
-    );
-
-    setWishlist(wishlistProducts);
-    setLoading(false);
-  }, [signedInUser]);
-
-  useEffect(() => {
-    if (signedInUser) {
-      getWishlistProducts();
-    }
-  }, [signedInUser, getWishlistProducts]);
-
-  const updateSignedInUser = (updatedUser: UserType) => {
-    setSignedInUser(updatedUser);
-  };
-
-  return loading ? (
-    <Loader />
-  ) : (
-    <div className="px-10 py-5">
-      <p className="my-10 text-heading3-bold">Your Wishlist</p>
-      {wishlist.length === 0 && <p>No items in your wishlist</p>}
-
-      <div className="flex flex-wrap justify-center gap-16">
-        {wishlist.map((product) => (
-          <ProductCard
-            key={product._id}
-            product={product}
-            updateSignedInUser={updateSignedInUser}
-          />
-        ))}
+    return (
+      <div className='container mx-auto px-4 py-8'>
+        <h1 className='text-2xl font-bold mb-6'>Your Wishlist</h1>
+        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
+          {user.wishlist.map((product: ProductType) => (
+            <ProductCard
+              key={product._id}
+              product={product}
+            />
+          ))}
+        </div>
       </div>
-    </div>
-  );
+    );
+  } catch (error) {
+    toast.error(`Failed to load wishlist | ${error}`);
+    return redirect('/');
+  }
 }
-export const dynamic = "force-dynamic";
+
+export const dynamic = 'force-dynamic';

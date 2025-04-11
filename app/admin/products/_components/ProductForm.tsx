@@ -34,7 +34,7 @@ interface ProductFormProps {
 export default function ProductForm({ initialData }: ProductFormProps) {
   const router = useRouter();
   const { form, loading, categories, onSubmit, handleKeyPress } =
-    useProductForm(initialData || undefined);
+    useProductForm({ initialData: initialData || undefined, collections: [] });
 
   // Helper function to add a new quantity price range
   const addQuantityRange = () => {
@@ -488,9 +488,9 @@ export default function ProductForm({ initialData }: ProductFormProps) {
                   <Select
                     onValueChange={(value) => {
                       field.onChange(value);
-                      form.setValue('subcategories', []); // Reset subcategories
+                      form.setValue('category.subcategories', []); // Reset subcategories
                     }}
-                    value={field.value}
+                    value={field.value.name}
                   >
                     <FormControl>
                       <SelectTrigger>
@@ -501,7 +501,7 @@ export default function ProductForm({ initialData }: ProductFormProps) {
                       {categories.map((category) => (
                         <SelectItem
                           key={category.slug}
-                          value={category.slug}
+                          value={category.name}
                         >
                           {category.name}
                         </SelectItem>
@@ -518,7 +518,7 @@ export default function ProductForm({ initialData }: ProductFormProps) {
             {form.watch('category') && (
               <FormField
                 control={form.control}
-                name='subcategories'
+                name='category.subcategories'
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Subcategories</FormLabel>
@@ -527,24 +527,19 @@ export default function ProductForm({ initialData }: ProductFormProps) {
                         placeholder='Select subcategories'
                         categories={
                           categories.find(
-                            (c) => c.slug === form.watch('category')
+                            (c) => c.slug === form.watch('category.name')
                           )?.subcategories || []
                         }
-                        value={Array.isArray(field.value) ? field.value : []} // Ensure it's always an array
+                        value={field.value.map(
+                          (sub: { name: string }) => sub.name
+                        )}
                         onChange={(slug) =>
-                          field.onChange([
-                            ...(Array.isArray(field.value) ? field.value : []),
-                            slug,
-                          ])
+                          field.onChange([...field.value, { name: slug }])
                         }
                         onRemove={(idToRemove) =>
                           field.onChange(
-                            (Array.isArray(field.value)
-                              ? field.value
-                              : []
-                            ).filter(
-                              (subcategoryId: string) =>
-                                subcategoryId !== idToRemove
+                            field.value.filter(
+                              (sub: { name: string }) => sub.name !== idToRemove
                             )
                           )
                         }

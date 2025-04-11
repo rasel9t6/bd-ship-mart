@@ -6,7 +6,7 @@ import React, { useState, useEffect } from 'react';
 import { Loader, Search } from 'lucide-react';
 import Image from 'next/image';
 import { toast } from 'react-hot-toast';
-import { OrderItem, OrderType, UserType } from '@/types/next-utils';
+import { OrderType, UserType } from '@/types/next-utils';
 
 export default function ProfilePage() {
   const { data: session } = useSession();
@@ -363,7 +363,7 @@ export default function ProfilePage() {
                     <div>
                       <span
                         className={`rounded-full px-3 py-1 text-sm ${
-                          order.status === 'completed'
+                          order.status === 'delivered'
                             ? 'bg-green-100 text-green-800'
                             : order.status === 'pending'
                               ? 'bg-yellow-100 text-yellow-800'
@@ -376,12 +376,12 @@ export default function ProfilePage() {
                   </div>
                   <div className='mt-4'>
                     <p className='text-sm text-gray-600'>
-                      Total: ৳{order.total.toFixed(2)}
+                      Total: ৳{order.totalAmount.bdt.toFixed(2)}
                     </p>
                     <div className='mt-2 space-y-2'>
-                      {order.items.map((item: OrderItem) => (
+                      {order.products.map((item, index) => (
                         <div
-                          key={item._id}
+                          key={`${order._id}-${index}`}
                           className='flex items-center justify-between text-sm'
                         >
                           <span>{item.title}</span>

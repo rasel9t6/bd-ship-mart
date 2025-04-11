@@ -7,13 +7,27 @@ import { motion, AnimatePresence } from 'motion/react';
 
 import toast from 'react-hot-toast'; // Import toast
 import useCart from '@/hooks/useCart';
-import { ProductInfoType } from '@/types/next-utils';
+import {
+  ProductInfoType,
+  OrderItem as OrderItemType,
+  ProductType,
+} from '@/types/next-utils';
 import OrderModal from '../../orders/_components/OrderModal';
 
 type OrderItem = {
   color: string;
   size: string;
   quantity: number;
+};
+
+type Range = {
+  minQuantity: number;
+  maxQuantity?: number;
+  price: {
+    bdt: number;
+    cny: number;
+    usd: number;
+  };
 };
 
 export default function ProductInfo({
@@ -28,9 +42,9 @@ export default function ProductInfo({
 
   // ✅ Initialize order items with color variants and ZERO quantity
   const [orderItems, setOrderItems] = useState<OrderItem[]>(
-    productInfo.colors.map((color) => ({
+    ((productInfo.colors as string[]) || []).map((color) => ({
       color,
-      size: productInfo.sizes[0] || 'Default',
+      size: ((productInfo.sizes as string[]) || [])[0] || 'Default',
       quantity: 0,
     }))
   );
@@ -43,12 +57,13 @@ export default function ProductInfo({
 
   // ✅ First range price (default product price)
   const firstRangePrice =
-    productInfo.quantityPricing?.ranges?.[0]?.price.bdt ||
-    productInfo.price.bdt;
+    ((productInfo.quantityPricing?.ranges as Range[]) || [])[0]?.price?.bdt ||
+    productInfo.price?.bdt ||
+    0;
 
   // ✅ Get price based on total quantity
   const getPriceForQuantity = (quantity: number) => {
-    const ranges = productInfo.quantityPricing?.ranges || [];
+    const ranges = (productInfo.quantityPricing?.ranges as Range[]) || [];
 
     // Default to base price
     let selectedPrice = firstRangePrice;
@@ -140,15 +155,42 @@ export default function ProductInfo({
   // ✅ Show warning if total quantity is less than minimum ONLY when attempting to submit
   // ✅ Removed the useEffect warning since we want users to freely input any quantity
 
-  const formattedOrderItems: OrderItem[] = orderItems.map((item, index) => ({
-    _id: `${productInfo._id}-${index}`, // Generating a unique ID
-    product: productInfo,
-    color: item.color,
-    size: item.size,
-    quantity: item.quantity,
-    price: selectedPrice,
-    totalPrice: item.quantity * selectedPrice,
-  }));
+  const formattedOrderItems: OrderItemType[] = orderItems.map(
+    (item, index) => ({
+      _id: `${productInfo._id}-${index}`,
+      products: [
+        {
+          product: productInfo as unknown as ProductType, // Cast to ProductType since we know the structure matches
+          title: productInfo.title || '',
+          sku: productInfo.sku || 'N/A',
+          color: item.color,
+          size: item.size,
+          quantity: item.quantity,
+          unitPrice: {
+            bdt: selectedPrice,
+            cny: 0,
+            usd: 0,
+          },
+          totalPrice: {
+            bdt: item.quantity * selectedPrice,
+            cny: 0,
+            usd: 0,
+          },
+        },
+      ],
+      totalAmount: {
+        bdt: item.quantity * selectedPrice,
+        cny: 0,
+        usd: 0,
+      },
+      unitPrice: {
+        bdt: selectedPrice,
+      },
+      quantity: item.quantity,
+      status: 'pending',
+      createdAt: new Date().toISOString(),
+    })
+  );
   return (
     <motion.div
       className='flex flex-col gap-6 rounded-lg bg-white p-6 shadow-md'
@@ -180,7 +222,11 @@ export default function ProductInfo({
           <strong>SKU:</strong> {productInfo.sku || 'N/A'}
         </div>
         <div>
-          <strong>Category:</strong> {productInfo.category.name}
+          <strong>Category:</strong>{' '}
+          {typeof productInfo.category === 'object' &&
+          !Array.isArray(productInfo.category)
+            ? (productInfo.category as { name: string })?.name
+            : ''}
         </div>
       </motion.div>
 
@@ -224,23 +270,25 @@ export default function ProductInfo({
 
       {/* Quantity Pricing Table */}
       <div className='flex space-x-4'>
-        {productInfo.quantityPricing?.ranges?.map((range, index) => (
-          <motion.div
-            key={index}
-            className='rounded-lg border p-4 text-center shadow-sm'
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.4 + index * 0.1 }}
-          >
-            <p className='text-xl font-bold text-gray-900'>
-              ৳{range.price.bdt}
-            </p>
-            <p className='text-sm text-gray-600'>
-              {range.minQuantity}
-              {range.maxQuantity ? `-${range.maxQuantity}` : '+'} Pcs
-            </p>
-          </motion.div>
-        ))}
+        {(productInfo.quantityPricing?.ranges as Range[])?.map(
+          (range, index) => (
+            <motion.div
+              key={index}
+              className='rounded-lg border p-4 text-center shadow-sm'
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.4 + index * 0.1 }}
+            >
+              <p className='text-xl font-bold text-gray-900'>
+                ৳{range.price.bdt}
+              </p>
+              <p className='text-sm text-gray-600'>
+                {range.minQuantity}
+                {range.maxQuantity ? `-${range.maxQuantity}` : '+'} Pcs
+              </p>
+            </motion.div>
+          )
+        )}
       </div>
 
       {/* Description */}
