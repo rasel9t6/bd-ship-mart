@@ -11,11 +11,17 @@ interface Product {
     bdt: number;
   };
 }
+
 interface Query {
   _id: { $ne: string };
   category?: string;
-  tags?: { $ne: string[] };
+  tags?: { $in: string[] };
+  'price.bdt'?: {
+    $gte: number;
+    $lte: number;
+  };
 }
+
 export const GET = async (
   _req: NextRequest,
   { params }: { params: Promise<{ productId: string }> }

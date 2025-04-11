@@ -123,14 +123,19 @@ interface OrderItem {
     customerType?: string;
   };
   totalAmount: ICurrency;
-  price: number;
+  unitPrice: {
+    bdt: number;
+  };
   quantity?: number;
   status: string;
   shippingMethod?: string;
   deliveryType?: string;
   estimatedDeliveryDate?: Date;
-  createdAt?: Date;
+  createdAt: Date | number | string;
   trackingHistory?: ITrackingEntry[];
+  unitPrice: {
+    bdt: number;
+  };
 }
 
 // Other existing interfaces remain the same

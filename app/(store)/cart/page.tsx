@@ -13,7 +13,20 @@ import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import useCart from '@/hooks/useCart';
 import OrderModal from '../orders/_components/OrderModal';
-import { ProductInfoType } from '@/types/next-utils';
+import { ProductInfoType, OrderItem, IOrderProduct } from '@/types/next-utils';
+
+// Define the cart item product type
+type CartProduct = {
+  _id: string;
+  title: string;
+  sku: string;
+  price: { bdt: number; cny: number; usd: number };
+  description?: string;
+  media?: string[];
+  category?: { name: string } | string;
+  slug?: string;
+  expense?: { bdt: number; cny: number; usd: number };
+};
 
 export default function CartPage() {
   const router = useRouter();
@@ -61,7 +74,7 @@ export default function CartPage() {
             cart.cartItems.length === 1
               ? cart.cartItems[0].item.slug || 'N/A'
               : 'multiple',
-          name:
+          title:
             cart.cartItems.length === 1
               ? cart.cartItems[0].item.title
               : 'Multiple Products',
@@ -81,7 +94,8 @@ export default function CartPage() {
           tags: [],
           sizes: [],
           colors: [],
-
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
           minimumOrderQuantity: 1,
           inputCurrency: 'CNY',
           quantityPricing: {
@@ -129,58 +143,44 @@ export default function CartPage() {
         };
 
   // Prepare order items with correct type structure
-  const orderItems = cart.cartItems.map((cartItem) => ({
-    _id: cartItem.item._id, // Changed from *id to _id to match OrderItemType
-    product: {
-      _id: cartItem.item._id, // Changed from *id to _id to match ProductType
-      sku: cartItem.item.sku || 'N/A',
-      slug: cartItem.item.slug || 'N/A',
-      title: cartItem.item.title,
-      description: cartItem.item.description || '',
-      media: cartItem.item.media || [],
-      category: {
-        name:
-          typeof cartItem.item.category === 'string'
-            ? cartItem.item.category
-            : cartItem.item.category?.name || '',
-        _id:
-          typeof cartItem.item.category === 'string'
-            ? ''
-            : cartItem.item.category?._id,
+  const orderItems: OrderItem[] = cart.cartItems.map((cartItem) => {
+    const product = cartItem.item as CartProduct;
+
+    const orderProduct: IOrderProduct = {
+      product: product as unknown as IOrderProduct['product'], // Cast to the expected product type
+      title: product.title,
+      sku: product.sku || 'N/A',
+      color: cartItem.color || '',
+      size: cartItem.size || '',
+      quantity: cartItem.quantity,
+      unitPrice: {
+        bdt: product.price.bdt,
+        cny: product.price.cny,
+        usd: product.price.usd,
       },
-      collections: [], // Required by ProductType
-      tags: cartItem.item.tags || [],
-      price: {
-        bdt: cartItem.item.price?.bdt || 0,
-        cny: cartItem.item.price?.cny || 0,
-        usd: cartItem.item.price?.usd || 0,
+      totalPrice: {
+        bdt: product.price.bdt * cartItem.quantity,
+        cny: product.price.cny * cartItem.quantity,
+        usd: product.price.usd * cartItem.quantity,
       },
-      expense: {
-        bdt: cartItem.item.expense?.bdt || 0,
-        cny: cartItem.item.expense?.cny || 0,
-        usd: cartItem.item.expense?.usd || 0,
+    };
+
+    return {
+      _id: product._id,
+      products: [orderProduct],
+      totalAmount: {
+        bdt: product.price.bdt * cartItem.quantity,
+        cny: product.price.cny * cartItem.quantity,
+        usd: product.price.usd * cartItem.quantity,
       },
-      sizes: cartItem.item.sizes || [],
-      colors: cartItem.item.colors || [],
-      createdAt: cartItem.item.createdAt || new Date().toISOString(),
-      updatedAt: cartItem.item.updatedAt || new Date().toISOString(),
-      minimumOrderQuantity: cartItem.item.minimumOrderQuantity || 1,
-      inputCurrency: cartItem.item.inputCurrency || 'CNY',
-      quantityPricing: cartItem.item.quantityPricing || {
-        ranges: [],
+      unitPrice: {
+        bdt: product.price.bdt,
       },
-      currencyRates: cartItem.item.currencyRates || {
-        usdToBdt: 121.5,
-        cnyToBdt: 17.5,
-      },
-      // Removed discount as it's not in ProductType
-    },
-    color: cartItem.color,
-    size: cartItem.size,
-    quantity: cartItem.quantity,
-    price: cartItem.item.price.bdt,
-    totalPrice: cartItem.item.price.bdt * cartItem.quantity,
-  }));
+      quantity: cartItem.quantity,
+      status: 'pending',
+      createdAt: new Date().toISOString(),
+    };
+  });
 
   // Handle checkout directly to payment gateway
   const handleDirectCheckout = async () => {
