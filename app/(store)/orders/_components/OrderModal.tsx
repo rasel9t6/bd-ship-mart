@@ -1,17 +1,16 @@
-import React, { useState, useEffect } from "react";
-import { motion } from "motion/react";
-import Image from "next/image";
-import toast from "react-hot-toast";
-import { useSession } from "next-auth/react";
+import React, { useState, useEffect } from 'react';
+import { motion } from 'motion/react';
+import Image from 'next/image';
+import toast from 'react-hot-toast';
+import { useSession } from 'next-auth/react';
 
-import CustomerInfoForm from "./CustomerInfoForm";
-import DeliveryOptions from "./DeliveryOptions";
-import OrderSummary from "./OrderSummary";
-import PaymentMethodSelector from "./PaymentMethodSelector";
-import ShippingAddressForm from "./ShippingAddressForm";
-import { ProductType } from "@/types/next-utils";
+import CustomerInfoForm from './CustomerInfoForm';
+import DeliveryOptions from './DeliveryOptions';
+import OrderSummary from './OrderSummary';
+import PaymentMethodSelector from './PaymentMethodSelector';
+import ShippingAddressForm from './ShippingAddressForm';
+import { OrderItem, ProductInfoType } from '@/types/next-utils';
 
-// Define proper types for address fields
 interface AddressType {
   street: string;
   city: string;
@@ -24,7 +23,7 @@ interface CustomerInfoType {
   name: string;
   email: string;
   phone: string;
-  customerType?: "regular" | "wholesale" | "vip";
+  customerType?: 'regular' | 'wholesale' | 'vip';
   address: AddressType;
 }
 
@@ -34,33 +33,22 @@ interface ICurrency {
   bdt: number;
 }
 
-interface OrderItemType {
-  _id: string;
-  product: ProductType[];
-  title: string;
-  sku: string;
-  color: string;
-  size: string;
-  quantity: number;
-  price: number;
-  totalPrice: number;
-}
-
-interface OrderType {
+interface OrderTypes {
   _id: string;
   orderId: string;
   customerId: string;
   customerInfo: CustomerInfoType;
+  quantity: number;
   shippingAddress: AddressType;
-  shippingMethod: "air" | "sea";
-  deliveryType: "door-to-door" | "warehouse";
+  shippingMethod: 'air' | 'sea';
+  deliveryType: 'door-to-door' | 'warehouse';
   paymentMethod:
-    | "bkash"
-    | "nogod"
-    | "rocket"
-    | "card"
-    | "bank-transfer"
-    | "cash";
+    | 'bkash'
+    | 'nogod'
+    | 'rocket'
+    | 'card'
+    | 'bank-transfer'
+    | 'cash';
   status: string;
   trackingHistory: Array<{
     status: string;
@@ -73,11 +61,11 @@ interface OrderType {
 type OrderModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  orderItems: OrderItemType[];
+  orderItems: OrderItem[];
   totalQuantity: number;
   selectedPrice: number;
   totalDiscount: number;
-  productInfo: ProductType;
+  productInfo: ProductInfoType;
 };
 
 export default function OrderModal({
@@ -90,44 +78,44 @@ export default function OrderModal({
   productInfo,
 }: OrderModalProps) {
   const { data: session } = useSession();
-  const [previousOrders, setPreviousOrders] = useState<OrderType[]>([]);
+  const [previousOrders, setPreviousOrders] = useState<OrderTypes[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   // Initial form state with empty fields
   const [formData, setFormData] = useState({
     // Customer Info
     customerInfo: {
-      name: "",
-      email: "",
-      phone: "",
-      customerType: "regular" as "regular" | "wholesale" | "vip",
+      name: '',
+      email: '',
+      phone: '',
+      customerType: 'regular' as 'regular' | 'wholesale' | 'vip',
       address: {
-        street: "",
-        city: "",
-        state: "",
-        postalCode: "",
-        country: "",
+        street: '',
+        city: '',
+        state: '',
+        postalCode: '',
+        country: '',
       },
     } as CustomerInfoType,
     // Shipping Address
     shippingAddress: {
-      street: "",
-      city: "",
-      state: "",
-      postalCode: "",
-      country: "",
+      street: '',
+      city: '',
+      state: '',
+      postalCode: '',
+      country: '',
     } as AddressType,
     // Order details
-    shippingMethod: "air" as "air" | "sea",
-    deliveryType: "door-to-door" as "door-to-door" | "warehouse",
-    paymentMethod: "bkash" as
-      | "bkash"
-      | "nogod"
-      | "rocket"
-      | "card"
-      | "bank-transfer"
-      | "cash",
-    paymentCurrency: "BDT" as "CNY" | "USD" | "BDT",
+    shippingMethod: 'air' as 'air' | 'sea',
+    deliveryType: 'door-to-door' as 'door-to-door' | 'warehouse',
+    paymentMethod: 'bkash' as
+      | 'bkash'
+      | 'nogod'
+      | 'rocket'
+      | 'card'
+      | 'bank-transfer'
+      | 'cash',
+    paymentCurrency: 'BDT' as 'CNY' | 'USD' | 'BDT',
   });
 
   // Fetch user's previous orders when component mounts
@@ -141,7 +129,7 @@ export default function OrderModal({
             setPreviousOrders(orders);
           }
         } catch (error) {
-          console.error("Error fetching previous orders:", error);
+          console.error('Error fetching previous orders:', error);
         } finally {
           setIsLoading(false);
         }
@@ -166,29 +154,29 @@ export default function OrderModal({
             setFormData((prevData) => ({
               ...prevData,
               customerInfo: {
-                name: userData.name || "",
-                email: userData.email || "",
-                phone: userData.phone || "",
-                customerType: userData.customerType || "regular",
+                name: userData.name || '',
+                email: userData.email || '',
+                phone: userData.phone || '',
+                customerType: userData.customerType || 'regular',
                 address: {
-                  street: userData.address?.street || "",
-                  city: userData.address?.city || "",
-                  state: userData.address?.state || "",
-                  postalCode: userData.address?.postalCode || "",
-                  country: userData.address?.country || "",
+                  street: userData.address?.street || '',
+                  city: userData.address?.city || '',
+                  state: userData.address?.state || '',
+                  postalCode: userData.address?.postalCode || '',
+                  country: userData.address?.country || '',
                 },
               },
               shippingAddress: {
-                street: userData.address?.street || "",
-                city: userData.address?.city || "",
-                state: userData.address?.state || "",
-                postalCode: userData.address?.postalCode || "",
-                country: userData.address?.country || "",
+                street: userData.address?.street || '',
+                city: userData.address?.city || '',
+                state: userData.address?.state || '',
+                postalCode: userData.address?.postalCode || '',
+                country: userData.address?.country || '',
               },
             }));
           }
         } catch (error) {
-          console.error("Error fetching user profile:", error);
+          console.error('Error fetching user profile:', error);
         }
       }
     }
@@ -251,7 +239,7 @@ export default function OrderModal({
   };
 
   // Calculate Order Totals according to the schema
-  const shippingCost = formData.shippingMethod === "air" ? 1500 : 1000;
+  const shippingCost = formData.shippingMethod === 'air' ? 1500 : 1000;
   const subtotal = totalQuantity * selectedPrice;
   const totalAmount = subtotal + shippingCost - totalDiscount;
 
@@ -268,12 +256,12 @@ export default function OrderModal({
   };
 
   // Function to create an order
-  const createOrder = async (orderData: OrderItemType) => {
+  const createOrder = async (orderData: OrderItem) => {
     try {
-      const response = await fetch("/api/orders", {
-        method: "POST",
+      const response = await fetch('/api/orders', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify(orderData),
       });
@@ -281,12 +269,12 @@ export default function OrderModal({
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Failed to create order");
+        throw new Error(data.error || 'Failed to create order');
       }
 
       return { success: true, data };
     } catch (error) {
-      console.error("Error creating order:", error);
+      console.error('Error creating order:', error);
       return { success: false, error: (error as Error).message };
     }
   };
@@ -296,7 +284,7 @@ export default function OrderModal({
     try {
       // Check if user is authenticated
       if (!session || !session.user) {
-        toast.error("Please sign in to place an order");
+        toast.error('Please sign in to place an order');
         return;
       }
 
@@ -306,16 +294,16 @@ export default function OrderModal({
         !formData.customerInfo.email ||
         !formData.customerInfo.phone
       ) {
-        toast.error("Please fill in all required customer information");
+        toast.error('Please fill in all required customer information');
         return;
       }
 
       // Validate shipping address if door-to-door delivery
-      if (formData.deliveryType === "door-to-door") {
+      if (formData.deliveryType === 'door-to-door') {
         const { street, city, state, postalCode, country } =
           formData.shippingAddress;
         if (!street || !city || !state || !postalCode || !country) {
-          toast.error("Please fill in all required shipping address fields");
+          toast.error('Please fill in all required shipping address fields');
           return;
         }
       }
@@ -332,13 +320,13 @@ export default function OrderModal({
         customerInfo: formData.customerInfo,
         products: orderItems.map((item) => ({
           product: item._id,
-          title: item.product.title,
-          sku: item.product.sku || "",
-          color: item.color || "",
-          size: item.size || "",
+          title: item.products.map((t) => t.title),
+          sku: item.products.map((t) => t.sku) || '',
+          color: item.products.map((t) => t.color) || '',
+          size: item.products.map((t) => t.size) || '',
           quantity: item.quantity,
           unitPrice: createCurrencyObject(item.price),
-          totalPrice: createCurrencyObject(item.totalPrice),
+          totalPrice: createCurrencyObject(item.totalAmount.bdt),
         })),
         currencyRates: {
           usdToBdt: 121.5,
@@ -359,28 +347,28 @@ export default function OrderModal({
         paymentMethod: formData.paymentMethod,
         paymentCurrency: formData.paymentCurrency,
         paymentDetails: {
-          status: "pending",
+          status: 'pending',
           transactions: [],
         },
-        status: "pending",
+        status: 'pending',
         trackingHistory: [
           {
-            status: "pending",
+            status: 'pending',
             timestamp: new Date(),
-            location: "Order Processing Center",
-            notes: "Order received and pending processing",
+            location: 'Order Processing Center',
+            notes: 'Order received and pending processing',
           },
         ],
         notes: [
           {
-            text: "Order placed through website",
-            createdBy: "system",
+            text: 'Order placed through website',
+            createdBy: 'system',
             isInternal: true,
           },
         ],
         metadata: {
-          source: "website",
-          tags: ["online"],
+          source: 'website',
+          tags: ['online'],
         },
       };
 
@@ -388,37 +376,36 @@ export default function OrderModal({
       const result = await createOrder(orderData);
 
       if (!result.success) {
-        throw new Error(result.error || "Failed to place order");
+        throw new Error(result.error || 'Failed to place order');
       }
 
-      toast.success("Your order has been placed successfully!");
+      toast.success('Your order has been placed successfully!');
       onClose();
     } catch (error) {
-      console.error("Error placing order:", error);
+      console.error('Error placing order:', error);
       toast.error(
-        (error as Error).message ||
-          "An error occurred while placing your order",
+        (error as Error).message || 'An error occurred while placing your order'
       );
     }
   };
 
   // Define if shipping address is required based on delivery type
-  const requireShippingAddress = formData.deliveryType === "door-to-door";
+  const requireShippingAddress = formData.deliveryType === 'door-to-door';
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+    <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/50'>
       <motion.div
-        className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-lg bg-white p-6 shadow-lg"
+        className='max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-lg bg-white p-6 shadow-lg'
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
       >
         {/* Modal Header */}
-        <div className="flex items-center justify-between border-b pb-3">
-          <h2 className="text-xl font-bold">Complete Your Order</h2>
+        <div className='flex items-center justify-between border-b pb-3'>
+          <h2 className='text-xl font-bold'>Complete Your Order</h2>
           <button
-            className="text-gray-500 hover:text-gray-700"
+            className='text-gray-500 hover:text-gray-700'
             onClick={onClose}
           >
             ✕
@@ -426,7 +413,7 @@ export default function OrderModal({
         </div>
 
         {/* Order Summary */}
-        <div className="mt-4 space-y-2">
+        <div className='mt-4 space-y-2'>
           <p>
             <strong>Product:</strong> {productInfo.name}
           </p>
@@ -437,31 +424,31 @@ export default function OrderModal({
             <strong>Price Per Unit:</strong> ৳ {selectedPrice}
           </p>
           {totalDiscount > 0 && (
-            <p className="text-green-600">
+            <p className='text-green-600'>
               <strong>Total Discount:</strong> ৳ {totalDiscount}
             </p>
           )}
         </div>
 
         {/* Order Items */}
-        <div className="mt-4">
-          <h3 className="text-lg font-semibold">Ordered Items</h3>
-          <ul className="mt-2 rounded-lg border p-3">
+        <div className='mt-4'>
+          <h3 className='text-lg font-semibold'>Ordered Items</h3>
+          <ul className='mt-2 rounded-lg border p-3'>
             {orderItems.map((item, index) => (
               <li
                 key={index}
-                className="flex justify-between border-b py-2 last:border-b-0"
+                className='flex justify-between border-b py-2 last:border-b-0'
               >
-                <div className="flex items-center gap-2">
-                  {item.product.title}{" "}
+                <div className='flex items-center gap-2'>
+                  {item.product.title}{' '}
                   {item.color && (
-                    <span className="flex items-center gap-2">
+                    <span className='flex items-center gap-2'>
                       <Image
                         src={item.color}
-                        alt="Color Variant"
+                        alt='Color Variant'
                         width={50}
                         height={50}
-                        className="rounded-lg"
+                        className='rounded-lg'
                       />
                     </span>
                   )}
@@ -477,8 +464,8 @@ export default function OrderModal({
 
         {/* Loading indicator when fetching data */}
         {isLoading ? (
-          <div className="my-4 flex justify-center">
-            <span className="text-gray-600">Loading your information...</span>
+          <div className='my-4 flex justify-center'>
+            <span className='text-gray-600'>Loading your information...</span>
           </div>
         ) : (
           <>
@@ -490,7 +477,7 @@ export default function OrderModal({
                   ...formData.customerInfo,
                   [field]: value,
                 };
-                handleFormDataChange("customerInfo", updatedCustomerInfo);
+                handleFormDataChange('customerInfo', updatedCustomerInfo);
               }}
               onAddressChange={(field: string, value: string) => {
                 const updatedAddress = {
@@ -501,7 +488,7 @@ export default function OrderModal({
                   ...formData.customerInfo,
                   address: updatedAddress,
                 };
-                handleFormDataChange("customerInfo", updatedCustomerInfo);
+                handleFormDataChange('customerInfo', updatedCustomerInfo);
               }}
               session={session}
             />
@@ -510,14 +497,14 @@ export default function OrderModal({
             {requireShippingAddress && (
               <ShippingAddressForm
                 shippingAddress={formData.shippingAddress}
-                onChange={(field: string, value: string) => {
+                onChange={(field, value) => {
                   const updatedShippingAddress = {
                     ...formData.shippingAddress,
                     [field]: value,
                   };
                   handleFormDataChange(
-                    "shippingAddress",
-                    updatedShippingAddress,
+                    'shippingAddress',
+                    updatedShippingAddress
                   );
                 }}
               />
@@ -534,25 +521,28 @@ export default function OrderModal({
             <PaymentMethodSelector
               paymentMethod={formData.paymentMethod}
               onChange={(value: string) =>
-                handleFormDataChange("paymentMethod", value)
+                handleFormDataChange('paymentMethod', value)
               }
             />
 
             {/* Payment Currency */}
-            <div className="mt-4">
-              <h3 className="text-lg font-semibold mb-2">Payment Currency</h3>
-              <div className="flex gap-4">
-                {["BDT", "USD", "CNY"].map((currency) => (
-                  <label key={currency} className="flex items-center">
+            <div className='mt-4'>
+              <h3 className='text-lg font-semibold mb-2'>Payment Currency</h3>
+              <div className='flex gap-4'>
+                {['BDT', 'USD', 'CNY'].map((currency) => (
+                  <label
+                    key={currency}
+                    className='flex items-center'
+                  >
                     <input
-                      type="radio"
-                      name="paymentCurrency"
+                      type='radio'
+                      name='paymentCurrency'
                       value={currency}
                       checked={formData.paymentCurrency === currency}
                       onChange={() =>
-                        handleFormDataChange("paymentCurrency", currency)
+                        handleFormDataChange('paymentCurrency', currency)
                       }
-                      className="mr-2"
+                      className='mr-2'
                     />
                     {currency}
                   </label>
@@ -571,10 +561,10 @@ export default function OrderModal({
         )}
 
         {/* Order Button */}
-        <div className="mt-6 flex justify-end border-t pt-4">
+        <div className='mt-6 flex justify-end border-t pt-4'>
           <button
             onClick={handleOrder}
-            className="rounded-md bg-blue-600 px-6 py-2 text-white transition-colors hover:bg-blue-700"
+            className='rounded-md bg-blue-600 px-6 py-2 text-white transition-colors hover:bg-blue-700'
             disabled={isLoading}
           >
             Place Order

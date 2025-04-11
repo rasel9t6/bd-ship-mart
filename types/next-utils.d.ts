@@ -1,6 +1,139 @@
 // types/next-utils.d.ts
-
 import type { Document, Types } from 'mongoose';
+
+// Currency interface to match the schema
+interface ICurrency {
+  cny: number;
+  usd: number;
+  bdt: number;
+}
+
+// Order Product interface for items in an order
+interface IOrderProduct {
+  product: ProductType;
+  title: string;
+  sku: string;
+  color?: string;
+  size?: string;
+  quantity: number;
+  unitPrice: ICurrency;
+  totalPrice: ICurrency;
+}
+
+// Transaction interface for payment details
+interface ITransaction {
+  amount: ICurrency;
+  transactionId: string;
+  paymentDate: Date;
+  receiptUrl?: string;
+  notes?: string;
+}
+
+// Tracking history entry interface
+interface ITrackingEntry {
+  status: string;
+  timestamp: Date;
+  location?: string;
+  notes?: string;
+}
+
+// Note interface for order notes
+interface INote {
+  text: string;
+  createdBy: string;
+  isInternal: boolean;
+  createdAt: Date;
+}
+
+// Updated OrderType to match the MongoDB schema
+interface OrderType extends Document {
+  orderId: string;
+  customerId: Types.ObjectId;
+  customerInfo: {
+    name: string;
+    email: string;
+    phone?: string;
+    customerType: 'regular' | 'wholesale' | 'vip';
+  };
+  products: IOrderProduct[];
+  currencyRates: {
+    usdToBdt: number;
+    cnyToBdt: number;
+  };
+  shippingAddress: {
+    street?: string;
+    city?: string;
+    state?: string;
+    postalCode?: string;
+    country?: string;
+  };
+  contactInformation: {
+    email?: string;
+    phone?: string;
+  };
+  shippingMethod: string; // "air" or "sea"
+  deliveryType: string; // "door-to-door" or "warehouse"
+  shippingRate: ICurrency;
+  totalDiscount: ICurrency;
+  totalAmount: ICurrency;
+  subTotal: ICurrency;
+  estimatedDeliveryDate?: Date;
+  paymentMethod: string; // "cash" or "card"
+  paymentCurrency: 'CNY' | 'USD' | 'BDT';
+  paymentDetails: {
+    status:
+      | 'pending'
+      | 'paid'
+      | 'failed'
+      | 'refunded'
+      | 'partially_refunded'
+      | 'partially_paid';
+    transactions: ITransaction[];
+  };
+  status:
+    | 'pending'
+    | 'confirmed'
+    | 'processing'
+    | 'shipped'
+    | 'in-transit'
+    | 'out-for-delivery'
+    | 'delivered'
+    | 'canceled'
+    | 'returned';
+  trackingHistory: ITrackingEntry[];
+  notes: INote[];
+  metadata: {
+    source?: string;
+    tags?: string[];
+    campaign?: string;
+  };
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// Updated OrderItem interface for use in the OrdersPage component
+interface OrderItem {
+  _id?: string;
+  orderId?: string;
+  products: IOrderProduct[];
+  customer?: {
+    name: string;
+    email?: string;
+    phone?: string;
+    customerType?: string;
+  };
+  totalAmount: ICurrency;
+  price: number;
+  quantity?: number;
+  status: string;
+  shippingMethod?: string;
+  deliveryType?: string;
+  estimatedDeliveryDate?: Date;
+  createdAt?: Date;
+  trackingHistory?: ITrackingEntry[];
+}
+
+// Other existing interfaces remain the same
 interface SubcategoryType extends Document {
   name: string;
   title: string;
@@ -25,6 +158,7 @@ interface SubcategoryType extends Document {
   createdAt: Date;
   updatedAt: Date;
 }
+
 interface CategoryType extends Document {
   name: string;
   title: string;
@@ -88,60 +222,52 @@ interface ProductType extends Document {
     usd: number;
   };
 }
+
+// Updated ProductInfoType to better match the schema
 interface ProductInfoType {
   _id: string;
+  product?: ProductType;
   sku: string;
-  slug: string;
+  slug?: string;
   title?: string;
-  description: string;
-  price: {
+  name?: string;
+  description?: string;
+  price?: {
     bdt: number;
     cny: number;
     usd: number;
   };
-  expense: {
+  color?: string;
+  size?: string;
+  quantity: number;
+  unitPrice?: ICurrency;
+  totalPrice?: ICurrency;
+  expense?: {
     bdt: number;
     cny: number;
     usd: number;
   };
-  media: string[];
-  category: {
-    name: string;
-  };
-  category?: string[];
-  tags: string[];
-  sizes: string[];
-  colors: string[];
+  media?: string[];
+  category?:
+    | {
+        name: string;
+      }
+    | string[];
+  tags?: string[];
+  sizes?: string[];
+  colors?: string[];
   createdAt?: string;
   updatedAt?: string;
-  minimumOrderQuantity: number;
-  inputCurrency: string;
-  quantityPricing: {
-    ranges: string[];
+  minimumOrderQuantity?: number;
+  inputCurrency?: string;
+  quantityPricing?: {
+    ranges: [];
   };
-  currencyRates: {
+  currencyRates?: {
     usdToBdt: number;
     cnyToBdt: number;
   };
-}
-interface OrderItem {
-  product: Types.ObjectId;
   quantity: number;
-  _id: string;
-  title: string;
-}
-
-interface OrderType extends Document {
-  customerId: Types.ObjectId;
-  items: OrderItem[];
-  totalAmount: number;
-  currency: 'BDT' | 'USD';
-  totalInBDT: number;
-  totalInUSD: number;
-  createdAt: Date;
-  updatedAt: Date;
-  status: string;
-  total: number;
 }
 
 interface UserType extends Document {

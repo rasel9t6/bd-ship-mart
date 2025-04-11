@@ -13,13 +13,13 @@ const handleError = (message: string, status: number = 500): NextResponse => {
 
 // GET handler
 export async function GET(
-  req: NextRequest,
-  { params }: { params: { productId: string } }
+  _req: NextRequest,
+  { params }: { params: Promise<{ productId: string }> }
 ) {
   try {
     await connectToDB();
-
-    const product = await Product.findOne({ slug: params.productId })
+    const { productId } = await params;
+    const product = await Product.findOne({ slug: productId })
       .populate({
         path: 'category',
         model: Category,
@@ -29,14 +29,12 @@ export async function GET(
         },
       })
       .lean();
-    console.log('Slug from params:', params.productId);
-    console.log('Product fetched:', product);
 
     if (!product) {
       return NextResponse.json({ error: 'Product not found' }, { status: 404 });
     }
 
-    revalidatePath(`/products/${params.productId}`);
+    revalidatePath(`/products/${productId}`);
     return NextResponse.json(product);
   } catch (error) {
     console.error('Product fetch error:', error);
@@ -85,14 +83,15 @@ export const POST = async (req: NextRequest) => {
 // PATCH handler
 export const PATCH = async (
   req: NextRequest,
-  { params }: { params: { productId: string } }
+  { params }: { params: Promise<{ productId: string }> }
 ) => {
   try {
     await connectToDB();
+    const { productId } = await params;
     const body = await req.json();
 
     // Validate ObjectId
-    if (!mongoose.isValidObjectId(params.productId)) {
+    if (!mongoose.isValidObjectId(productId)) {
       return NextResponse.json(
         { error: 'Invalid product ID' },
         { status: 400 }
@@ -100,7 +99,7 @@ export const PATCH = async (
     }
 
     // Check if the product exists
-    const existingProduct = await Product.findOne({ slug: params.productId });
+    const existingProduct = await Product.findOne({ slug: productId });
     if (!existingProduct) {
       return NextResponse.json({ error: 'Product not found' }, { status: 404 });
     }
@@ -109,11 +108,11 @@ export const PATCH = async (
     delete body.slug;
 
     // Update product (excluding slug)
-    const updatedProduct = await Product.findByIdAndUpdate(
-      params.productId,
-      body,
-      { new: true, runValidators: true, upsert: false }
-    );
+    const updatedProduct = await Product.findByIdAndUpdate(productId, body, {
+      new: true,
+      runValidators: true,
+      upsert: false,
+    });
 
     return NextResponse.json(updatedProduct);
   } catch (error) {
@@ -125,20 +124,20 @@ export const PATCH = async (
 // DELETE handler
 export const DELETE = async (
   req: NextRequest,
-  { params }: { params: { productId: string } }
+  { params }: { params: Promise<{ productId: string }> }
 ) => {
   try {
     await connectToDB();
-
+    const { productId } = await params;
     // Validate ObjectId
-    if (!mongoose.isValidObjectId(params.productId)) {
+    if (!mongoose.isValidObjectId(productId)) {
       return NextResponse.json(
         { error: 'Invalid product ID' },
         { status: 400 }
       );
     }
 
-    const product = await Product.findById(params.productId);
+    const product = await Product.findById(productId);
     if (!product) {
       return new NextResponse(
         JSON.stringify({ message: 'Product not found' }),

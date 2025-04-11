@@ -1,14 +1,14 @@
-import User from "@/lib/models/User";
-import { connectToDB } from "@/lib/dbConnect";
-import { getServerSession } from "next-auth";
-import { NextRequest, NextResponse } from "next/server";
+import { connectToDB } from '@/lib/dbConnect';
+import User from '@/models/User';
+import { getServerSession } from 'next-auth';
+import { NextRequest, NextResponse } from 'next/server';
 
 export const POST = async (req: NextRequest) => {
   try {
     const session = await getServerSession();
 
     if (!session?.user?.email) {
-      return new NextResponse("Unauthorized", { status: 401 });
+      return new NextResponse('Unauthorized', { status: 401 });
     }
 
     await connectToDB();
@@ -16,13 +16,13 @@ export const POST = async (req: NextRequest) => {
     const user = await User.findOne({ email: session.user.email });
 
     if (!user) {
-      return new NextResponse("User not found", { status: 404 });
+      return new NextResponse('User not found', { status: 404 });
     }
 
     const { productId } = await req.json();
 
     if (!productId) {
-      return new NextResponse("Product Id required", { status: 400 });
+      return new NextResponse('Product Id required', { status: 400 });
     }
 
     const isLiked = user.wishlist.includes(productId);
@@ -39,9 +39,9 @@ export const POST = async (req: NextRequest) => {
 
     return NextResponse.json(user, { status: 200 });
   } catch (err) {
-    console.log("[wishlist_POST]", err);
-    return new NextResponse("Internal Server Error", { status: 500 });
+    console.log('[wishlist_POST]', err);
+    return new NextResponse('Internal Server Error', { status: 500 });
   }
 };
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';

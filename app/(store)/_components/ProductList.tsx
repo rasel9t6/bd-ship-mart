@@ -1,4 +1,4 @@
-import { ProductType } from "@/lib/types";
+import { ProductType } from "@/types/next-utils";
 import ProductCard from "../products/_components/ProductCard";
 import { getProducts } from "@/lib/actions/actions";
 
