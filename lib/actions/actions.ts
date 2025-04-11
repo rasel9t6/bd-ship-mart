@@ -13,7 +13,7 @@ if (!apiUrl) {
 export const getTotalSales = async () => {
   try {
     await connectToDB();
-    const orders = await Order.find();
+    const orders = await Order.find().lean();
     const totalOrders = orders.length;
     const totalRevenue = orders.reduce(
       (acc, order) => acc + (order.totalAmount?.bdt || 0),
@@ -22,32 +22,35 @@ export const getTotalSales = async () => {
     return { totalOrders, totalRevenue };
   } catch (error) {
     console.error('Error fetching total sales:', error);
-    throw new Error('Could not retrieve total sales');
+    return { totalOrders: 0, totalRevenue: 0 };
   }
 };
 
 export const getTotalCustomers = async () => {
   try {
     await connectToDB();
-    const customers = await Customer.find();
-    const totalCustomers = customers.length;
-    return totalCustomers;
+    const customers = await Customer.find().lean();
+    return customers.length;
   } catch (error) {
     console.error('Error fetching total customers:', error);
-    throw new Error('Could not retrieve total customers');
+    return 0;
   }
 };
 
 export const getSalesPerMonth = async () => {
   try {
     await connectToDB();
-    const orders = await Order.find();
+    const orders = await Order.find().lean();
 
-    const salesPerMonth = orders.reduce((acc, order) => {
-      const monthIndex = new Date(order.createdAt).getMonth(); // 0 for January --> 11 for December
-      acc[monthIndex] = (acc[monthIndex] || 0) + (order.totalAmount || 0); // Ensure it's a number
-      return acc;
-    }, {});
+    const salesPerMonth = orders.reduce(
+      (acc, order) => {
+        const monthIndex = new Date(order.createdAt).getMonth();
+        acc[monthIndex] =
+          (acc[monthIndex] || 0) + (order.totalAmount?.bdt || 0);
+        return acc;
+      },
+      {} as Record<number, number>
+    );
 
     const graphData = Array.from({ length: 12 }, (_, i) => {
       const month = new Intl.DateTimeFormat('en-US', { month: 'short' }).format(
@@ -59,7 +62,12 @@ export const getSalesPerMonth = async () => {
     return graphData;
   } catch (error) {
     console.error('Error fetching sales per month:', error);
-    throw new Error('Could not retrieve sales per month');
+    return Array.from({ length: 12 }, (_, i) => ({
+      name: new Intl.DateTimeFormat('en-US', { month: 'short' }).format(
+        new Date(0, i)
+      ),
+      sales: 0,
+    }));
   }
 };
 
