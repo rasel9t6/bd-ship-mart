@@ -97,6 +97,7 @@ export async function getProducts() {
     return JSON.parse(JSON.stringify(products));
   } catch (error) {
     console.error(`${error}`);
+    return [];
   }
 }
 
