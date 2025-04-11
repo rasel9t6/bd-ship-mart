@@ -1,7 +1,6 @@
-import React from "react";
 
-import RightSidebarPage from "../@rightSidebar/page";
 import LeftSidebar from "../_components/LeftSidebar";
+import RightSidebar from "../_components/RightSidebar";
 
 export default function layout({ children }: { children: React.ReactNode }) {
   return (
@@ -12,7 +11,7 @@ export default function layout({ children }: { children: React.ReactNode }) {
           {children}
         </div>
       </section>
-      <RightSidebarPage />
+      <RightSidebar />
     </div>
   );
 }

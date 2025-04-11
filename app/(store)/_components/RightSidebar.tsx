@@ -20,7 +20,7 @@ interface Category {
   subcategories: Record<string, SubCategory>;
 }
 
-export default function RightSidebarPage() {
+export default function RightSidebar() {
   const [expandedCategories, setExpandedCategories] = useState<
     Record<string, boolean>
   >({});
