@@ -1,5 +1,5 @@
-import CategoryForm from "../_components/CategoryForm";
-import { getCategory } from "@/lib/actions/actions";
+import CategoryForm from '../_components/CategoryForm';
+import { getCategory } from '@/lib/actions/actions';
 
 // // Metadata generator
 // const generateCategoryMetadata = (category: CategoryType): Metadata => ({
@@ -23,6 +23,6 @@ export default async function CategoryDetailsPage({
   params: Params;
 }) {
   const { categorySlug } = await params;
-  const category = await getCategory({ categorySlug });
+  const category = await getCategory(categorySlug);
   return <CategoryForm initialData={category} />;
 }

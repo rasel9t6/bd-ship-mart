@@ -1,20 +1,20 @@
-"use client";
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
-import { useForm, useFieldArray } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import Link from "next/link";
-import toast from "react-hot-toast";
-import { Button } from "@/ui/button";
-import MediaUpload from "@/ui/custom/MediaUpload";
+'use client';
+import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useForm, useFieldArray } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import Link from 'next/link';
+import toast from 'react-hot-toast';
+import { Button } from '@/ui/button';
+import MediaUpload from '@/ui/custom/MediaUpload';
 import {
   Card,
   CardHeader,
   CardTitle,
   CardContent,
   CardFooter,
-} from "@/ui/card";
+} from '@/ui/card';
 import {
   Form,
   FormField,
@@ -22,12 +22,12 @@ import {
   FormLabel,
   FormControl,
   FormMessage,
-} from "@/ui/form";
-import { Input } from "@/ui/input";
-import { Textarea } from "@/ui/textarea";
-import { Separator } from "@radix-ui/react-dropdown-menu";
-import Delete from "@/ui/custom/Delete";
-import { Checkbox } from "@/ui/checkbox";
+} from '@/ui/form';
+import { Input } from '@/ui/input';
+import { Textarea } from '@/ui/textarea';
+import { Separator } from '@radix-ui/react-dropdown-menu';
+import Delete from '@/ui/custom/Delete';
+import { Checkbox } from '@/ui/checkbox';
 
 // Types matching MongoDB Schema
 type Subcategory = {
@@ -67,8 +67,8 @@ interface CategoryFormProps {
 
 // Schemas matching MongoDB requirements
 const subcategorySchema = z.object({
-  name: z.string().min(1, "Name is required"),
-  title: z.string().min(1, "Title is required"),
+  name: z.string().min(1, 'Name is required'),
+  title: z.string().min(1, 'Title is required'),
   description: z.string().optional(),
   icon: z.string().optional(),
   thumbnail: z.string().optional(),
@@ -80,21 +80,21 @@ const subcategorySchema = z.object({
       byAir: z.object({
         min: z
           .number()
-          .min(0, "Min shipping charge must be positive")
+          .min(0, 'Min shipping charge must be positive')
           .default(0),
         max: z
           .number()
-          .min(0, "Max shipping charge must be positive")
+          .min(0, 'Max shipping charge must be positive')
           .default(0),
       }),
       bySea: z.object({
         min: z
           .number()
-          .min(0, "Min shipping charge must be positive")
+          .min(0, 'Min shipping charge must be positive')
           .default(0),
         max: z
           .number()
-          .min(0, "Max shipping charge must be positive")
+          .min(0, 'Max shipping charge must be positive')
           .default(0),
       }),
     })
@@ -105,11 +105,11 @@ const subcategorySchema = z.object({
 });
 
 const formSchema = z.object({
-  name: z.string().min(1, "Name is required").trim(),
-  title: z.string().min(1, "Title is required"),
-  description: z.string().min(1, "Description is required"),
-  icon: z.string().min(1, "Icon is required"),
-  thumbnail: z.string().min(1, "Thumbnail is required"),
+  name: z.string().min(1, 'Name is required').trim(),
+  title: z.string().min(1, 'Title is required'),
+  description: z.string().min(1, 'Description is required'),
+  icon: z.string().min(1, 'Icon is required'),
+  thumbnail: z.string().min(1, 'Thumbnail is required'),
   isActive: z.boolean().default(true),
   sortOrder: z.number().int().default(0),
   shippingCharge: z
@@ -117,21 +117,21 @@ const formSchema = z.object({
       byAir: z.object({
         min: z
           .number()
-          .min(0, "Min shipping charge must be positive")
+          .min(0, 'Min shipping charge must be positive')
           .default(0),
         max: z
           .number()
-          .min(0, "Max shipping charge must be positive")
+          .min(0, 'Max shipping charge must be positive')
           .default(0),
       }),
       bySea: z.object({
         min: z
           .number()
-          .min(0, "Min shipping charge must be positive")
+          .min(0, 'Min shipping charge must be positive')
           .default(0),
         max: z
           .number()
-          .min(0, "Max shipping charge must be positive")
+          .min(0, 'Max shipping charge must be positive')
           .default(0),
       }),
     })
@@ -148,7 +148,7 @@ const CategoryForm = ({ initialData }: CategoryFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
   const [isSubcategoryVisible, setIsSubcategoryVisible] = useState(
-    (initialData?.subcategories?.length ?? 0) > 0,
+    (initialData?.subcategories?.length ?? 0) > 0
   );
 
   const form = useForm<FormValues>({
@@ -171,11 +171,11 @@ const CategoryForm = ({ initialData }: CategoryFormProps) => {
             })) || [],
         }
       : {
-          name: "",
-          title: "",
-          description: "",
-          icon: "",
-          thumbnail: "",
+          name: '',
+          title: '',
+          description: '',
+          icon: '',
+          thumbnail: '',
           isActive: true,
           sortOrder: 0,
           shippingCharge: {
@@ -184,12 +184,12 @@ const CategoryForm = ({ initialData }: CategoryFormProps) => {
           },
           subcategories: [],
         },
-    mode: "onChange",
+    mode: 'onChange',
   });
 
   const { fields, append, remove, replace } = useFieldArray({
     control: form.control,
-    name: "subcategories",
+    name: 'subcategories',
   });
 
   if (fields.length === 0 && initialData?.subcategories?.length) {
@@ -201,7 +201,7 @@ const CategoryForm = ({ initialData }: CategoryFormProps) => {
           byAir: { min: 0, max: 0 },
           bySea: { min: 0, max: 0 },
         },
-      })),
+      }))
     );
   }
 
@@ -215,18 +215,18 @@ const CategoryForm = ({ initialData }: CategoryFormProps) => {
         subcategories: values.subcategories.map((sub, index) => ({
           ...sub,
           sortOrder: index,
-          parentId: initialData?._id || "", // Will be set by API for new categories
+          parentId: initialData?._id || '', // Will be set by API for new categories
         })),
       };
 
       const url = initialData
         ? `/api/categories/${initialData.slug}`
-        : "/api/categories";
+        : '/api/categories';
 
       const response = await fetch(url, {
-        method: "POST",
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${process.env.STORE_API_KEY}`,
         },
         body: JSON.stringify(formattedData),
@@ -234,47 +234,55 @@ const CategoryForm = ({ initialData }: CategoryFormProps) => {
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.message || "Failed to save category");
+        throw new Error(error.message || 'Failed to save category');
       }
 
       toast.success(
-        `Category ${initialData ? "updated" : "created"} successfully`,
+        `Category ${initialData ? 'updated' : 'created'} successfully`
       );
-      router.push("/categories");
+      router.push('/categories');
       router.refresh();
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to save category",
+        error instanceof Error ? error.message : 'Failed to save category'
       );
-      console.error("Category submission error:", error);
+      console.error('Category submission error:', error);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <Card className="bg-white shadow-sm">
-      <CardHeader className="flex flex-row items-center justify-between">
+    <Card className='bg-white shadow-sm'>
+      <CardHeader className='flex flex-row items-center justify-between'>
         <CardTitle>
-          {initialData ? "Edit Category" : "Create Category"}
+          {initialData ? 'Edit Category' : 'Create Category'}
         </CardTitle>
-        {initialData && <Delete id={initialData.slug} item="category" />}
+        {initialData && (
+          <Delete
+            id={initialData.slug}
+            item='category'
+          />
+        )}
       </CardHeader>
 
       <Separator />
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleFormSubmit)}>
-          <CardContent className="space-y-6 pt-6">
+          <CardContent className='space-y-6 pt-6'>
             {/* Main Category Fields */}
             <FormField
               control={form.control}
-              name="name"
+              name='name'
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter category name..." {...field} />
+                    <Input
+                      placeholder='Enter category name...'
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -283,12 +291,15 @@ const CategoryForm = ({ initialData }: CategoryFormProps) => {
 
             <FormField
               control={form.control}
-              name="title"
+              name='title'
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Title</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter category title..." {...field} />
+                    <Input
+                      placeholder='Enter category title...'
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -297,14 +308,14 @@ const CategoryForm = ({ initialData }: CategoryFormProps) => {
 
             <FormField
               control={form.control}
-              name="description"
+              name='description'
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Description</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Describe your category..."
-                      className="min-h-32"
+                      placeholder='Describe your category...'
+                      className='min-h-32'
                       {...field}
                     />
                   </FormControl>
@@ -314,22 +325,22 @@ const CategoryForm = ({ initialData }: CategoryFormProps) => {
             />
 
             {/* Shipping Charge Section */}
-            <div className="space-y-4">
-              <h2 className="text-lg font-semibold">Shipping Charge (BDT)</h2>
+            <div className='space-y-4'>
+              <h2 className='text-lg font-semibold'>Shipping Charge (BDT)</h2>
 
               {/* By Air */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className='grid grid-cols-2 gap-4'>
                 <FormField
                   control={form.control}
-                  name="shippingCharge.byAir.min"
+                  name='shippingCharge.byAir.min'
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>By Air - Min</FormLabel>
                       <FormControl>
                         <Input
-                          type="number"
+                          type='number'
                           min={0}
-                          placeholder="Min charge for Air..."
+                          placeholder='Min charge for Air...'
                           {...field}
                           onChange={(e) =>
                             field.onChange(Number(e.target.value))
@@ -343,15 +354,15 @@ const CategoryForm = ({ initialData }: CategoryFormProps) => {
 
                 <FormField
                   control={form.control}
-                  name="shippingCharge.byAir.max"
+                  name='shippingCharge.byAir.max'
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>By Air - Max</FormLabel>
                       <FormControl>
                         <Input
-                          type="number"
+                          type='number'
                           min={0}
-                          placeholder="Max charge for Air..."
+                          placeholder='Max charge for Air...'
                           {...field}
                           onChange={(e) =>
                             field.onChange(Number(e.target.value))
@@ -365,18 +376,18 @@ const CategoryForm = ({ initialData }: CategoryFormProps) => {
               </div>
 
               {/* By Sea */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className='grid grid-cols-2 gap-4'>
                 <FormField
                   control={form.control}
-                  name="shippingCharge.bySea.min"
+                  name='shippingCharge.bySea.min'
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>By Sea - Min</FormLabel>
                       <FormControl>
                         <Input
-                          type="number"
+                          type='number'
                           min={0}
-                          placeholder="Min charge for Sea..."
+                          placeholder='Min charge for Sea...'
                           {...field}
                           onChange={(e) =>
                             field.onChange(Number(e.target.value))
@@ -390,15 +401,15 @@ const CategoryForm = ({ initialData }: CategoryFormProps) => {
 
                 <FormField
                   control={form.control}
-                  name="shippingCharge.bySea.max"
+                  name='shippingCharge.bySea.max'
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>By Sea - Max</FormLabel>
                       <FormControl>
                         <Input
-                          type="number"
+                          type='number'
                           min={0}
-                          placeholder="Max charge for Sea..."
+                          placeholder='Max charge for Sea...'
                           {...field}
                           onChange={(e) =>
                             field.onChange(Number(e.target.value))
@@ -413,10 +424,10 @@ const CategoryForm = ({ initialData }: CategoryFormProps) => {
             </div>
 
             {/* Media Upload Section */}
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <div className='grid grid-cols-1 gap-6 md:grid-cols-2'>
               <FormField
                 control={form.control}
-                name="icon"
+                name='icon'
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Icon</FormLabel>
@@ -424,12 +435,12 @@ const CategoryForm = ({ initialData }: CategoryFormProps) => {
                       <MediaUpload
                         value={
                           field.value
-                            ? [{ url: field.value, type: "image" }]
+                            ? [{ url: field.value, type: 'image' }]
                             : []
                         }
-                        onChange={(url) => form.setValue("icon", url)}
-                        onRemove={() => form.setValue("icon", "")}
-                        folderId="icons"
+                        onChange={(url) => form.setValue('icon', url)}
+                        onRemove={() => form.setValue('icon', '')}
+                        folderId='icons'
                       />
                     </FormControl>
                     <FormMessage />
@@ -439,7 +450,7 @@ const CategoryForm = ({ initialData }: CategoryFormProps) => {
 
               <FormField
                 control={form.control}
-                name="thumbnail"
+                name='thumbnail'
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Thumbnail</FormLabel>
@@ -447,12 +458,12 @@ const CategoryForm = ({ initialData }: CategoryFormProps) => {
                       <MediaUpload
                         value={
                           field.value
-                            ? [{ url: field.value, type: "image" }]
+                            ? [{ url: field.value, type: 'image' }]
                             : []
                         }
-                        onChange={(url) => form.setValue("thumbnail", url)}
-                        onRemove={() => form.setValue("thumbnail", "")}
-                        folderId="thumbnails"
+                        onChange={(url) => form.setValue('thumbnail', url)}
+                        onRemove={() => form.setValue('thumbnail', '')}
+                        folderId='thumbnails'
                       />
                     </FormControl>
                     <FormMessage />
@@ -463,14 +474,14 @@ const CategoryForm = ({ initialData }: CategoryFormProps) => {
 
             <FormField
               control={form.control}
-              name="sortOrder"
+              name='sortOrder'
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Sort Order</FormLabel>
                   <FormControl>
                     <Input
-                      type="number"
-                      placeholder="Enter sort order..."
+                      type='number'
+                      placeholder='Enter sort order...'
                       {...field}
                       onChange={(e) => field.onChange(Number(e.target.value))}
                     />
@@ -482,9 +493,9 @@ const CategoryForm = ({ initialData }: CategoryFormProps) => {
 
             <FormField
               control={form.control}
-              name="isActive"
+              name='isActive'
               render={({ field }) => (
-                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                <FormItem className='flex flex-row items-center justify-between rounded-lg border p-4'>
                   <FormLabel>Active Status</FormLabel>
                   <FormControl>
                     <Checkbox
@@ -497,33 +508,33 @@ const CategoryForm = ({ initialData }: CategoryFormProps) => {
             />
 
             {/* Subcategories Section */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h2 className="text-xl font-semibold">Subcategories</h2>
-                <div className="flex gap-2">
+            <div className='space-y-4'>
+              <div className='flex items-center justify-between'>
+                <h2 className='text-xl font-semibold'>Subcategories</h2>
+                <div className='flex gap-2'>
                   <Button
-                    type="button"
-                    variant="outline"
+                    type='button'
+                    variant='outline'
                     onClick={() =>
                       setIsSubcategoryVisible(!isSubcategoryVisible)
                     }
                   >
-                    {isSubcategoryVisible ? "Hide" : "Show"} Subcategories
+                    {isSubcategoryVisible ? 'Hide' : 'Show'} Subcategories
                   </Button>
                   <Button
-                    type="button"
-                    variant="secondary"
+                    type='button'
+                    variant='secondary'
                     onClick={() => {
                       setIsSubcategoryVisible(true);
                       append({
-                        name: "",
-                        title: "",
-                        description: "",
-                        icon: "",
-                        thumbnail: "",
+                        name: '',
+                        title: '',
+                        description: '',
+                        icon: '',
+                        thumbnail: '',
                         isActive: true,
                         sortOrder: fields.length,
-                        parentId: initialData?._id || "",
+                        parentId: initialData?._id || '',
                         shippingCharge: {
                           byAir: { min: 0, max: 0 },
                           bySea: { min: 0, max: 0 },
@@ -538,21 +549,24 @@ const CategoryForm = ({ initialData }: CategoryFormProps) => {
 
               {isSubcategoryVisible &&
                 fields.map((field, index) => (
-                  <Card key={field.id} className="border">
-                    <CardHeader className="flex flex-row items-center justify-between pb-2">
-                      <h3 className="text-lg font-medium">
+                  <Card
+                    key={field.id}
+                    className='border'
+                  >
+                    <CardHeader className='flex flex-row items-center justify-between pb-2'>
+                      <h3 className='text-lg font-medium'>
                         Subcategory {index + 1}
                       </h3>
                       <Button
-                        type="button"
-                        variant="ghost"
+                        type='button'
+                        variant='ghost'
                         onClick={() => remove(index)}
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        className='text-red-600 hover:text-red-700 hover:bg-red-50'
                       >
                         Remove
                       </Button>
                     </CardHeader>
-                    <CardContent className="space-y-4">
+                    <CardContent className='space-y-4'>
                       <FormField
                         control={form.control}
                         name={`subcategories.${index}.name`}
@@ -561,7 +575,7 @@ const CategoryForm = ({ initialData }: CategoryFormProps) => {
                             <FormLabel>Name</FormLabel>
                             <FormControl>
                               <Input
-                                placeholder="Enter subcategory name..."
+                                placeholder='Enter subcategory name...'
                                 {...field}
                               />
                             </FormControl>
@@ -577,7 +591,7 @@ const CategoryForm = ({ initialData }: CategoryFormProps) => {
                             <FormLabel>Title</FormLabel>
                             <FormControl>
                               <Input
-                                placeholder="Enter subcategory title..."
+                                placeholder='Enter subcategory title...'
                                 {...field}
                               />
                             </FormControl>
@@ -593,8 +607,8 @@ const CategoryForm = ({ initialData }: CategoryFormProps) => {
                             <FormLabel>Description</FormLabel>
                             <FormControl>
                               <Textarea
-                                placeholder="Describe your subcategory..."
-                                className="min-h-32"
+                                placeholder='Describe your subcategory...'
+                                className='min-h-32'
                                 {...field}
                               />
                             </FormControl>
@@ -603,7 +617,7 @@ const CategoryForm = ({ initialData }: CategoryFormProps) => {
                         )}
                       />
                       {/* Media Upload for Subcategory */}
-                      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                      <div className='grid grid-cols-1 gap-6 md:grid-cols-2'>
                         <FormField
                           control={form.control}
                           name={`subcategories.${index}.icon`}
@@ -614,22 +628,22 @@ const CategoryForm = ({ initialData }: CategoryFormProps) => {
                                 <MediaUpload
                                   value={
                                     field.value
-                                      ? [{ url: field.value, type: "image" }]
+                                      ? [{ url: field.value, type: 'image' }]
                                       : []
                                   }
                                   onChange={(url) =>
                                     form.setValue(
                                       `subcategories.${index}.icon`,
-                                      url,
+                                      url
                                     )
                                   }
                                   onRemove={() =>
                                     form.setValue(
                                       `subcategories.${index}.icon`,
-                                      "",
+                                      ''
                                     )
                                   }
-                                  folderId="icons"
+                                  folderId='icons'
                                 />
                               </FormControl>
                               <FormMessage />
@@ -647,22 +661,22 @@ const CategoryForm = ({ initialData }: CategoryFormProps) => {
                                 <MediaUpload
                                   value={
                                     field.value
-                                      ? [{ url: field.value, type: "image" }]
+                                      ? [{ url: field.value, type: 'image' }]
                                       : []
                                   }
                                   onChange={(url) =>
                                     form.setValue(
                                       `subcategories.${index}.thumbnail`,
-                                      url,
+                                      url
                                     )
                                   }
                                   onRemove={() =>
                                     form.setValue(
                                       `subcategories.${index}.thumbnail`,
-                                      "",
+                                      ''
                                     )
                                   }
-                                  folderId="thumbnails"
+                                  folderId='thumbnails'
                                 />
                               </FormControl>
                               <FormMessage />
@@ -671,13 +685,13 @@ const CategoryForm = ({ initialData }: CategoryFormProps) => {
                         />
                       </div>
                       {/* Shipping Charge Section for Subcategory */}
-                      <div className="space-y-4">
-                        <h3 className="text-lg font-semibold">
+                      <div className='space-y-4'>
+                        <h3 className='text-lg font-semibold'>
                           Shipping Charge
                         </h3>
 
                         {/* By Air */}
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className='grid grid-cols-2 gap-4'>
                           <FormField
                             control={form.control}
                             name={`subcategories.${index}.shippingCharge.byAir.min`}
@@ -686,7 +700,7 @@ const CategoryForm = ({ initialData }: CategoryFormProps) => {
                                 <FormLabel>By Air - Min</FormLabel>
                                 <FormControl>
                                   <Input
-                                    type="number"
+                                    type='number'
                                     min={0}
                                     {...field}
                                     onChange={(e) =>
@@ -707,7 +721,7 @@ const CategoryForm = ({ initialData }: CategoryFormProps) => {
                                 <FormLabel>By Air - Max</FormLabel>
                                 <FormControl>
                                   <Input
-                                    type="number"
+                                    type='number'
                                     min={0}
                                     {...field}
                                     onChange={(e) =>
@@ -722,7 +736,7 @@ const CategoryForm = ({ initialData }: CategoryFormProps) => {
                         </div>
 
                         {/* By Sea */}
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className='grid grid-cols-2 gap-4'>
                           <FormField
                             control={form.control}
                             name={`subcategories.${index}.shippingCharge.bySea.min`}
@@ -731,7 +745,7 @@ const CategoryForm = ({ initialData }: CategoryFormProps) => {
                                 <FormLabel>By Sea - Min</FormLabel>
                                 <FormControl>
                                   <Input
-                                    type="number"
+                                    type='number'
                                     min={0}
                                     {...field}
                                     onChange={(e) =>
@@ -752,7 +766,7 @@ const CategoryForm = ({ initialData }: CategoryFormProps) => {
                                 <FormLabel>By Sea - Max</FormLabel>
                                 <FormControl>
                                   <Input
-                                    type="number"
+                                    type='number'
                                     min={0}
                                     {...field}
                                     onChange={(e) =>
@@ -770,7 +784,7 @@ const CategoryForm = ({ initialData }: CategoryFormProps) => {
                         control={form.control}
                         name={`subcategories.${index}.isActive`}
                         render={({ field }) => (
-                          <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                          <FormItem className='flex flex-row items-center justify-between rounded-lg border p-4'>
                             <FormLabel>Active Status</FormLabel>
                             <FormControl>
                               <Checkbox
@@ -789,8 +803,8 @@ const CategoryForm = ({ initialData }: CategoryFormProps) => {
                             <FormLabel>Sort Order</FormLabel>
                             <FormControl>
                               <Input
-                                type="number"
-                                placeholder="Enter sort order..."
+                                type='number'
+                                placeholder='Enter sort order...'
                                 {...field}
                                 onChange={(e) =>
                                   field.onChange(Number(e.target.value))
@@ -807,14 +821,20 @@ const CategoryForm = ({ initialData }: CategoryFormProps) => {
             </div>
           </CardContent>
 
-          <CardFooter className="flex items-center gap-4 pt-4">
-            <Button type="submit" disabled={isSubmitting}>
+          <CardFooter className='flex items-center gap-4 pt-4'>
+            <Button
+              type='submit'
+              disabled={isSubmitting}
+            >
               {isSubmitting
-                ? "Saving..."
-                : `Save ${initialData ? "Changes" : "Category"}`}
+                ? 'Saving...'
+                : `Save ${initialData ? 'Changes' : 'Category'}`}
             </Button>
-            <Link href="/admin/categories">
-              <Button type="button" variant="outline">
+            <Link href='/admin/categories'>
+              <Button
+                type='button'
+                variant='outline'
+              >
                 Cancel
               </Button>
             </Link>

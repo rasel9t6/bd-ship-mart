@@ -6,7 +6,7 @@ import Category from '@/models/Category';
 import Product from '@/models/Product';
 import Subcategory from '@/models/Subcategory';
 import { SubcategoryType } from '@/types/next-utils';
-type Params = Promise<{ categorySlug: string }>;
+type Params = Promise<{ categorySlug: string[] }>;
 export const GET = async (req: NextRequest, { params }: { params: Params }) => {
   try {
     await connectToDB();

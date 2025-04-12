@@ -3,6 +3,7 @@ import CategoryHero from '../_components/CategoryHero';
 import CategorySlider from '../_components/CategorySlider';
 import ProductCard from '../../products/_components/ProductCard';
 import { ProductType } from '@/types/next-utils';
+import { getCategory } from '@/lib/actions/actions';
 
 // Define params with categoryId as string array
 type Params = Promise<{
@@ -16,20 +17,13 @@ export default async function CategoryDetailsPage({
 }) {
   const { categoryId } = await params;
 
-  const categoryPath = categoryId.join('/');
+  const categoryPath = Array.isArray(categoryId)
+    ? categoryId.join('/')
+    : categoryId;
 
   // Fetch category data based on the full path
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/categories/${categoryPath}`
-  );
+  const categoryDetails = await getCategory(categoryPath);
 
-  if (!res.ok) {
-    // Handle error cases
-    const error = await res.json();
-    throw new Error(error.message || 'Failed to fetch category details');
-  }
-
-  const categoryDetails = await res.json();
   const { title, description, thumbnail, products, name, subcategories } =
     categoryDetails;
 

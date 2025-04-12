@@ -88,10 +88,10 @@ export async function getCategories() {
     console.error(`${error}`);
   }
 }
-export async function getCategory({ categorySlug }: { categorySlug: string }) {
+export async function getCategory(categorySlug: string) {
   try {
     await connectToDB();
-    const category = await Category.findOne({ slug: categorySlug }); // Fix: Removed object wrapping for findById
+    const category = await Category.findOne({ slug: categorySlug });
     return JSON.parse(JSON.stringify(category));
   } catch (error) {
     console.error(`${error}`);

@@ -1,12 +1,11 @@
 'use client';
 
-import { type FC, useState, useEffect, useCallback } from 'react';
+import { type FC, useState, useEffect } from 'react';
 import { IoMdClose } from 'react-icons/io';
 import { FileUploader } from 'react-drag-drop-files';
 import { IoCloudUploadOutline } from 'react-icons/io5';
 import { useMediaStore } from '@/hooks/useMediaStore';
 import GalleryItem from './GalleryImage';
-import toast from 'react-hot-toast';
 
 interface MediaGalleryProps {
   visible: boolean;
@@ -23,7 +22,6 @@ const MediaGallery: FC<MediaGalleryProps> = ({
 }) => {
   const { media, loading, uploadMedia, removeItem } = useMediaStore();
   const [localMedia, setLocalMedia] = useState(media);
-  const [files, setFiles] = useState<File[]>([]);
 
   // Sync local state with global media store
   useEffect(() => {
@@ -38,20 +36,7 @@ const MediaGallery: FC<MediaGalleryProps> = ({
     onClose();
   };
 
-  const handleDrop = useCallback((acceptedFiles: File[]) => {
-    const files = acceptedFiles.map((file) =>
-      Object.assign(file, {
-        preview: URL.createObjectURL(file),
-      })
-    );
-    toast.success(`Successfully added ${files.length} files`);
-    setFiles((prevFiles) => [...prevFiles, ...files]);
-  }, []);
-
   const handleUpload = async (files: File[]) => {
-    console.log('Files received:', files);
-    console.log('Type of files:', Object.prototype.toString.call(files));
-
     try {
       await uploadMedia(files, folderId);
     } catch (error) {
@@ -90,7 +75,7 @@ const MediaGallery: FC<MediaGalleryProps> = ({
         {/* Upload Section */}
         <FileUploader
           multiple
-          handleChange={handleDrop}
+          handleChange={handleUpload}
           name='file'
           types={fileTypes}
         >

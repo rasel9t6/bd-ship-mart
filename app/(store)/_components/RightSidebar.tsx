@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronRight, Info } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import ShippingCostsModal from '../_components/ShippingCostsModal';
+import ShippingCostsModal from './ShippingCostsModal';
 
 interface ShippingCost {
   byAir: { min: number; max: number };
