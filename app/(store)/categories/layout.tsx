@@ -1,4 +1,3 @@
-
 import LeftSidebar from "../_components/LeftSidebar";
 import RightSidebar from "../_components/RightSidebar";
 

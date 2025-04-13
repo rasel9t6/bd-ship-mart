@@ -49,14 +49,14 @@ export default async function CategoriesPage() {
         <div className='flex items-center justify-between'>
           <p className='text-heading2-bold'>Categories</p>
           <Link
-            className='flex items-center rounded-lg bg-blue-1 p-3 text-body-semibold text-white'
+            className='flex items-center rounded-lg bg-primary p-3 text-body-semibold '
             href='/admin/categories/new'
           >
             <FaPlus className='mr-2 size-4' />
             Create Categories
           </Link>
         </div>
-        <Separator className='my-4 bg-gray-1' />
+        <Separator className='my-4 bg-bondi-blue' />
         <div className='text-red-500'>
           Error loading categories. Please try again later.
         </div>

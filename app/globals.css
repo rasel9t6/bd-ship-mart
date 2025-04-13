@@ -1,42 +1,56 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 @config '../tailwind.config.ts';
 :root {
-  /* Base colors as HSL values from shadcn UI */
-  --background: 0 0% 100%;
-  --foreground: 222.2 84% 4.9%;
-  --card: 0 0% 100%;
-  --card-foreground: 222.2 84% 4.9%;
-  --popover: 0 0% 100%;
-  --popover-foreground: 222.2 84% 4.9%;
-  --primary: 222.2 47.4% 11.2%;
-  --primary-foreground: 210 40% 98%;
-  --secondary: 210 40% 96.1%;
-  --secondary-foreground: 222.2 47.4% 11.2%;
-  --muted: 210 40% 96.1%;
-  --muted-foreground: 215.4 16.3% 46.9%;
-  --accent: 210 40% 96.1%;
-  --accent-foreground: 222.2 47.4% 11.2%;
-  --destructive: 0 84.2% 60.2%;
-  --destructive-foreground: 210 40% 98%;
-  --border: 214.3 31.8% 91.4%;
-  --input: 214.3 31.8% 91.4%;
-  --ring: 222.2 84% 4.9%;
+  /* Base colors from your custom palette */
+  --background: 180 100% 98%; /* Near white with slight blue tint */
+  --foreground: 0 0% 38%; /* gray-1/gray-500 */
+  --card: 180 100% 98%; /* Same as background */
+  --card-foreground: 0 0% 38%; /* gray-1/gray-500 */
+  --popover: 180 100% 98%; /* Same as background */
+  --popover-foreground: 0 0% 38%; /* gray-1/gray-500 */
+
+  /* Primary: Bondi Blue */
+  --primary: 183 100% 35%; /* bondi-blue-500/DEFAULT */
+  --primary-foreground: 0 0% 98%; /* white-1/gray-50 */
+
+  /* Secondary: Light Blue */
+  --secondary: 207 85% 95%; /* blue-100/blue-2 */
+  --secondary-foreground: 210 100% 37%; /* blue-600/blue-1 */
+
+  /* Muted: Light Gray */
+  --muted: 220 13% 91%; /* gray-100/gray-2 */
+  --muted-foreground: 0 0% 50%; /* custom-gray lighter */
+
+  /* Accent: Blaze Orange */
+  --accent: 25 99% 52%; /* blaze-orange-500/DEFAULT */
+  --accent-foreground: 0 0% 98%; /* white-1/gray-50 */
+
+  /* Destructive: Red */
+  --destructive: 0 100% 50%; /* danger-500/red-1 */
+  --destructive-foreground: 0 0% 98%; /* white-1/gray-50 */
+
+  /* Border, Input, Ring */
+  --border: 220 13% 91%; /* gray-100/gray-2 */
+  --input: 220 13% 91%; /* gray-100/gray-2 */
+  --ring: 183 100% 35%; /* bondi-blue-500/DEFAULT */
+
+  /* Other settings */
   --radius: 0.5rem;
 
   /* Chart colors */
-  --chart-1: 222.2 47.4% 11.2%;
-  --chart-2: 210 40% 96.1%;
-  --chart-3: 215.4 16.3% 46.9%;
-  --chart-4: 0 84.2% 60.2%;
-  --chart-5: 210 40% 98%;
+  --chart-1: 183 100% 35%; /* bondi-blue-500/DEFAULT */
+  --chart-2: 25 99% 52%; /* blaze-orange-500/DEFAULT */
+  --chart-3: 0 0% 38%; /* gray-500/gray-1 */
+  --chart-4: 210 100% 37%; /* blue-600/blue-1 */
+  --chart-5: 142 72% 29%; /* success-500 */
 
-  /* Enhanced typography settings */
+  /* Enhanced typography settings - keeping your originals */
   --font-sans:
-    ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-    Roboto, "Helvetica Neue", Arial, sans-serif;
+    ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    Roboto, 'Helvetica Neue', Arial, sans-serif;
   --font-mono:
-    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
-    "Courier New", monospace;
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono',
+    'Courier New', monospace;
   --line-height-tight: 1.25;
   --line-height-normal: 1.5;
   --line-height-relaxed: 1.75;
@@ -46,25 +60,38 @@
 }
 
 .dark {
-  --background: 222.2 84% 4.9%;
-  --foreground: 210 40% 98%;
-  --card: 222.2 84% 4.9%;
-  --card-foreground: 210 40% 98%;
-  --popover: 222.2 84% 4.9%;
-  --popover-foreground: 210 40% 98%;
-  --primary: 210 40% 98%;
-  --primary-foreground: 222.2 47.4% 11.2%;
-  --secondary: 217.2 32.6% 17.5%;
-  --secondary-foreground: 210 40% 98%;
-  --muted: 217.2 32.6% 17.5%;
-  --muted-foreground: 215 20.2% 65.1%;
-  --accent: 217.2 32.6% 17.5%;
-  --accent-foreground: 210 40% 98%;
-  --destructive: 0 62.8% 30.6%;
-  --destructive-foreground: 210 40% 98%;
-  --border: 217.2 32.6% 17.5%;
-  --input: 217.2 32.6% 17.5%;
-  --ring: 212.7 26.8% 83.9%;
+  /* Dark mode using darker shades from your palette */
+  --background: 224 100% 14%; /* bondi-blue-800 */
+  --foreground: 0 0% 98%; /* gray-50/white-1 */
+  --card: 224 100% 14%; /* bondi-blue-800 */
+  --card-foreground: 0 0% 98%; /* gray-50/white-1 */
+  --popover: 224 100% 14%; /* bondi-blue-800 */
+  --popover-foreground: 0 0% 98%; /* gray-50/white-1 */
+
+  /* Primary (inverted for dark mode) */
+  --primary: 183 100% 50%; /* bondi-blue-300 - brighter in dark mode */
+  --primary-foreground: 224 100% 14%; /* bondi-blue-800 */
+
+  /* Secondary */
+  --secondary: 183 100% 18%; /* bondi-blue-600 */
+  --secondary-foreground: 0 0% 98%; /* gray-50/white-1 */
+
+  /* Muted */
+  --muted: 223 47% 11%; /* gray-800 */
+  --muted-foreground: 215 20% 65%; /* gray-300 */
+
+  /* Accent */
+  --accent: 25 99% 52%; /* blaze-orange-500/DEFAULT - keeping it vibrant */
+  --accent-foreground: 0 0% 98%; /* gray-50/white-1 */
+
+  /* Destructive */
+  --destructive: 0 70% 42%; /* danger-700 - darker red for dark mode */
+  --destructive-foreground: 0 0% 98%; /* gray-50/white-1 */
+
+  /* Border, Input, Ring */
+  --border: 183 100% 18%; /* bondi-blue-600 */
+  --input: 183 100% 18%; /* bondi-blue-600 */
+  --ring: 183 100% 50%; /* bondi-blue-300 */
 }
 
 @layer base {
@@ -121,8 +148,13 @@
   p {
     margin-bottom: 1em;
   }
-
+  a {
+    cursor: pointer;
+  }
   a:hover {
     color: hsl(var(--primary) / 0.8);
+  }
+  button {
+    cursor: pointer;
   }
 }

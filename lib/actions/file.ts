@@ -1,6 +1,6 @@
-'use server';
+"use server";
 
-import { v2 as cloud, type UploadApiResponse } from 'cloudinary';
+import { v2 as cloud, type UploadApiResponse } from "cloudinary";
 
 cloud.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -11,11 +11,11 @@ cloud.config({
 
 export const uploadFile = async (
   data: FormData,
-  filter: string
+  filter: string,
 ): Promise<UploadApiResponse | undefined> => {
-  const file = data.get('file');
+  const file = data.get("file");
 
-  if (file instanceof File && file.type.startsWith('image')) {
+  if (file instanceof File && file.type.startsWith("image")) {
     const buffer = Buffer.from(await file.arrayBuffer());
 
     return new Promise((resolve, reject) => {
@@ -24,17 +24,17 @@ export const uploadFile = async (
           { folder: filter, timeout: 120000 }, // Increased timeout
           (error, result) => {
             if (error) {
-              console.error('Upload Error:', error);
-              reject(new Error(error.message ?? 'Upload failed'));
+              console.error("Upload Error:", error);
+              reject(new Error(error.message ?? "Upload failed"));
             } else {
               resolve(result);
             }
-          }
+          },
         )
         .end(buffer);
     });
   } else {
-    throw new Error('Invalid file type. Only images are allowed.');
+    throw new Error("Invalid file type. Only images are allowed.");
   }
 };
 
@@ -42,8 +42,8 @@ export const readAllImages = async (filter: string) => {
   try {
     const { resources } = (await cloud.api.resources({
       prefix: filter,
-      resource_type: 'image',
-      type: 'upload',
+      resource_type: "image",
+      type: "upload",
     })) as { resources: UploadApiResponse[] };
 
     return resources
@@ -68,9 +68,9 @@ export const renameImages = async (images: { id: string; src: string }[]) => {
   for (let i = 0; i < images.length; i++) {
     const publicId = images[i]?.id;
     if (!publicId) continue;
-    const parts = publicId.split('/');
-    const prefix = parts.slice(0, -1).join('/');
-    const newPublicId = `${prefix}/${String(i + 1).padStart(3, '0')}_${parts.pop()}`;
+    const parts = publicId.split("/");
+    const prefix = parts.slice(0, -1).join("/");
+    const newPublicId = `${prefix}/${String(i + 1).padStart(3, "0")}_${parts.pop()}`;
     await cloud.uploader.rename(publicId, newPublicId);
   }
 };
@@ -78,7 +78,7 @@ export const renameImages = async (images: { id: string; src: string }[]) => {
 // remove image with prefix
 export const removeImageByPrefix = async (prefix: string) => {
   const { resources } = (await cloud.api.resources({
-    type: 'upload',
+    type: "upload",
     prefix,
     max_results: 100,
   })) as { resources: UploadApiResponse[] };

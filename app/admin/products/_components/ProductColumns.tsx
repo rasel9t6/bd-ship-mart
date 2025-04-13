@@ -1,42 +1,42 @@
-'use client';
-import { ProductType } from '@/types/next-utils';
-import Delete from '@/ui/custom/Delete';
-import { ColumnDef } from '@tanstack/react-table';
-import Link from 'next/link';
+"use client";
+import { ProductType } from "@/types/next-utils";
+import Delete from "@/ui/custom/Delete";
+import { ColumnDef } from "@tanstack/react-table";
+import Link from "next/link";
 
 export const columns: ColumnDef<ProductType>[] = [
   {
-    accessorKey: 'title',
-    header: 'Title',
+    accessorKey: "title",
+    header: "Title",
     cell: ({ row }) => (
       <Link
         href={`/products/${row.original.slug}`}
-        className='hover:text-red-1'
+        className="hover:text-red-1"
       >
         {row.original.title}
       </Link>
     ),
   },
   {
-    accessorKey: 'category',
-    header: 'Category',
+    accessorKey: "category",
+    header: "Category",
     cell: ({ row }) => {
       const category =
-        typeof row.original.category === 'object' && row.original.category
+        typeof row.original.category === "object" && row.original.category
           ? row.original.category.name
-          : typeof row.original.category === 'string'
+          : typeof row.original.category === "string"
             ? row.original.category
-            : 'N/A';
+            : "N/A";
 
       // Only attempt to access subcategories if category is an object
       const subcategories =
-        typeof row.original.category === 'object' &&
+        typeof row.original.category === "object" &&
         row.original.category &&
         Array.isArray(row.original.category.subcategories)
           ? row.original.category.subcategories
               .map((sub) => sub.name)
-              .join(', ')
-          : 'N/A';
+              .join(", ")
+          : "N/A";
 
       return (
         <div>
@@ -51,35 +51,30 @@ export const columns: ColumnDef<ProductType>[] = [
     },
   },
   {
-    header: 'Price',
+    header: "Price",
     cell: ({ row }) => {
       const product = row.original;
       if (product.price?.cny !== undefined)
         return `¥ ${product.price.cny.toFixed(2)}`;
       if (product.price?.usd !== undefined)
         return `$ ${product.price.usd.toFixed(2)}`;
-      return 'N/A';
+      return "N/A";
     },
   },
   {
-    header: 'Expense',
+    header: "Expense",
     cell: ({ row }) => {
       const product = row.original;
       if (product.expense?.cny !== undefined)
         return `¥ ${product.expense.cny.toFixed(2)}`;
       if (product.expense?.usd !== undefined)
         return `$ ${product.expense.usd.toFixed(2)}`;
-      return 'N/A';
+      return "N/A";
     },
   },
   {
-    header: 'Action',
-    id: 'actions',
-    cell: ({ row }) => (
-      <Delete
-        item='product'
-        id={row.original._id}
-      />
-    ),
+    header: "Action",
+    id: "actions",
+    cell: ({ row }) => <Delete item="product" id={row.original._id} />,
   },
 ];

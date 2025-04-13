@@ -1,7 +1,7 @@
-import { NextResponse } from 'next/server';
+import { NextResponse } from "next/server";
 
-import Category from '@/models/Category';
-import { connectToDB } from '@/lib/dbConnect';
+import Category from "@/models/Category";
+import { connectToDB } from "@/lib/dbConnect";
 
 interface ShippingCost {
   byAir: { min: number; max: number };
@@ -27,10 +27,10 @@ export async function GET() {
     await connectToDB();
 
     const categories = await Category.find({ isActive: true })
-      .select('name title slug shippingCharge subcategories')
+      .select("name title slug shippingCharge subcategories")
       .populate({
-        path: 'subcategories',
-        select: 'name title slug shippingCharge',
+        path: "subcategories",
+        select: "name title slug shippingCharge",
         match: { isActive: true },
       });
 
@@ -42,7 +42,7 @@ export async function GET() {
         subcategories: category.subcategories.reduce(
           (
             subAcc: Record<string, SubCategory>,
-            subcategory: PopulatedSubCategory
+            subcategory: PopulatedSubCategory,
           ) => {
             subAcc[subcategory.slug] = {
               name: subcategory.name,
@@ -53,7 +53,7 @@ export async function GET() {
             };
             return subAcc;
           },
-          {}
+          {},
         ),
       };
       return acc;
@@ -61,7 +61,7 @@ export async function GET() {
 
     return NextResponse.json(transformedData);
   } catch (error) {
-    console.error('[SHIPPING_COSTS_GET]', error);
-    return new NextResponse('Internal error', { status: 500 });
+    console.error("[SHIPPING_COSTS_GET]", error);
+    return new NextResponse("Internal error", { status: 500 });
   }
 }

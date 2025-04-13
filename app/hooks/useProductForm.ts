@@ -1,29 +1,29 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
   ProductFormData,
   productFormSchema,
   ProductFormValues,
-} from '@/lib/type';
-import { SubcategoryType } from '@/types/next-utils';
+} from "@/lib/type";
+import { SubcategoryType } from "@/types/next-utils";
 
 export const useProductForm = (initialData?: Partial<ProductFormData>) => {
   const [formData, setFormData] = useState<ProductFormData>({
-    sku: '',
-    title: '',
-    description: '',
+    sku: "",
+    title: "",
+    description: "",
     media: [],
     category: {
-      name: '',
+      name: "",
       subcategories: [],
     },
     tags: [],
     sizes: [],
     colors: [],
     minimumOrderQuantity: 1,
-    inputCurrency: 'CNY',
+    inputCurrency: "CNY",
     price: {
       cny: 0,
       usd: 0,
@@ -43,12 +43,12 @@ export const useProductForm = (initialData?: Partial<ProductFormData>) => {
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productFormSchema),
     defaultValues: {
-      sku: initialData?.sku || '',
-      title: initialData?.title || '',
-      description: initialData?.description || '',
+      sku: initialData?.sku || "",
+      title: initialData?.title || "",
+      description: initialData?.description || "",
       media: initialData?.media || [],
       category: {
-        name: initialData?.category?.name || '',
+        name: initialData?.category?.name || "",
         subcategories: Array.isArray(initialData?.category?.subcategories)
           ? initialData.category.subcategories
           : initialData?.category?.subcategories
@@ -64,7 +64,7 @@ export const useProductForm = (initialData?: Partial<ProductFormData>) => {
       sizes: initialData?.sizes || [],
       colors: initialData?.colors || [],
       minimumOrderQuantity: initialData?.minimumOrderQuantity || 1,
-      inputCurrency: initialData?.inputCurrency || 'CNY',
+      inputCurrency: initialData?.inputCurrency || "CNY",
       price: initialData?.price || {
         cny: 0,
         usd: 0,

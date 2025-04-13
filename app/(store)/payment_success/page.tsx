@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import useCart from '@/hooks/useCart';
-import Link from 'next/link';
-import { useEffect } from 'react';
+import useCart from "@/hooks/useCart";
+import Link from "next/link";
+import { useEffect } from "react";
 
 const SuccessfulPayment = () => {
   const cart = useCart();
@@ -12,12 +12,12 @@ const SuccessfulPayment = () => {
   }, [cart]);
 
   return (
-    <div className='flex h-screen flex-col items-center justify-center gap-5'>
-      <p className='text-heading4-bold text-bondi-blue'>Successful Payment</p>
+    <div className="flex h-screen flex-col items-center justify-center gap-5">
+      <p className="text-heading4-bold text-bondi-blue">Successful Payment</p>
       <p>Thank you for your purchase</p>
       <Link
-        href='/'
-        className='border p-4 text-base-bold hover:bg-black hover:text-white'
+        href="/"
+        className="border p-4 text-base-bold hover:bg-black hover:text-white"
       >
         CONTINUE TO SHOPPING
       </Link>

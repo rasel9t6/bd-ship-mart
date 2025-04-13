@@ -1,6 +1,6 @@
-import { connectToDB } from '@/lib/dbConnect';
-import Customer from '@/models/Customer';
-import { NextRequest, NextResponse } from 'next/server';
+import { connectToDB } from "@/lib/dbConnect";
+import Customer from "@/models/Customer";
+import { NextRequest, NextResponse } from "next/server";
 
 // Fetch all customers
 export const GET = async () => {
@@ -10,10 +10,10 @@ export const GET = async () => {
 
     return NextResponse.json(customers, { status: 200 });
   } catch (error) {
-    console.error('[customers_GET]', error);
+    console.error("[customers_GET]", error);
     return NextResponse.json(
-      { error: 'Internal Server Error' },
-      { status: 500 }
+      { error: "Internal Server Error" },
+      { status: 500 },
     );
   }
 };
@@ -34,9 +34,9 @@ export const POST = async (req: NextRequest) => {
       return NextResponse.json(
         {
           error:
-            'Missing required fields: customerId, name, email, phone, address',
+            "Missing required fields: customerId, name, email, phone, address",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -47,8 +47,8 @@ export const POST = async (req: NextRequest) => {
     });
     if (existingCustomer) {
       return NextResponse.json(
-        { error: 'Customer with this email already exists' },
-        { status: 409 }
+        { error: "Customer with this email already exists" },
+        { status: 409 },
       );
     }
 
@@ -57,16 +57,16 @@ export const POST = async (req: NextRequest) => {
 
     return NextResponse.json(
       {
-        message: 'Customer created successfully',
+        message: "Customer created successfully",
         customer: newCustomer,
       },
-      { status: 201 }
+      { status: 201 },
     );
   } catch (error) {
-    console.error('[CUSTOMER_CREATE_ERROR]', error);
+    console.error("[CUSTOMER_CREATE_ERROR]", error);
     return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
+      { error: "Internal server error" },
+      { status: 500 },
     );
   }
 };

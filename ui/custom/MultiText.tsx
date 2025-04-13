@@ -1,10 +1,9 @@
-'use client';
-import { useState, KeyboardEvent } from 'react';
+"use client";
+import { useState, KeyboardEvent } from "react";
 
-
-import { Input } from '../input';
-import { Badge } from '../badge';
-import { X } from 'lucide-react';
+import { Input } from "../input";
+import { Badge } from "../badge";
+import { X } from "lucide-react";
 
 interface MultiTextProps {
   placeholder: string;
@@ -19,7 +18,7 @@ export default function MultiText({
   onChange,
   onRemove,
 }: MultiTextProps) {
-  const [inputValue, setInputValue] = useState('');
+  const [inputValue, setInputValue] = useState("");
 
   const addValue = (item: string) => {
     // Trim the input and convert to lowercase/uppercase as needed
@@ -28,20 +27,20 @@ export default function MultiText({
     // Prevent adding empty or duplicate values
     if (processedItem && !value.includes(processedItem)) {
       onChange(processedItem);
-      setInputValue('');
+      setInputValue("");
     }
   };
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       e.preventDefault();
       addValue(inputValue);
     }
 
     // Optional: Allow adding with comma
-    if (e.key === ',') {
+    if (e.key === ",") {
       e.preventDefault();
-      addValue(inputValue.replace(',', ''));
+      addValue(inputValue.replace(",", ""));
     }
   };
 
@@ -55,21 +54,21 @@ export default function MultiText({
       />
 
       {value.length > 0 && (
-        <div className='mt-4 flex flex-wrap gap-2'>
+        <div className="mt-4 flex flex-wrap gap-2">
           {value.map((item, index) => (
             <Badge
               key={`${item}-${index}`}
-              variant='secondary'
-              className='flex items-center'
+              variant="secondary"
+              className="flex items-center"
             >
               {item}
               <button
-                className='ml-2 hover:text-red-1'
+                className="ml-2 hover:text-red-1"
                 onClick={() => onRemove(item)}
-                type='button'
+                type="button"
                 aria-label={`Remove ${item}`}
               >
-                <X className='size-4' />
+                <X className="size-4" />
               </button>
             </Badge>
           ))}

@@ -1,10 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from "next/server";
 
-import { connectToDB } from '@/lib/dbConnect';
-import Customer from '@/models/Customer';
-import Order from '@/models/Order';
-import Product from '@/models/Product';
-import { OrderType } from '@/types/next-utils';
+import { connectToDB } from "@/lib/dbConnect";
+import Customer from "@/models/Customer";
+import Order from "@/models/Order";
+import Product from "@/models/Product";
+import { OrderType } from "@/types/next-utils";
 
 // Fetch all orders
 export const GET = async () => {
@@ -13,13 +13,13 @@ export const GET = async () => {
 
     const orders = await Order.find()
       .populate({
-        path: 'products.product',
+        path: "products.product",
         model: Product,
       })
       .populate({
-        path: 'customerId',
+        path: "customerId",
         model: Customer,
-        select: 'name email phone address customerId',
+        select: "name email phone address customerId",
       })
       .sort({ createdAt: -1 });
 
@@ -27,10 +27,10 @@ export const GET = async () => {
       status: 200,
     });
   } catch (error) {
-    console.error('[orders_GET]', error);
+    console.error("[orders_GET]", error);
     return new NextResponse(
-      JSON.stringify({ error: 'Internal Server Error' }),
-      { status: 500 }
+      JSON.stringify({ error: "Internal Server Error" }),
+      { status: 500 },
     );
   }
 };
@@ -48,9 +48,9 @@ export const POST = async (req: NextRequest) => {
     ) {
       return new NextResponse(
         JSON.stringify({
-          error: 'Missing required fields: userId, products, shippingAddress',
+          error: "Missing required fields: userId, products, shippingAddress",
         }),
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -61,9 +61,9 @@ export const POST = async (req: NextRequest) => {
       ...orderData,
       trackingHistory: [
         {
-          status: 'pending',
+          status: "pending",
           timestamp: new Date(),
-          location: 'Order received',
+          location: "Order received",
         },
       ],
     });
@@ -82,23 +82,23 @@ export const POST = async (req: NextRequest) => {
     const userOrders = await fetch(`${process.env.STORE_API_URL}/users`);
     const userOrdersData = await userOrders.json();
     const userOrder = userOrdersData.find(
-      (order: OrderType) => order.customerId === orderData.userId
+      (order: OrderType) => order.customerId === orderData.userId,
     );
     if (userOrder) {
       userOrder.orders.push(newOrder._id);
     }
     return new NextResponse(
       JSON.stringify({
-        message: 'Order created successfully',
+        message: "Order created successfully",
         order: newOrder,
       }),
-      { status: 201 }
+      { status: 201 },
     );
   } catch (error) {
-    console.error('[ORDER_CREATE_ERROR]', error);
+    console.error("[ORDER_CREATE_ERROR]", error);
     return new NextResponse(
-      JSON.stringify({ error: 'Internal server error' }),
-      { status: 500 }
+      JSON.stringify({ error: "Internal server error" }),
+      { status: 500 },
     );
   }
 };

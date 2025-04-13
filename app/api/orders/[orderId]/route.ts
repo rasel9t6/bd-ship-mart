@@ -1,10 +1,10 @@
-import { connectToDB } from '@/lib/dbConnect';
-import Order from '@/models/Order';
-import { NextRequest, NextResponse } from 'next/server';
+import { connectToDB } from "@/lib/dbConnect";
+import Order from "@/models/Order";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: Promise<{ orderId: string }> }
+  { params }: { params: Promise<{ orderId: string }> },
 ) {
   try {
     await connectToDB();
@@ -13,7 +13,7 @@ export async function PATCH(
     const { status, location } = await req.json();
 
     if (!status) {
-      return new NextResponse(JSON.stringify({ error: 'Status is required' }), {
+      return new NextResponse(JSON.stringify({ error: "Status is required" }), {
         status: 400,
       });
     }
@@ -22,7 +22,7 @@ export async function PATCH(
     const order = await Order.findOne({ orderId }); // Change to { orderId } if it's a custom field
 
     if (!order) {
-      return new NextResponse(JSON.stringify({ error: 'Order not found' }), {
+      return new NextResponse(JSON.stringify({ error: "Order not found" }), {
         status: 404,
       });
     }
@@ -32,21 +32,21 @@ export async function PATCH(
     order.trackingHistory.push({
       status,
       timestamp: new Date(),
-      location: location || 'Status updated',
+      location: location || "Status updated",
     });
 
     await order.save();
 
     return new NextResponse(
-      JSON.stringify({ message: 'Order status updated successfully', order }),
-      { status: 200 }
+      JSON.stringify({ message: "Order status updated successfully", order }),
+      { status: 200 },
     );
   } catch (error) {
-    console.error('[ORDER_STATUS_UPDATE_ERROR]', error);
+    console.error("[ORDER_STATUS_UPDATE_ERROR]", error);
 
     return new NextResponse(
-      JSON.stringify({ error: 'Internal server error' }),
-      { status: 500 }
+      JSON.stringify({ error: "Internal server error" }),
+      { status: 500 },
     );
   }
 }

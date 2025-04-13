@@ -1,12 +1,12 @@
-import { connectToDB } from '@/lib/dbConnect';
-import { NextRequest, NextResponse } from 'next/server';
+import { connectToDB } from "@/lib/dbConnect";
+import { NextRequest, NextResponse } from "next/server";
 
-import Order from '@/models/Order';
-import Customer from '@/models/Customer';
+import Order from "@/models/Order";
+import Customer from "@/models/Customer";
 type Params = Promise<{ userId: string }>;
 export const GET = async (
   _req: NextRequest,
-  { params }: { params: Params }
+  { params }: { params: Params },
 ) => {
   try {
     await connectToDB();
@@ -20,11 +20,11 @@ export const GET = async (
 
     return response;
   } catch (error) {
-    console.error('[customer_orders_GET]', error);
+    console.error("[customer_orders_GET]", error);
 
     const response = NextResponse.json(
-      { error: 'Internal Server Error' },
-      { status: 500 }
+      { error: "Internal Server Error" },
+      { status: 500 },
     );
 
     // Apply CORS headers to error response
@@ -35,7 +35,7 @@ export const GET = async (
 
 export const PATCH = async (
   req: NextRequest,
-  { params }: { params: Promise<{ userId: string }> }
+  { params }: { params: Promise<{ userId: string }> },
 ) => {
   try {
     await connectToDB();
@@ -52,7 +52,7 @@ export const PATCH = async (
           ...(updateData.address && { address: updateData.address }),
           ...(updateData.orders && { orders: updateData.orders }),
         },
-        { new: true }
+        { new: true },
       );
     }
 
@@ -62,17 +62,17 @@ export const PATCH = async (
 
     // Create a response confirming the update
     const response = NextResponse.json(
-      { message: 'Customer information updated successfully' },
-      { status: 200 }
+      { message: "Customer information updated successfully" },
+      { status: 200 },
     );
 
     return response;
   } catch (error) {
-    console.error('[customer_update_PATCH]', error);
+    console.error("[customer_update_PATCH]", error);
 
     const response = NextResponse.json(
-      { error: 'Internal Server Error' },
-      { status: 500 }
+      { error: "Internal Server Error" },
+      { status: 500 },
     );
 
     return response;

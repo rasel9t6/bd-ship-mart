@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -43,7 +43,7 @@ type Subcategory = {
   thumbnail?: string;
   isActive: boolean;
   sortOrder: number;
-  parentId: string;
+  category: string;
 };
 
 interface CategoryFormProps {
@@ -74,7 +74,7 @@ const subcategorySchema = z.object({
   thumbnail: z.string().optional(),
   isActive: z.boolean().default(true),
   sortOrder: z.number().int().default(0),
-  parentId: z.string().optional(),
+  category: z.string().optional(),
   shippingCharge: z
     .object({
       byAir: z.object({
@@ -148,62 +148,85 @@ const CategoryForm = ({ initialData }: CategoryFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
   const [isSubcategoryVisible, setIsSubcategoryVisible] = useState(
-    (initialData?.subcategories?.length ?? 0) > 0
+    initialData &&
+      Array.isArray(initialData.subcategories) &&
+      initialData.subcategories.length > 0
   );
+
+  // Make sure subcategories is always an array
+  const safeSubcategories =
+    initialData && initialData.subcategories
+      ? Array.isArray(initialData.subcategories)
+        ? initialData.subcategories
+        : []
+      : [];
+
+  // Format subcategories for the form
+  const formattedSubcategories = safeSubcategories.map((sub) => ({
+    ...sub,
+    category: initialData?._id || '',
+    shippingCharge: sub.shippingCharge || {
+      byAir: { min: 0, max: 0 },
+      bySea: { min: 0, max: 0 },
+    },
+  }));
+
+  // Prepare default values for the form
+  const defaultValues = initialData
+    ? {
+        ...initialData,
+        shippingCharge: initialData.shippingCharge || {
+          byAir: { min: 0, max: 0 },
+          bySea: { min: 0, max: 0 },
+        },
+        subcategories: formattedSubcategories,
+      }
+    : {
+        name: '',
+        title: '',
+        description: '',
+        icon: '',
+        thumbnail: '',
+        isActive: true,
+        sortOrder: 0,
+        shippingCharge: {
+          byAir: { min: 0, max: 0 },
+          bySea: { min: 0, max: 0 },
+        },
+        subcategories: [],
+      };
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: initialData
-      ? {
-          ...initialData,
-          shippingCharge: initialData.shippingCharge || {
-            byAir: { min: 0, max: 0 },
-            bySea: { min: 0, max: 0 },
-          },
-          subcategories:
-            initialData.subcategories.map((sub) => ({
-              ...sub,
-              parentId: initialData._id,
-              shippingCharge: sub.shippingCharge || {
-                byAir: { min: 0, max: 0 },
-                bySea: { min: 0, max: 0 },
-              },
-            })) || [],
-        }
-      : {
-          name: '',
-          title: '',
-          description: '',
-          icon: '',
-          thumbnail: '',
-          isActive: true,
-          sortOrder: 0,
-          shippingCharge: {
-            byAir: { min: 0, max: 0 },
-            bySea: { min: 0, max: 0 },
-          },
-          subcategories: [],
-        },
+    defaultValues,
     mode: 'onChange',
   });
 
-  const { fields, append, remove, replace } = useFieldArray({
+  const { fields, append, remove } = useFieldArray({
     control: form.control,
     name: 'subcategories',
   });
 
-  if (fields.length === 0 && initialData?.subcategories?.length) {
-    replace(
-      initialData.subcategories.map((sub) => ({
-        ...sub,
-        parentId: initialData._id,
-        shippingCharge: sub.shippingCharge || {
-          byAir: { min: 0, max: 0 },
-          bySea: { min: 0, max: 0 },
-        },
-      }))
-    );
-  }
+  // If needed, fetch subcategories data from API
+  useEffect(() => {
+    // Only run if we have initialData but fields are empty
+    if (
+      initialData?._id &&
+      fields.length === 0 &&
+      formattedSubcategories.length > 0
+    ) {
+      // Use setValue instead of replace to avoid errors
+      form.setValue('subcategories', formattedSubcategories);
+    }
+  }, [initialData, fields.length, form, formattedSubcategories]);
+
+  // Debug logging
+  useEffect(() => {
+    if (initialData) {
+      console.log('Initial subcategories:', formattedSubcategories);
+      console.log('Current fields:', fields);
+    }
+  }, [initialData, fields, formattedSubcategories]);
 
   const handleFormSubmit = async (values: FormValues) => {
     try {
@@ -215,7 +238,7 @@ const CategoryForm = ({ initialData }: CategoryFormProps) => {
         subcategories: values.subcategories.map((sub, index) => ({
           ...sub,
           sortOrder: index,
-          parentId: initialData?._id || '', // Will be set by API for new categories
+          category: initialData?._id || '', // Will be set by API for new categories
         })),
       };
 
@@ -227,7 +250,6 @@ const CategoryForm = ({ initialData }: CategoryFormProps) => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${process.env.STORE_API_KEY}`,
         },
         body: JSON.stringify(formattedData),
       });
@@ -240,7 +262,7 @@ const CategoryForm = ({ initialData }: CategoryFormProps) => {
       toast.success(
         `Category ${initialData ? 'updated' : 'created'} successfully`
       );
-      router.push('/categories');
+      router.push('/admin/categories');
       router.refresh();
     } catch (error) {
       toast.error(
@@ -534,7 +556,7 @@ const CategoryForm = ({ initialData }: CategoryFormProps) => {
                         thumbnail: '',
                         isActive: true,
                         sortOrder: fields.length,
-                        parentId: initialData?._id || '',
+                        category: initialData?._id || '',
                         shippingCharge: {
                           byAir: { min: 0, max: 0 },
                           bySea: { min: 0, max: 0 },

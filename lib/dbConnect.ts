@@ -1,11 +1,11 @@
-import mongoose from 'mongoose';
-import dotenv from 'dotenv';
+import mongoose from "mongoose";
+import dotenv from "dotenv";
 dotenv.config();
 const MONGODB_URI = process.env.MONGODB_URI!;
 
 if (!MONGODB_URI) {
   throw new Error(
-    'Please define the MONGODB_URI environment variable in .env.local'
+    "Please define the MONGODB_URI environment variable in .env.local",
   );
 }
 
@@ -24,7 +24,7 @@ export async function connectToDB() {
 
   if (!cached.promise) {
     const opts = {
-      dbName: 'bd-ship-mart-db',
+      dbName: "bd-ship-mart-db",
       bufferCommands: false,
       maxPoolSize: 10,
       serverSelectionTimeoutMS: 5000,
@@ -34,11 +34,11 @@ export async function connectToDB() {
 
     try {
       cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
-        console.log('MongoDB connected successfully');
+        console.log("MongoDB connected successfully");
         return mongoose;
       });
     } catch (error) {
-      console.error('MongoDB connection error:', error);
+      console.error("MongoDB connection error:", error);
       throw error;
     }
   }
@@ -48,7 +48,7 @@ export async function connectToDB() {
     return cached.conn;
   } catch (error) {
     cached.promise = null;
-    console.error('MongoDB connection error:', error);
+    console.error("MongoDB connection error:", error);
     throw error;
   }
 }

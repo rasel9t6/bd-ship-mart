@@ -1,11 +1,11 @@
-import { connectToDB } from '@/lib/dbConnect';
-import { NextRequest, NextResponse } from 'next/server';
-import { revalidatePath } from 'next/cache';
-import mongoose from 'mongoose';
-import Category from '@/models/Category';
-import Product from '@/models/Product';
-import Subcategory from '@/models/Subcategory';
-import { SubcategoryType } from '@/types/next-utils';
+import { connectToDB } from "@/lib/dbConnect";
+import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
+import mongoose from "mongoose";
+import Category from "@/models/Category";
+import Product from "@/models/Product";
+import Subcategory from "@/models/Subcategory";
+import { SubcategoryType } from "@/types/next-utils";
 type Params = Promise<{ categorySlug: string[] }>;
 export const GET = async (req: NextRequest, { params }: { params: Params }) => {
   try {
@@ -18,16 +18,16 @@ export const GET = async (req: NextRequest, { params }: { params: Params }) => {
         slug: slugPath[0],
       })
         .populate({
-          path: 'subcategories',
+          path: "subcategories",
           model: Subcategory,
         })
-        .populate('products')
+        .populate("products")
         .lean();
 
       if (!category) {
         return NextResponse.json(
-          { error: 'Category not found' },
-          { status: 404 }
+          { error: "Category not found" },
+          { status: 404 },
         );
       }
 
@@ -40,8 +40,8 @@ export const GET = async (req: NextRequest, { params }: { params: Params }) => {
 
       if (!parentCategory) {
         return NextResponse.json(
-          { error: 'Parent category not found' },
-          { status: 404 }
+          { error: "Parent category not found" },
+          { status: 404 },
         );
       }
 
@@ -49,13 +49,13 @@ export const GET = async (req: NextRequest, { params }: { params: Params }) => {
         category: parentCategory._id,
         slug: slugPath[1],
       })
-        .populate('products')
+        .populate("products")
         .lean();
 
       if (!subcategory) {
         return NextResponse.json(
-          { error: 'Subcategory not found' },
-          { status: 404 }
+          { error: "Subcategory not found" },
+          { status: 404 },
         );
       }
 
@@ -64,21 +64,21 @@ export const GET = async (req: NextRequest, { params }: { params: Params }) => {
     }
 
     return NextResponse.json(
-      { error: 'Invalid category path' },
-      { status: 400 }
+      { error: "Invalid category path" },
+      { status: 400 },
     );
   } catch (error) {
-    console.error('[CATEGORY_GET]', error);
+    console.error("[CATEGORY_GET]", error);
     return NextResponse.json(
-      { error: error || 'Failed to fetch category' },
-      { status: 500 }
+      { error: error || "Failed to fetch category" },
+      { status: 500 },
     );
   }
 };
 
 export const POST = async (
   req: NextRequest,
-  { params }: { params: Params }
+  { params }: { params: Params },
 ) => {
   try {
     await connectToDB();
@@ -88,8 +88,8 @@ export const POST = async (
     // We only support updating top-level categories via this endpoint
     if (slugPath.length !== 1) {
       return NextResponse.json(
-        { error: 'Invalid category path for update' },
-        { status: 400 }
+        { error: "Invalid category path for update" },
+        { status: 400 },
       );
     }
 
@@ -97,8 +97,8 @@ export const POST = async (
 
     if (!category) {
       return NextResponse.json(
-        { error: 'Category not found' },
-        { status: 404 }
+        { error: "Category not found" },
+        { status: 404 },
       );
     }
 
@@ -124,9 +124,9 @@ export const POST = async (
           const subcategoryData = {
             name: sub.name,
             title: sub.title,
-            description: sub.description || '',
-            icon: sub.icon || '',
-            thumbnail: sub.thumbnail || '',
+            description: sub.description || "",
+            icon: sub.icon || "",
+            thumbnail: sub.thumbnail || "",
             isActive: sub.isActive ?? true,
             category: category._id,
             sortOrder: sub.sortOrder || 0,
@@ -152,24 +152,24 @@ export const POST = async (
     await category.save();
 
     // Revalidate the categories path
-    revalidatePath('/categories');
+    revalidatePath("/categories");
     revalidatePath(`/categories/${slugPath[0]}`);
 
     return NextResponse.json(category);
   } catch (error) {
-    console.error('[CATEGORY_UPDATE]', error);
+    console.error("[CATEGORY_UPDATE]", error);
     return NextResponse.json(
       {
-        error: error || 'Failed to update category',
+        error: error || "Failed to update category",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 };
 
 export const DELETE = async (
   req: NextRequest,
-  { params }: { params: Params }
+  { params }: { params: Params },
 ) => {
   try {
     await connectToDB();
@@ -178,15 +178,15 @@ export const DELETE = async (
     // We only support deleting top-level categories via this endpoint
     if (slugPath.length !== 1) {
       return NextResponse.json(
-        { error: 'Invalid category path for deletion' },
-        { status: 400 }
+        { error: "Invalid category path for deletion" },
+        { status: 400 },
       );
     }
 
     const category = await Category.findOne({ slug: slugPath[0] });
 
     if (!category) {
-      return new NextResponse('Category not found', { status: 404 });
+      return new NextResponse("Category not found", { status: 404 });
     }
 
     // Start a transaction for atomic operations
@@ -198,7 +198,7 @@ export const DELETE = async (
       await Product.updateMany(
         { categories: category._id },
         { $pull: { categories: category._id } },
-        { session }
+        { session },
       );
 
       // Delete associated subcategories
@@ -217,15 +217,15 @@ export const DELETE = async (
       throw error;
     }
 
-    revalidatePath('/categories');
-    return new NextResponse('Category deleted successfully', { status: 200 });
+    revalidatePath("/categories");
+    return new NextResponse("Category deleted successfully", { status: 200 });
   } catch (error) {
-    console.error('[CATEGORY_DELETE]', error);
+    console.error("[CATEGORY_DELETE]", error);
     return NextResponse.json(
-      { error: error || 'Failed to delete category' },
-      { status: 500 }
+      { error: error || "Failed to delete category" },
+      { status: 500 },
     );
   }
 };
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";

@@ -1,14 +1,14 @@
-import Customer from '@/models/Customer';
-import Order from '@/models/Order';
-import { connectToDB } from '../dbConnect';
-import Category from '@/models/Category';
-import Product from '@/models/Product';
-import User from '@/models/User';
-import Subcategory from '@/models/Subcategory';
-const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
+import Customer from "@/models/Customer";
+import Order from "@/models/Order";
+import { connectToDB } from "../dbConnect";
+import Category from "@/models/Category";
+import Product from "@/models/Product";
+import User from "@/models/User";
+import Subcategory from "@/models/Subcategory";
+const apiUrl = process.env.NEXT_PUBLIC_API_URL || "";
 
 if (!apiUrl) {
-  throw new Error('NEXT_PUBLIC_API_URL is not found');
+  throw new Error("NEXT_PUBLIC_API_URL is not found");
 }
 export const getTotalSales = async () => {
   try {
@@ -17,11 +17,11 @@ export const getTotalSales = async () => {
     const totalOrders = orders.length;
     const totalRevenue = orders.reduce(
       (acc, order) => acc + (order.totalAmount?.bdt || 0),
-      0
+      0,
     );
     return { totalOrders, totalRevenue };
   } catch (error) {
-    console.error('Error fetching total sales:', error);
+    console.error("Error fetching total sales:", error);
     return { totalOrders: 0, totalRevenue: 0 };
   }
 };
@@ -32,7 +32,7 @@ export const getTotalCustomers = async () => {
     const customers = await Customer.find().lean();
     return customers.length;
   } catch (error) {
-    console.error('Error fetching total customers:', error);
+    console.error("Error fetching total customers:", error);
     return 0;
   }
 };
@@ -49,22 +49,22 @@ export const getSalesPerMonth = async () => {
           (acc[monthIndex] || 0) + (order.totalAmount?.bdt || 0);
         return acc;
       },
-      {} as Record<number, number>
+      {} as Record<number, number>,
     );
 
     const graphData = Array.from({ length: 12 }, (_, i) => {
-      const month = new Intl.DateTimeFormat('en-US', { month: 'short' }).format(
-        new Date(0, i)
+      const month = new Intl.DateTimeFormat("en-US", { month: "short" }).format(
+        new Date(0, i),
       );
       return { name: month, sales: salesPerMonth[i] || 0 };
     });
 
     return graphData;
   } catch (error) {
-    console.error('Error fetching sales per month:', error);
+    console.error("Error fetching sales per month:", error);
     return Array.from({ length: 12 }, (_, i) => ({
-      name: new Intl.DateTimeFormat('en-US', { month: 'short' }).format(
-        new Date(0, i)
+      name: new Intl.DateTimeFormat("en-US", { month: "short" }).format(
+        new Date(0, i),
       ),
       sales: 0,
     }));
@@ -80,7 +80,7 @@ export async function getCategories() {
   try {
     await connectToDB();
     const category = await Category.find().populate({
-      path: 'subcategories',
+      path: "subcategories",
       model: Subcategory,
     });
     return JSON.parse(JSON.stringify(category));
@@ -160,7 +160,7 @@ export async function getRelatedProducts({ productId }: { productId: string }) {
 
 export async function getUserOrders(userId: string | undefined) {
   try {
-    const res = await User.findById(userId).populate('orders');
+    const res = await User.findById(userId).populate("orders");
     const user = JSON.parse(JSON.stringify(res));
     return user.orders;
   } catch (error) {
@@ -173,10 +173,10 @@ export async function getProductDetails(productId: string) {
     await connectToDB();
     const product = await Product.findById(productId)
       .populate({
-        path: 'category',
+        path: "category",
         model: Category,
         populate: {
-          path: 'subcategories',
+          path: "subcategories",
           model: Subcategory,
         },
       })
