@@ -27,7 +27,7 @@ export default async function CategoriesPage() {
         <div className='flex items-center justify-between'>
           <p className='text-heading2-bold'>Categories</p>
           <Link
-            className='flex items-center rounded-lg bg-blue-1 p-3 text-body-semibold text-white'
+            className='flex items-center rounded-lg bg-primary p-3 text-body-semibold text-white'
             href='/admin/categories/new'
           >
             <FaPlus className='mr-2 size-4' />

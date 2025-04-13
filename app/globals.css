@@ -14,7 +14,7 @@
   --primary-foreground: 0 0% 98%; /* white-1/gray-50 */
 
   /* Secondary: Light Blue */
-  --secondary: 207 85% 95%; /* blue-100/blue-2 */
+  --secondary: 25 99% 52%; /* blue-100/blue-2 */
   --secondary-foreground: 210 100% 37%; /* blue-600/blue-1 */
 
   /* Muted: Light Gray */
@@ -22,8 +22,9 @@
   --muted-foreground: 0 0% 50%; /* custom-gray lighter */
 
   /* Accent: Blaze Orange */
-  --accent: 25 99% 52%; /* blaze-orange-500/DEFAULT */
-  --accent-foreground: 0 0% 98%; /* white-1/gray-50 */
+  --accent: 183, 100%, 21%; /* bondi-blue-50 */
+  --accent-foreground: 0 0% 98%;
+  /* white-1/gray-50 */
 
   /* Destructive: Red */
   --destructive: 0 100% 50%; /* danger-500/red-1 */
