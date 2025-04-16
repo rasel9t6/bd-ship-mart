@@ -3,6 +3,7 @@ import Category from '@/models/Category';
 import Product from '@/models/Product';
 import Subcategory from '@/models/Subcategory';
 import { ProductType } from '@/types/next-utils';
+import slugify from 'slugify';
 
 import mongoose, { FilterQuery } from 'mongoose';
 import { revalidatePath } from 'next/cache';
@@ -14,6 +15,20 @@ export const POST = async (req: NextRequest) => {
     await connectToDB();
 
     const body = await req.json();
+
+    // Generate slug if not provided
+    if (!body.slug) {
+      body.slug = slugify(body.title, { lower: true, strict: true });
+    }
+
+    // Check if slug already exists
+    const existingProduct = await Product.findOne({ slug: body.slug });
+    if (existingProduct) {
+      return NextResponse.json(
+        { error: 'A product with this title already exists' },
+        { status: 400 }
+      );
+    }
 
     const product = new Product(body);
     await product.validate(); // Explicitly validate before saving
@@ -32,12 +47,18 @@ export const POST = async (req: NextRequest) => {
       );
       await Promise.all(updateCategoryPromises);
     }
+
     revalidatePath('/products');
     revalidatePath(`/products/${product.slug}`);
+    revalidatePath('/admin/products');
     return NextResponse.json(product, { status: 201 });
   } catch (error) {
+    console.error('Error creating product:', error);
     return NextResponse.json(
-      { error: error || 'Failed to create product' },
+      {
+        error:
+          error instanceof Error ? error.message : 'Failed to create product',
+      },
       { status: 400 }
     );
   }

@@ -1,7 +1,6 @@
 import mongoose, { Document, Schema } from 'mongoose';
 import slugify from 'slugify';
 import Category from './Category';
-import toast from 'react-hot-toast';
 
 type CurrencyRates = {
   toBDT: number;
@@ -13,28 +12,37 @@ type ConversionRates = {
   [key: string]: CurrencyRates;
 };
 
+// Define media type interface
+interface IMediaItem {
+  url: string;
+  type: 'image' | 'video';
+}
+
 // Create custom type for price and expense
 interface ICurrency {
   cny: number;
   usd: number;
   bdt: number;
 }
+
 interface IRange {
   minQuantity: number;
   maxQuantity?: number;
   price: ICurrency;
 }
+
 // Define the Product interface
 interface IProduct extends Document {
   sku: string;
   title: string;
   slug: string;
   description?: string;
-  media: string[];
+  media: IMediaItem[];
+  colors: IMediaItem[];
   category: mongoose.Types.ObjectId;
+  subcategories: mongoose.Types.ObjectId[];
   tags: string[];
   sizes: string[];
-  colors: string[];
   minimumOrderQuantity: number;
   inputCurrency: 'CNY' | 'USD';
   quantityPricing: { ranges: IRange[] };
@@ -47,8 +55,6 @@ interface IProduct extends Document {
   hasOverlappingRanges(ranges: IRange[]): boolean;
   performCurrencyConversions(): void;
 }
-
-// Define range interface
 
 // Create Currency schema
 const CurrencySchema = new Schema<ICurrency>(
@@ -72,6 +78,26 @@ const CurrencySchema = new Schema<ICurrency>(
   { _id: false }
 );
 
+// Create Media Item schema
+const MediaItemSchema = new Schema<IMediaItem>(
+  {
+    url: {
+      type: String,
+      required: true,
+      validate: {
+        validator: (v: string) => /^https?:\/\/.+/.test(v),
+        message: 'Invalid media URL format',
+      },
+    },
+    type: {
+      type: String,
+      enum: ['image', 'video'],
+      required: true,
+    },
+  },
+  { _id: false }
+);
+
 // Create Range schema
 const RangeSchema = new Schema<IRange>(
   {
@@ -86,6 +112,7 @@ const RangeSchema = new Schema<IRange>(
         message:
           'Max quantity must be greater than or equal to minimum quantity',
       },
+      required: false, // Make maxQuantity explicitly optional
     },
     price: CurrencySchema,
   },
@@ -107,42 +134,28 @@ const ProductSchema = new Schema<IProduct>(
       unique: true,
       lowercase: true,
       index: true,
+      required: true,
     },
     description: {
       type: String,
       trim: true,
       maxLength: [2000, 'Description cannot exceed 2000 characters'],
     },
-    media: [
-      {
-        type: String,
-        validate: {
-          validator: (v: string) => /^https?:\/\/.+/.test(v),
-          message: 'Invalid media URL format',
-        },
-      },
-    ],
+    media: [MediaItemSchema], // Updated to use MediaItemSchema
     category: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Category',
       required: [true, 'Category is required'],
       index: true,
-      set: function (category: string) {
-        toast.success(`Category Updated: ${category}`);
-        return category;
-      },
+    },
+    subcategories: {
+      type: [mongoose.Schema.Types.ObjectId],
+      ref: 'Subcategory',
+      default: [],
     },
     tags: [String],
     sizes: [String],
-    colors: [
-      {
-        type: String,
-        validate: {
-          validator: (v: string) => /^https?:\/\/.+/.test(v),
-          message: 'Invalid media URL format',
-        },
-      },
-    ],
+    colors: [MediaItemSchema], // Updated to use MediaItemSchema
     minimumOrderQuantity: {
       type: Number,
       required: true,
@@ -160,9 +173,11 @@ const ProductSchema = new Schema<IProduct>(
         type: [RangeSchema],
         validate: {
           validator: function (this: IProduct, ranges: IRange[]) {
-            // Use 'this' to refer to the product instance
+            // Fixed the validation logic - return false if ranges overlap
             return (
-              !ranges || ranges.length <= 1 || this.hasOverlappingRanges(ranges)
+              !ranges ||
+              ranges.length <= 1 ||
+              !this.hasOverlappingRanges(ranges)
             );
           },
           message: 'Quantity ranges cannot overlap',
@@ -191,11 +206,17 @@ ProductSchema.methods.hasOverlappingRanges = function (
     for (let j = i + 1; j < ranges.length; j++) {
       const range1 = ranges[i];
       const range2 = ranges[j];
+
+      // Handle cases where maxQuantity might be undefined
+      const range1Max =
+        range1.maxQuantity === undefined ? Infinity : range1.maxQuantity;
+      const range2Max =
+        range2.maxQuantity === undefined ? Infinity : range2.maxQuantity;
+
+      // Check for overlap
       const overlap =
-        (range1.minQuantity <= range2.maxQuantity! &&
-          range1.maxQuantity! >= range2.minQuantity) ||
-        (range2.minQuantity <= range1.maxQuantity! &&
-          range2.maxQuantity! >= range1.minQuantity);
+        range1.minQuantity <= range2Max && range1Max >= range2.minQuantity;
+
       if (overlap) return true;
     }
   }
@@ -227,15 +248,15 @@ ProductSchema.post('save', async function (doc: IProduct) {
 // Generate slug before saving
 ProductSchema.pre<IProduct>('save', function (next) {
   try {
-    if (this.isModified('title') && !this.isNew) {
+    if (!this.slug || this.isModified('title')) {
       this.slug = slugify(this.title, { lower: true, strict: true });
     }
-    this.performCurrencyConversions();
     next();
   } catch (error) {
     next(error as Error);
   }
 });
+
 // Currency conversion logic
 ProductSchema.methods.performCurrencyConversions = function () {
   const convertCurrency = (inputValue: number, rate: number) =>

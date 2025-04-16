@@ -25,9 +25,10 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import MultiSelect from '@/ui/custom/MultiSelect';
-import MediaUpload, { MediaType, MediaItem } from '@/ui/custom/MediaUpload';
+import MediaUpload, { MediaType } from '@/ui/custom/MediaUpload';
 import MultiText from '@/ui/custom/MultiText';
 import { Plus, Trash2 } from 'lucide-react';
+import slugify from 'slugify';
 
 // Define the form schema with Zod
 const formSchema = z.object({
@@ -52,22 +53,18 @@ const formSchema = z.object({
     cnyToBdt: z.number().min(0),
   }),
   minimumOrderQuantity: z.number().min(1),
-  media: z
-    .array(
-      z.object({
-        url: z.string().url(),
-        type: z.enum(['image', 'video']),
-      })
-    )
-    .optional(),
-  colors: z
-    .array(
-      z.object({
-        url: z.string().url(),
-        type: z.enum(['image', 'video']),
-      })
-    )
-    .optional(),
+  media: z.array(
+    z.object({
+      url: z.string().url(),
+      type: z.enum(['image']),
+    })
+  ),
+  colors: z.array(
+    z.object({
+      url: z.string().url(),
+      type: z.enum(['image', 'video']),
+    })
+  ),
   sizes: z.array(z.string()).optional(),
   tags: z.array(z.string()).optional(),
   quantityPricing: z.object({
@@ -122,6 +119,7 @@ interface ProductFormType {
   title: string;
   description?: string;
   sku: string;
+  slug?: string;
   category?: CategoryField;
   subcategory?: string;
   subcategories?: string[];
@@ -145,6 +143,11 @@ interface ProductFormType {
   colors?: MediaItem[];
   tags?: string[];
   sizes?: string[];
+}
+
+interface MediaItem {
+  url: string;
+  type: 'image';
 }
 
 interface Props {
@@ -301,7 +304,9 @@ export default function ProductForm({ initialData }: Props) {
 
   // Handle media upload
   const handleMediaChange = (url: string, type: MediaType) => {
-    form.setValue('media', [{ url, type }]);
+    if (type === 'image') {
+      form.setValue('media', [{ url, type }]);
+    }
   };
 
   const handleMediaRemove = () => {
@@ -403,32 +408,44 @@ export default function ProductForm({ initialData }: Props) {
   };
 
   // Form submission handler
-  const onSubmit = async (data: FormValues) => {
+  const onSubmit = async (values: FormValues) => {
     try {
       setLoading(true);
-      const url = initialData
-        ? `/api/products/${initialData._id}`
+      const endpoint = initialData?._id
+        ? `/api/products/${initialData.slug}`
         : '/api/products';
-      const method = initialData ? 'PATCH' : 'POST';
+      const method = initialData?._id ? 'PATCH' : 'POST';
 
-      const res = await fetch(url, {
+      const response = await fetch(endpoint, {
         method,
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          ...values,
+          slug:
+            initialData?.slug ||
+            slugify(values.title, { lower: true, strict: true }),
+        }),
       });
 
-      if (!res.ok) {
-        throw new Error('Failed to save product');
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Something went wrong');
       }
 
-      toast.success(initialData ? 'Product updated' : 'Product created');
+      toast.success(
+        initialData?._id
+          ? 'Product updated successfully'
+          : 'Product created successfully'
+      );
       router.push('/admin/products');
       router.refresh();
     } catch (error) {
-      console.error('Error saving product:', error);
-      toast.error('Failed to save product');
+      console.error('Error submitting form:', error);
+      toast.error(
+        error instanceof Error ? error.message : 'Something went wrong'
+      );
     } finally {
       setLoading(false);
     }

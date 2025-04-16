@@ -1,9 +1,9 @@
 import { getProduct } from "@/lib/actions/actions";
 import ProductForm from "../_components/ProductForm";
-type Params = Promise<{ productId: string }>;
+type Params = Promise<{ productSlug: string }>;
 export default async function ProductPage({ params }: { params: Params }) {
-  const { productId } = await params;
-  const productDetails = await getProduct({ productId });
+  const { productSlug } = await params;
+  const productDetails = await getProduct({ productSlug });
 
   return (
     <>

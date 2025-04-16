@@ -19,25 +19,30 @@ import { useRouter } from 'next/navigation';
 export default function Delete({ id, item }: { id: string; item: string }) {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+
   async function onDelete() {
     try {
       setLoading(true);
-      const itemType = item === 'product' ? 'products' : 'categories';
-      const res = await fetch(`/api/${itemType}/${id}`, {
+      const endpoint =
+        item === 'product' ? `/api/products/${id}` : `/api/categories/${id}`;
+      const res = await fetch(endpoint, {
         method: 'DELETE',
       });
 
-      if (res.ok) {
-        setLoading(false);
-        toast.success(`${item} deleted`);
-        router.refresh();
-      } else {
-        console.error(`${item} deletion failed`, await res.text());
-        toast.error(`${item} deletion failed.Please try again.`);
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.message || 'Failed to delete');
       }
+
+      toast.success(`${item} deleted successfully`);
+      router.refresh();
     } catch (error) {
       console.error(`[${item}]_DELETE`, error);
-      toast.error('Something went wrong. Please try again.');
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : 'Something went wrong. Please try again.'
+      );
     } finally {
       setLoading(false);
     }
@@ -63,8 +68,9 @@ export default function Delete({ id, item }: { id: string; item: string }) {
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
           <AlertDialogAction
-            className='bg-danger text-white'
+            className='hover:bg-danger bg-danger/90 text-white'
             onClick={onDelete}
+            disabled={loading}
           >
             {loading ? 'Deleting...' : `Delete`}
           </AlertDialogAction>

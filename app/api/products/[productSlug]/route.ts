@@ -2,7 +2,6 @@ import { connectToDB } from '@/lib/dbConnect';
 import Category from '@/models/Category';
 import Product from '@/models/Product';
 import Subcategory from '@/models/Subcategory';
-import mongoose from 'mongoose';
 import { revalidatePath } from 'next/cache';
 import { NextRequest, NextResponse } from 'next/server';
 import toast from 'react-hot-toast';
@@ -87,23 +86,15 @@ export const POST = async (req: NextRequest) => {
 // PATCH handler
 export const PATCH = async (
   req: NextRequest,
-  { params }: { params: Promise<{ productId: string }> }
+  { params }: { params: Promise<{ productSlug: string }> }
 ) => {
   try {
     await connectToDB();
-    const { productId } = await params;
+    const { productSlug } = await params;
     const body = await req.json();
 
-    // Validate ObjectId
-    if (!mongoose.isValidObjectId(productId)) {
-      return NextResponse.json(
-        { error: 'Invalid product ID' },
-        { status: 400 }
-      );
-    }
-
     // Check if the product exists
-    const existingProduct = await Product.findOne({ slug: productId });
+    const existingProduct = await Product.findOne({ slug: productSlug });
     if (!existingProduct) {
       return NextResponse.json({ error: 'Product not found' }, { status: 404 });
     }
@@ -112,11 +103,15 @@ export const PATCH = async (
     delete body.slug;
 
     // Update product (excluding slug)
-    const updatedProduct = await Product.findByIdAndUpdate(productId, body, {
-      new: true,
-      runValidators: true,
-      upsert: false,
-    });
+    const updatedProduct = await Product.findByIdAndUpdate(
+      existingProduct._id,
+      body,
+      {
+        new: true,
+        runValidators: true,
+        upsert: false,
+      }
+    );
 
     return NextResponse.json(updatedProduct);
   } catch (error) {
@@ -128,20 +123,13 @@ export const PATCH = async (
 // DELETE handler
 export const DELETE = async (
   req: NextRequest,
-  { params }: { params: Promise<{ productId: string }> }
+  { params }: { params: Promise<{ productSlug: string }> }
 ) => {
   try {
     await connectToDB();
-    const { productId } = await params;
-    // Validate ObjectId
-    if (!mongoose.isValidObjectId(productId)) {
-      return NextResponse.json(
-        { error: 'Invalid product ID' },
-        { status: 400 }
-      );
-    }
+    const { productSlug } = await params;
 
-    const product = await Product.findById(productId);
+    const product = await Product.findOne({ slug: productSlug });
     if (!product) {
       return new NextResponse(
         JSON.stringify({ message: 'Product not found' }),
@@ -152,18 +140,23 @@ export const DELETE = async (
     await Product.findByIdAndDelete(product._id);
 
     // Update category's products array
-    await Category.findByIdAndUpdate(product.category, {
-      $pull: { products: product._id },
-    });
+    if (product.category) {
+      await Category.findByIdAndUpdate(product.category, {
+        $pull: { products: product._id },
+      });
+    }
 
+    revalidatePath('/admin/products');
     revalidatePath('/products');
-    toast.success('Product deleted successfully');
     return new NextResponse(JSON.stringify({ message: 'Product deleted' }), {
       status: 200,
     });
   } catch (error) {
-    toast.error(`Failed to delete product | ${error}`);
-    return new NextResponse('Internal error', { status: 500 });
+    console.error('Failed to delete product:', error);
+    return new NextResponse(
+      JSON.stringify({ message: 'Internal server error' }),
+      { status: 500 }
+    );
   }
 };
 
