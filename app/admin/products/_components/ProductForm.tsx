@@ -814,7 +814,7 @@ export default function ProductForm({ initialData }: Props) {
                   <Input
                     type='number'
                     min={1}
-                    value={range.minQuantity}
+                    value={range.minQuantity || ''}
                     onChange={(e) =>
                       handleRangeChange(
                         index,
@@ -831,7 +831,7 @@ export default function ProductForm({ initialData }: Props) {
                 <FormControl>
                   <Input
                     type='number'
-                    min={range.minQuantity}
+                    min={range.minQuantity || 1}
                     value={range.maxQuantity || ''}
                     placeholder='No limit'
                     onChange={(e) =>

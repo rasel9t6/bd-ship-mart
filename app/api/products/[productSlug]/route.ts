@@ -1,11 +1,11 @@
-import { connectToDB } from "@/lib/dbConnect";
-import Category from "@/models/Category";
-import Product from "@/models/Product";
-import Subcategory from "@/models/Subcategory";
-import mongoose from "mongoose";
-import { revalidatePath } from "next/cache";
-import { NextRequest, NextResponse } from "next/server";
-import toast from "react-hot-toast";
+import { connectToDB } from '@/lib/dbConnect';
+import Category from '@/models/Category';
+import Product from '@/models/Product';
+import Subcategory from '@/models/Subcategory';
+import mongoose from 'mongoose';
+import { revalidatePath } from 'next/cache';
+import { NextRequest, NextResponse } from 'next/server';
+import toast from 'react-hot-toast';
 
 const handleError = (message: string, status: number = 500): NextResponse => {
   console.error(message);
@@ -15,33 +15,36 @@ const handleError = (message: string, status: number = 500): NextResponse => {
 // GET handler
 export async function GET(
   _req: NextRequest,
-  { params }: { params: Promise<{ productId: string }> },
+  { params }: { params: Promise<{ productSlug: string }> }
 ) {
   try {
     await connectToDB();
-    const { productId } = await params;
-    const product = await Product.findOne({ slug: productId })
+    const { productSlug } = await params;
+    const product = await Product.findOne({ slug: productSlug })
       .populate({
-        path: "category",
+        path: 'category',
         model: Category,
         populate: {
-          path: "subcategories",
+          path: 'subcategories',
           model: Subcategory,
         },
       })
       .lean();
 
     if (!product) {
-      return NextResponse.json({ error: "Product not found" }, { status: 404 });
+      return NextResponse.json({ error: 'Product not found' }, { status: 404 });
     }
 
-    revalidatePath(`/products/${productId}`);
+    revalidatePath(`/products/${productSlug}`);
     return NextResponse.json(product);
-  } catch (error) {
-    console.error("Product fetch error:", error);
+  } catch (error: unknown) {
+    console.error('Product fetch error:', error);
     return NextResponse.json(
-      { error: error || "Failed to fetch product" },
-      { status: 500 },
+      {
+        error:
+          error instanceof Error ? error.message : 'Failed to fetch product',
+      },
+      { status: 500 }
     );
   }
 }
@@ -54,7 +57,7 @@ export const POST = async (req: NextRequest) => {
 
     // Validate required fields
     if (!body.title || !body.category) {
-      return handleError("Title and category are required", 400);
+      return handleError('Title and category are required', 400);
     }
 
     // Create and save the new product
@@ -77,14 +80,14 @@ export const POST = async (req: NextRequest) => {
     });
   } catch (error) {
     toast.error(`Failed to create product | ${error}`);
-    return handleError("Internal Server Error", 500);
+    return handleError('Internal Server Error', 500);
   }
 };
 
 // PATCH handler
 export const PATCH = async (
   req: NextRequest,
-  { params }: { params: Promise<{ productId: string }> },
+  { params }: { params: Promise<{ productId: string }> }
 ) => {
   try {
     await connectToDB();
@@ -94,15 +97,15 @@ export const PATCH = async (
     // Validate ObjectId
     if (!mongoose.isValidObjectId(productId)) {
       return NextResponse.json(
-        { error: "Invalid product ID" },
-        { status: 400 },
+        { error: 'Invalid product ID' },
+        { status: 400 }
       );
     }
 
     // Check if the product exists
     const existingProduct = await Product.findOne({ slug: productId });
     if (!existingProduct) {
-      return NextResponse.json({ error: "Product not found" }, { status: 404 });
+      return NextResponse.json({ error: 'Product not found' }, { status: 404 });
     }
 
     // Prevent updating the slug
@@ -117,15 +120,15 @@ export const PATCH = async (
 
     return NextResponse.json(updatedProduct);
   } catch (error) {
-    console.error("❌ Error updating product:", error);
-    return handleError("Internal Server Error", 500);
+    console.error('❌ Error updating product:', error);
+    return handleError('Internal Server Error', 500);
   }
 };
 
 // DELETE handler
 export const DELETE = async (
   req: NextRequest,
-  { params }: { params: Promise<{ productId: string }> },
+  { params }: { params: Promise<{ productId: string }> }
 ) => {
   try {
     await connectToDB();
@@ -133,16 +136,16 @@ export const DELETE = async (
     // Validate ObjectId
     if (!mongoose.isValidObjectId(productId)) {
       return NextResponse.json(
-        { error: "Invalid product ID" },
-        { status: 400 },
+        { error: 'Invalid product ID' },
+        { status: 400 }
       );
     }
 
     const product = await Product.findById(productId);
     if (!product) {
       return new NextResponse(
-        JSON.stringify({ message: "Product not found" }),
-        { status: 404 },
+        JSON.stringify({ message: 'Product not found' }),
+        { status: 404 }
       );
     }
 
@@ -153,15 +156,15 @@ export const DELETE = async (
       $pull: { products: product._id },
     });
 
-    revalidatePath("/products");
-    toast.success("Product deleted successfully");
-    return new NextResponse(JSON.stringify({ message: "Product deleted" }), {
+    revalidatePath('/products');
+    toast.success('Product deleted successfully');
+    return new NextResponse(JSON.stringify({ message: 'Product deleted' }), {
       status: 200,
     });
   } catch (error) {
     toast.error(`Failed to delete product | ${error}`);
-    return new NextResponse("Internal error", { status: 500 });
+    return new NextResponse('Internal error', { status: 500 });
   }
 };
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
