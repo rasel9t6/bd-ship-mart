@@ -1,4 +1,3 @@
-import Customer from '@/models/Customer';
 import Order from '@/models/Order';
 import { connectToDB } from '../dbConnect';
 import Category from '@/models/Category';
@@ -26,16 +25,7 @@ export const getTotalSales = async () => {
   }
 };
 
-export const getTotalCustomers = async () => {
-  try {
-    await connectToDB();
-    const customers = await Customer.find().lean();
-    return customers.length;
-  } catch (error) {
-    console.error('Error fetching total customers:', error);
-    return 0;
-  }
-};
+
 
 export const getSalesPerMonth = async () => {
   try {
@@ -139,20 +129,16 @@ export async function getOrder({ orderId }: { orderId: string }) {
   }
 }
 
-export async function getCustomers() {
+
+export async function getRelatedProducts({
+  productSlug,
+}: {
+  productSlug: string;
+}) {
   try {
-    await connectToDB();
-    const customers = await Customer.find();
-    return JSON.parse(JSON.stringify(customers));
-  } catch (error) {
-    console.error(`${error}`);
-  }
-}
-export async function getRelatedProducts({ productId }: { productId: string }) {
-  try {
-    const res = await fetch(`${apiUrl}/products/${productId}/related`);
+    const res = await fetch(`${apiUrl}/products/${productSlug}/related`);
     const relatedProducts = await res.json();
-    return relatedProducts;
+    return JSON.parse(JSON.stringify(relatedProducts));
   } catch (error) {
     console.error(`${error}`);
   }

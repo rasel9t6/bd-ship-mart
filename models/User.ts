@@ -1,7 +1,25 @@
 // models/User.ts
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
+
+// Slugify function to create URL-friendly strings
+const slugify = (text: string) => {
+  return text
+    .toString()
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, '-') // Replace spaces with -
+    .replace(/[^\w\-]+/g, '') // Remove all non-word chars
+    .replace(/\-\-+/g, '-') // Replace multiple - with single -
+    .replace(/^-+/, '') // Trim - from start of text
+    .replace(/-+$/, ''); // Trim - from end of text
+};
 
 const userSchema = new mongoose.Schema({
+  userId: {
+    type: String,
+    required: true,
+    unique: true,
+  },
   name: {
     type: String,
     required: true,
@@ -18,8 +36,8 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ["user", "admin", "super_admin"],
-    default: "user",
+    enum: ['user', 'admin', 'super_admin'],
+    default: 'user',
   },
   profilePicture: {
     type: String,
@@ -56,10 +74,26 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-  orders: [{ type: mongoose.Schema.Types.ObjectId, ref: "Order" }],
-  wishlist: [{ type: mongoose.Schema.Types.ObjectId, ref: "Product" }],
+  orders: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Order' }],
+  wishlist: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Product' }],
+  status: { type: String, enum: ['active', 'inactive'], default: 'active' },
+  customerType: {
+    type: String,
+    enum: ['regular', 'wholesale', 'vip'],
+    default: 'regular',
+  },
 });
 
-const User = mongoose.models.User || mongoose.model("User", userSchema);
+// Pre-save middleware to generate userId
+userSchema.pre('save', function (next) {
+  if (!this.userId) {
+    const nameSlug = slugify(this.name);
+    const timestamp = Date.now().toString().slice(-6);
+    this.userId = `${nameSlug}-k2b-${timestamp}`;
+  }
+  next();
+});
+
+const User = mongoose.models.User || mongoose.model('User', userSchema);
 
 export default User;

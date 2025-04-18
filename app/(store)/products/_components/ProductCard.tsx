@@ -1,7 +1,7 @@
-import Image from "next/image";
-import Link from "next/link";
-import HeartFavorite from "./HeartFavorite";
-import { ProductType, UserType } from "@/types/next-utils";
+import Image from 'next/image';
+import Link from 'next/link';
+import HeartFavorite from './HeartFavorite';
+import { ProductType, UserType } from '@/types/next-utils';
 
 interface ProductCardProps {
   product: ProductType;
@@ -14,29 +14,29 @@ export default function ProductCard({
   return (
     <Link
       href={`/products/${product.slug}`}
-      className="group flex flex-col gap-3 rounded-lg border border-gray-200 bg-white p-4 shadow-sm transition-all duration-300 hover:shadow-lg"
+      className='group flex flex-col gap-3 rounded-lg border border-gray-200 bg-white p-4 shadow-sm transition-all duration-300 hover:shadow-lg'
     >
       {/* 🖼 Product Image */}
-      <div className="relative h-48 w-full overflow-hidden rounded-lg">
+      <div className='relative h-48 w-full overflow-hidden rounded-lg'>
         <Image
-          src={product?.media[0] ?? "/not-found.gif"}
+          src={product?.media[0].url ?? '/not-found.gif'}
           alt={product.title}
           fill
-          className="rounded-lg object-cover transition-transform duration-300 group-hover:scale-105"
+          className='rounded-lg object-cover transition-transform duration-300 group-hover:scale-105'
         />
       </div>
 
       {/* 📌 Product Info */}
-      <div className="flex flex-col">
-        <p className="truncate text-lg font-semibold text-gray-800">
+      <div className='flex flex-col'>
+        <p className='truncate text-lg font-semibold text-gray-800'>
           {product.title}
         </p>
-        <p className="text-sm text-gray-500">{product.category.name}</p>
+        <p className='text-sm text-gray-500'>{product.category.name}</p>
       </div>
 
       {/* 💰 Price & Wishlist */}
-      <div className="flex items-center justify-between">
-        <p className="text-lg font-bold text-blaze-orange">
+      <div className='flex items-center justify-between'>
+        <p className='text-lg font-bold text-blaze-orange'>
           ৳{product.price.bdt}
         </p>
         {updateSignedInUser && (

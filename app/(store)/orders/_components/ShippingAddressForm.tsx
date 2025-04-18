@@ -1,71 +1,120 @@
-import React from "react";
+import { useFormContext } from 'react-hook-form';
+import { MapPin } from 'lucide-react';
+import { Card, CardContent } from '@/ui/card';
+import {
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from '@/ui/form';
+import { Input } from '@/ui/input';
 
-interface AddressType {
-  street: string;
-  city: string;
-  state: string;
-  postalCode: string;
-  country: string;
-}
+export const ShippingAddressForm = () => {
+  const form = useFormContext();
 
-interface ShippingAddressFormProps {
-  shippingAddress: AddressType;
-  onChange: (name: string, e: string) => void;
-}
-
-const ShippingAddressForm: React.FC<ShippingAddressFormProps> = ({
-  shippingAddress,
-  onChange,
-}) => {
   return (
-    <div className="mt-6">
-      <h3 className="text-lg font-semibold">Shipping Address</h3>
-      <div className="mt-2 grid grid-cols-1 gap-4">
-        <input
-          type="text"
-          value={shippingAddress.street}
-          onChange={(e) => onChange("street", e.target.value)}
-          placeholder="Street Address *"
-          className="w-full rounded-md border p-2"
-          required
-        />
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          <input
-            type="text"
-            value={shippingAddress.city}
-            onChange={(e) => onChange("city", e.target.value)}
-            placeholder="City *"
-            className="w-full rounded-md border p-2"
-            required
-          />
-          <input
-            type="text"
-            value={shippingAddress.state}
-            onChange={(e) => onChange("state", e.target.value)}
-            placeholder="State/Province *"
-            className="w-full rounded-md border p-2"
-            required
-          />
-          <input
-            type="text"
-            value={shippingAddress.postalCode}
-            onChange={(e) => onChange("postalCode", e.target.value)}
-            placeholder="Postal Code *"
-            className="w-full rounded-md border p-2"
-            required
-          />
-          <input
-            type="text"
-            value={shippingAddress.country}
-            onChange={(e) => onChange("country", e.target.value)}
-            placeholder="Country *"
-            className="w-full rounded-md border p-2"
-            required
-          />
-        </div>
+    <div className='space-y-6'>
+      <div>
+        <h3 className='text-lg font-medium mb-4'>Shipping Address</h3>
+        <Card>
+          <CardContent className='p-4 space-y-4'>
+            <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+              <FormField
+                control={form.control}
+                name='shippingAddress.street'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Street Address</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        placeholder='123 Main St'
+                        className='border-gray-300'
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name='shippingAddress.city'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>City</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        placeholder='Dhaka'
+                        className='border-gray-300'
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
+              <FormField
+                control={form.control}
+                name='shippingAddress.state'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>State/Province</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        placeholder='Dhaka'
+                        className='border-gray-300'
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name='shippingAddress.postalCode'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Postal Code</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        placeholder='1216'
+                        className='border-gray-300'
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name='shippingAddress.country'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Country</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        placeholder='Bangladesh'
+                        className='border-gray-300'
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
 };
-
-export default ShippingAddressForm;

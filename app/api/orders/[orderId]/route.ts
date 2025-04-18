@@ -1,52 +1,87 @@
-import { connectToDB } from "@/lib/dbConnect";
-import Order from "@/models/Order";
-import { NextRequest, NextResponse } from "next/server";
+// app/api/orders/[orderId]/route.ts
+import { NextRequest, NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
 
-export async function PATCH(
-  req: NextRequest,
-  { params }: { params: Promise<{ orderId: string }> },
+import Order from '@/models/Order';
+import { authOptions } from '@/lib/authOption';
+import { connectToDB } from '@/lib/dbConnect';
+
+type Params = Promise<{ orderId: string }>;
+export async function GET(
+  _request: NextRequest,
+  { params }: { params: Params }
 ) {
   try {
+    const session = await getServerSession(authOptions);
+
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     await connectToDB();
 
     const { orderId } = await params;
-    const { status, location } = await req.json();
 
-    if (!status) {
-      return new NextResponse(JSON.stringify({ error: "Status is required" }), {
-        status: 400,
-      });
+    // Try to find by orderId string first
+    let order = await Order.findOne({ orderId })
+      .populate('customerInfo', 'name email phone address')
+      .populate('products.product');
+
+    // If not found, try to find by MongoDB _id
+    if (!order && orderId.match(/^[0-9a-fA-F]{24}$/)) {
+      order = await Order.findById(orderId)
+        .populate('customerInfo', 'name email phone address')
+        .populate('products.product');
     }
-
-    // Find order by either _id or custom orderId field
-    const order = await Order.findOne({ orderId }); // Change to { orderId } if it's a custom field
 
     if (!order) {
-      return new NextResponse(JSON.stringify({ error: "Order not found" }), {
-        status: 404,
-      });
+      return NextResponse.json({ error: 'Order not found' }, { status: 404 });
     }
 
-    // Update status & tracking history
-    order.status = status;
-    order.trackingHistory.push({
-      status,
-      timestamp: new Date(),
-      location: location || "Status updated",
-    });
-
-    await order.save();
-
-    return new NextResponse(
-      JSON.stringify({ message: "Order status updated successfully", order }),
-      { status: 200 },
-    );
+    return NextResponse.json(order);
   } catch (error) {
-    console.error("[ORDER_STATUS_UPDATE_ERROR]", error);
+    console.error('Error fetching order:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch order' },
+      { status: 500 }
+    );
+  }
+}
 
-    return new NextResponse(
-      JSON.stringify({ error: "Internal server error" }),
-      { status: 500 },
+// PATCH /api/orders/[orderId] - Update a specific order
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Params }
+) {
+  try {
+    const session = await getServerSession(authOptions);
+
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    await connectToDB();
+
+    const { orderId } = await params;
+    const updateData = await request.json();
+
+    // Find and update the order
+    const updatedOrder = await Order.findOneAndUpdate(
+      { orderId },
+      { ...updateData, updatedAt: new Date() },
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedOrder) {
+      return NextResponse.json({ error: 'Order not found' }, { status: 404 });
+    }
+
+    return NextResponse.json(updatedOrder);
+  } catch (error) {
+    console.error('Error updating order:', error);
+    return NextResponse.json(
+      { error: 'Failed to update order' },
+      { status: 500 }
     );
   }
 }

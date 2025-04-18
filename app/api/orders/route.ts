@@ -1,104 +1,84 @@
-import { NextRequest, NextResponse } from "next/server";
+import { authOptions } from '@/lib/authOption';
+import { connectToDB } from '@/lib/dbConnect';
+import Order from '@/models/Order';
+import User from '@/models/User';
+import { getServerSession } from 'next-auth';
+import { NextRequest, NextResponse } from 'next/server';
 
-import { connectToDB } from "@/lib/dbConnect";
-import Customer from "@/models/Customer";
-import Order from "@/models/Order";
-import Product from "@/models/Product";
-import { OrderType } from "@/types/next-utils";
-
-// Fetch all orders
-export const GET = async () => {
+export async function POST(request: NextRequest) {
   try {
-    await connectToDB();
+    const session = await getServerSession(authOptions);
 
-    const orders = await Order.find()
-      .populate({
-        path: "products.product",
-        model: Product,
-      })
-      .populate({
-        path: "customerId",
-        model: Customer,
-        select: "name email phone address customerId",
-      })
-      .sort({ createdAt: -1 });
-
-    return new NextResponse(JSON.stringify(orders), {
-      status: 200,
-    });
-  } catch (error) {
-    console.error("[orders_GET]", error);
-    return new NextResponse(
-      JSON.stringify({ error: "Internal Server Error" }),
-      { status: 500 },
-    );
-  }
-};
-
-// Create a new order
-export const POST = async (req: NextRequest) => {
-  try {
-    const orderData = await req.json();
-
-    // Validate required fields
-    if (
-      !orderData.userId ||
-      !orderData.products ||
-      !orderData.shippingAddress
-    ) {
-      return new NextResponse(
-        JSON.stringify({
-          error: "Missing required fields: userId, products, shippingAddress",
-        }),
-        { status: 400 },
-      );
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     await connectToDB();
+
+    const orderData = await request.json();
 
     // Create new order
-    const newOrder = await Order.create({
-      ...orderData,
-      trackingHistory: [
-        {
-          status: "pending",
-          timestamp: new Date(),
-          location: "Order received",
-        },
-      ],
-    });
+    const order = new Order(orderData);
+    const savedOrder = await order.save();
 
-    // Find the customer to update their orders array
-    const customer = await Customer.findOne({ customerId: orderData.userId });
+    // Update user if needed
+    if (orderData.customerInfo) {
+      const userId = orderData.customerInfo;
 
-    if (customer) {
-      // Add order to customer's orders array
-      customer.orders.push(newOrder._id);
-      await customer.save();
-    } else {
-      console.error(`Customer with ID ${orderData.userId} not found`);
+      // Add order to user's orders array
+      await User.findByIdAndUpdate(userId, {
+        $addToSet: { orders: savedOrder._id },
+      });
     }
 
-    const userOrders = await fetch(`${process.env.STORE_API_URL}/users`);
-    const userOrdersData = await userOrders.json();
-    const userOrder = userOrdersData.find(
-      (order: OrderType) => order.customerId === orderData.userId,
-    );
-    if (userOrder) {
-      userOrder.orders.push(newOrder._id);
-    }
-    return new NextResponse(
-      JSON.stringify({
-        message: "Order created successfully",
-        order: newOrder,
-      }),
-      { status: 201 },
-    );
+    return NextResponse.json(savedOrder, { status: 201 });
   } catch (error) {
-    console.error("[ORDER_CREATE_ERROR]", error);
-    return new NextResponse(
-      JSON.stringify({ error: "Internal server error" }),
-      { status: 500 },
+    console.error('Error creating order:', error);
+    return NextResponse.json(
+      { error: 'Failed to create order' },
+      { status: 500 }
     );
   }
-};
+}
+
+// GET /api/orders - Get orders with optional filters
+export async function GET(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions);
+
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    await connectToDB();
+
+    const searchParams = request.nextUrl.searchParams;
+    const userId = searchParams.get('userId');
+    const limit = parseInt(searchParams.get('limit') || '10');
+    const skip = parseInt(searchParams.get('skip') || '0');
+    const sort = searchParams.get('sort') || '-createdAt';
+
+    const query = userId ? { customerInfo: userId } : {};
+
+    const orders = await Order.find(query)
+      .sort(sort)
+      .skip(skip)
+      .limit(limit)
+      .populate('customerInfo', 'name email phone')
+      .populate('products.product', 'name images price');
+
+    const total = await Order.countDocuments(query);
+
+    return NextResponse.json({
+      orders,
+      total,
+      hasMore: total > skip + orders.length,
+    });
+  } catch (error) {
+    console.error('Error fetching orders:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch orders' },
+      { status: 500 }
+    );
+  }
+}

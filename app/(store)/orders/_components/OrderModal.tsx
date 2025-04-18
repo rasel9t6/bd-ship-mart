@@ -1,679 +1,669 @@
-import React, { useState, useEffect } from "react";
-import { motion } from "motion/react";
-import Image from "next/image";
-import toast from "react-hot-toast";
-import { useSession } from "next-auth/react";
+'use client';
 
-import CustomerInfoForm from "./CustomerInfoForm";
-import DeliveryOptions from "./DeliveryOptions";
-import OrderSummary from "./OrderSummary";
-import PaymentMethodSelector from "./PaymentMethodSelector";
-import ShippingAddressForm from "./ShippingAddressForm";
-import { OrderItem, ProductInfoType, ICurrency } from "@/types/next-utils";
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { FormProvider } from 'react-hook-form';
 
-interface AddressType {
-  street: string;
-  city: string;
-  state: string;
-  postalCode: string;
-  country: string;
+import {
+  Loader2,
+  AlertCircle,
+  User,
+  MapPin,
+  CreditCard,
+  CheckCircle,
+} from 'lucide-react';
+import { Button } from '@/ui/button';
+import { Badge } from '@/ui/badge';
+import { Progress } from '@/ui/progress';
+import { ScrollArea } from '@/ui/scroll-area';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/ui/tabs';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogTitle,
+} from '@/ui/alert-dialog';
+
+import { CustomerInfoForm } from './CustomerInfoForm';
+import { ShippingAddressForm } from './ShippingAddressForm';
+import { PaymentShippingForm } from './PaymentShippingForm';
+import { OrderReview } from './OrderReview';
+import toast from 'react-hot-toast';
+import { BkashPayment } from './BkashPayment';
+
+// Form schema using Zod
+const formSchema = z.object({
+  customerInfo: z.object({
+    name: z.string().min(1, 'Name is required'),
+    email: z.string().email('Valid email is required'),
+    phone: z.string().min(1, 'Phone is required'),
+  }),
+  shippingAddress: z.object({
+    street: z.string().min(1, 'Street is required'),
+    city: z.string().min(1, 'City is required'),
+    state: z.string().min(1, 'State is required'),
+    postalCode: z.string().min(1, 'Postal code is required'),
+    country: z.string().min(1, 'Country is required'),
+  }),
+  shippingMethod: z.enum(['air', 'sea']),
+  deliveryType: z.enum(['door-to-door', 'warehouse']),
+  paymentMethod: z.enum(['cash', 'card', 'bkash']),
+  paymentCurrency: z.enum(['BDT', 'USD', 'CNY']),
+  bkashNumber: z.string().optional(),
+  notes: z.string().optional(),
+});
+
+type FormValues = z.infer<typeof formSchema>;
+
+interface OrderModalProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  userId: string;
+  orderData?: {
+    products: {
+      product: string; // Product ID
+      color: string[];
+      size: string[];
+      quantity: number;
+      unitPrice: {
+        cny: number;
+        usd: number;
+        bdt: number;
+      };
+      totalPrice: {
+        cny: number;
+        usd: number;
+        bdt: number;
+      };
+    }[];
+  };
+  productInfo?: {
+    _id: string;
+    name: string;
+  };
 }
 
-interface CustomerInfoType {
-  name: string;
-  email: string;
-  phone: string;
-  customerType?: "regular" | "wholesale" | "vip";
-  address: AddressType;
+interface CreatedOrder {
+  _id: string;
+  orderId: string;
+  totalAmount: {
+    bdt: number;
+    usd: number;
+    cny: number;
+  };
+  paymentMethod: string;
+  paymentCurrency: string;
 }
 
-interface FormData {
-  customerInfo: CustomerInfoType;
-  shippingAddress: AddressType;
-  shippingMethod: "air" | "sea";
-  deliveryType: "door-to-door" | "warehouse";
-  paymentMethod:
-    | "bkash"
-    | "nogod"
-    | "rocket"
-    | "card"
-    | "bank-transfer"
-    | "cash";
-  paymentCurrency: "CNY" | "USD" | "BDT";
-}
-
-type OrderModalProps = {
-  isOpen: boolean;
-  onClose: () => void;
-  orderItems: OrderItem[];
-  totalQuantity: number;
-  selectedPrice: number;
-  totalDiscount: number;
-  productInfo: ProductInfoType;
-};
-
-export default function OrderModal({
-  isOpen,
-  onClose,
-  orderItems,
-  totalQuantity,
-  selectedPrice,
-  totalDiscount,
+const OrderModal = ({
+  open,
+  onOpenChange,
+  userId,
+  orderData,
   productInfo,
-}: OrderModalProps) {
-  const { data: session } = useSession();
-  const [previousOrders, setPreviousOrders] = useState<OrderItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+}: OrderModalProps) => {
+  const router = useRouter();
+  const [loading, setLoading] = useState(true);
+  const [submitLoading, setSubmitLoading] = useState(false);
+  const [user, setUser] = useState<{
+    name?: string;
+    email?: string;
+    phone?: string;
+    address?: {
+      street: string;
+      city: string;
+      state: string;
+      zipCode: string;
+      country: string;
+    };
+  } | null>(null);
+  const [products, setProducts] = useState<
+    Array<{
+      product: {
+        _id: string;
+        name: string;
+      };
+      color: string[];
+      size: string[];
+      quantity: number;
+      unitPrice: {
+        cny: number;
+        usd: number;
+        bdt: number;
+      };
+      totalPrice: {
+        bdt: number;
+      };
+    }>
+  >([]);
+  const [error, setError] = useState('');
+  const [activeTab, setActiveTab] = useState('customer');
+  const [formCompletion, setFormCompletion] = useState(0);
+  const [showBkashPayment, setShowBkashPayment] = useState(false);
+  const [createdOrder, setCreatedOrder] = useState<CreatedOrder | null>(null);
 
-  // Initial form state with empty fields
-  const [formData, setFormData] = useState<FormData>({
-    customerInfo: {
-      name: "",
-      email: "",
-      phone: "",
-      customerType: "regular",
-      address: {
-        street: "",
-        city: "",
-        state: "",
-        postalCode: "",
-        country: "",
+  // Initialize form
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      customerInfo: {
+        name: '',
+        email: '',
+        phone: '',
       },
+      shippingAddress: {
+        street: '',
+        city: '',
+        state: '',
+        postalCode: '',
+        country: 'Bangladesh',
+      },
+      shippingMethod: 'air',
+      deliveryType: 'door-to-door',
+      paymentMethod: 'bkash',
+      paymentCurrency: 'BDT',
+      bkashNumber: '',
+      notes: '',
     },
-    shippingAddress: {
-      street: "",
-      city: "",
-      state: "",
-      postalCode: "",
-      country: "",
-    },
-    shippingMethod: "air",
-    deliveryType: "door-to-door",
-    paymentMethod: "bkash",
-    paymentCurrency: "BDT",
+    mode: 'onChange',
   });
 
-  // Fetch user's previous orders when component mounts
+  // Initialize products from orderData if available
   useEffect(() => {
-    async function fetchUserOrders() {
-      if (session?.user?.id) {
-        try {
-          const response = await fetch(`/api/users/${session.user.id}/orders`);
-          if (response.ok) {
-            const orders = await response.json();
-            setPreviousOrders(orders);
-          }
-        } catch (error) {
-          console.error("Error fetching previous orders:", error);
-        } finally {
-          setIsLoading(false);
-        }
-      } else {
-        setIsLoading(false);
-      }
-    }
-
-    fetchUserOrders();
-  }, [session]);
-
-  // Fetch user profile data
-  useEffect(() => {
-    async function fetchUserProfile() {
-      if (session?.user?.id) {
-        try {
-          const response = await fetch(`/api/users/${session.user.id}`);
-          if (response.ok) {
-            const userData = await response.json();
-
-            // Populate form with user data
-            setFormData((prevData) => ({
-              ...prevData,
-              customerInfo: {
-                name: userData.name || "",
-                email: userData.email || "",
-                phone: userData.phone || "",
-                customerType: userData.customerType || "regular",
-                address: {
-                  street: userData.address?.street || "",
-                  city: userData.address?.city || "",
-                  state: userData.address?.state || "",
-                  postalCode: userData.address?.postalCode || "",
-                  country: userData.address?.country || "",
-                },
-              },
-              shippingAddress: {
-                street: userData.address?.street || "",
-                city: userData.address?.city || "",
-                state: userData.address?.state || "",
-                postalCode: userData.address?.postalCode || "",
-                country: userData.address?.country || "",
-              },
-            }));
-          }
-        } catch (error) {
-          console.error("Error fetching user profile:", error);
-        }
-      }
-    }
-
-    fetchUserProfile();
-  }, [session]);
-
-  // Populate form data from previous orders if available
-  useEffect(() => {
-    if (previousOrders.length > 0 && !isLoading) {
-      // Get the most recent order
-      const latestOrder = previousOrders[0];
-
-      setFormData((prevData) => ({
-        ...prevData,
-        customerInfo: {
-          name: latestOrder.customer?.name || prevData.customerInfo.name,
-          email: latestOrder.customer?.email || prevData.customerInfo.email,
-          phone: latestOrder.customer?.phone || prevData.customerInfo.phone,
-          customerType:
-            (latestOrder.customer?.customerType as
-              | "regular"
-              | "wholesale"
-              | "vip") || prevData.customerInfo.customerType,
-          address: {
-            street: prevData.customerInfo.address.street,
-            city: prevData.customerInfo.address.city,
-            state: prevData.customerInfo.address.state,
-            postalCode: prevData.customerInfo.address.postalCode,
-            country: prevData.customerInfo.address.country,
-          },
+    if (orderData?.products) {
+      const formattedProducts = orderData.products.map((product) => ({
+        product: {
+          _id: product.product,
+          name: productInfo?.name || 'Product',
         },
-        shippingAddress: {
-          street: prevData.shippingAddress.street,
-          city: prevData.shippingAddress.city,
-          state: prevData.shippingAddress.state,
-          postalCode: prevData.shippingAddress.postalCode,
-          country: prevData.shippingAddress.country,
+        color: product.color || [],
+        size: product.size || [],
+        quantity: product.quantity || 1,
+        unitPrice: product.unitPrice || {
+          cny: 0,
+          usd: 0,
+          bdt: 0,
         },
-        shippingMethod:
-          (latestOrder.shippingMethod as "air" | "sea") ||
-          prevData.shippingMethod,
-        deliveryType:
-          (latestOrder.deliveryType as "door-to-door" | "warehouse") ||
-          prevData.deliveryType,
-        paymentMethod: prevData.paymentMethod,
+        totalPrice: product.totalPrice || {
+          cny: 0,
+          usd: 0,
+          bdt: 0,
+        },
       }));
+      setProducts(formattedProducts);
     }
-  }, [previousOrders, isLoading]);
+  }, [orderData, productInfo]);
 
-  // Handle form data changes
-  const handleFormDataChange = (
-    field: keyof FormData,
-    value: FormData[keyof FormData],
-  ) => {
-    setFormData((prevData) => ({
-      ...prevData,
-      [field]: value,
-    }));
-  };
+  // Calculate form completion
+  useEffect(() => {
+    const formState = form.getValues();
+    const customerInfoValid =
+      formState.customerInfo.name &&
+      formState.customerInfo.email &&
+      formState.customerInfo.phone;
+    const shippingAddressValid =
+      formState.shippingAddress.street &&
+      formState.shippingAddress.city &&
+      formState.shippingAddress.state &&
+      formState.shippingAddress.postalCode &&
+      formState.shippingAddress.country;
 
-  // Calculate Order Totals according to the schema
-  const shippingCost = formData.shippingMethod === "air" ? 1500 : 1000;
-  const subtotal = totalQuantity * selectedPrice;
-  const totalAmount = subtotal + shippingCost - totalDiscount;
+    let completionPercentage = 0;
+    if (customerInfoValid) completionPercentage += 33;
+    if (shippingAddressValid) completionPercentage += 33;
+    if (
+      formState.shippingMethod &&
+      formState.deliveryType &&
+      formState.paymentMethod &&
+      formState.paymentCurrency
+    ) {
+      completionPercentage += 34;
+    }
 
-  // Create a currency object
-  const createCurrencyObject = (bdtValue: number): ICurrency => {
-    const usdToBdt = 121.5;
-    const cnyToBdt = 17.5;
+    setFormCompletion(completionPercentage);
+  }, [form.watch()]);
 
-    return {
-      bdt: bdtValue,
-      usd: Number((bdtValue / usdToBdt).toFixed(2)),
-      cny: Number((bdtValue / cnyToBdt).toFixed(2)),
-    };
-  };
+  // Fetch user data and latest order
+  useEffect(() => {
+    if (open && userId) {
+      fetchUserData();
+    }
+  }, [open, userId]);
 
-  // Function to create an order
-  const createOrder = async (orderData: {
-    customerId: string;
-    customerInfo: {
-      name: string;
-      email: string;
-      phone: string;
-      customerType: "regular" | "wholesale" | "vip";
-    };
-    products: Array<{
-      product: string | undefined;
-      title: string;
-      sku: string;
-      color: string;
-      size: string;
-      quantity: number;
-      unitPrice: ICurrency;
-      totalPrice: ICurrency;
-    }>;
-    currencyRates: {
-      usdToBdt: number;
-      cnyToBdt: number;
-    };
-    shippingAddress: AddressType;
-    contactInformation: {
-      email: string;
-      phone: string;
-    };
-    shippingMethod: "air" | "sea";
-    deliveryType: "door-to-door" | "warehouse";
-    shippingRate: ICurrency;
-    totalDiscount: ICurrency;
-    subTotal: ICurrency;
-    totalAmount: ICurrency;
-    estimatedDeliveryDate: Date;
-    paymentMethod:
-      | "bkash"
-      | "nogod"
-      | "rocket"
-      | "card"
-      | "bank-transfer"
-      | "cash";
-    paymentCurrency: "CNY" | "USD" | "BDT";
-    paymentDetails: {
-      status:
-        | "pending"
-        | "paid"
-        | "failed"
-        | "refunded"
-        | "partially_refunded"
-        | "partially_paid";
-      transactions: Array<{
-        amount: ICurrency;
-        transactionId: string;
-        paymentDate: Date;
-        receiptUrl?: string;
-        notes?: string;
-      }>;
-    };
-    status:
-      | "pending"
-      | "confirmed"
-      | "processing"
-      | "shipped"
-      | "in-transit"
-      | "out-for-delivery"
-      | "delivered"
-      | "canceled"
-      | "returned";
-    trackingHistory: Array<{
-      status: string;
-      timestamp: Date;
-      location: string;
-      notes: string;
-    }>;
-    notes: Array<{
-      text: string;
-      createdBy: string;
-      isInternal: boolean;
-      createdAt: Date;
-    }>;
-    metadata: {
-      source: string;
-      tags: string[];
-    };
-  }) => {
+  const fetchUserData = async () => {
     try {
-      const response = await fetch("/api/orders", {
-        method: "POST",
+      setLoading(true);
+      // Fetch user data with populated latest order
+      const response = await fetch(`/api/users/${userId}?populate=orders`);
+      const data = await response.json();
+      setUser(data);
+
+      // Set form values based on user data
+      form.setValue('customerInfo.name', data.name || '');
+      form.setValue('customerInfo.email', data.email || '');
+      form.setValue('customerInfo.phone', data.phone || '');
+
+      if (data.address) {
+        form.setValue('shippingAddress.street', data.address.street || '');
+        form.setValue('shippingAddress.city', data.address.city || '');
+        form.setValue('shippingAddress.state', data.address.state || '');
+        form.setValue('shippingAddress.postalCode', data.address.zipCode || '');
+        form.setValue('shippingAddress.country', data.address.country || '');
+      }
+
+      // Get latest order if exists
+      if (data.orders && data.orders.length > 0) {
+        const latestOrder = data.orders[0]; // Assuming orders are sorted by date desc
+
+        // Pre-fill form with latest order data
+        if (latestOrder.shippingMethod) {
+          form.setValue('shippingMethod', latestOrder.shippingMethod);
+        }
+
+        if (latestOrder.deliveryType) {
+          form.setValue('deliveryType', latestOrder.deliveryType);
+        }
+
+        if (latestOrder.paymentMethod) {
+          form.setValue('paymentMethod', latestOrder.paymentMethod);
+        }
+
+        if (latestOrder.paymentCurrency) {
+          form.setValue('paymentCurrency', latestOrder.paymentCurrency);
+        }
+
+        if (latestOrder.shippingAddress) {
+          form.setValue('shippingAddress', {
+            street: latestOrder.shippingAddress.street || '',
+            city: latestOrder.shippingAddress.city || '',
+            state: latestOrder.shippingAddress.state || '',
+            postalCode: latestOrder.shippingAddress.postalCode || '',
+            country: latestOrder.shippingAddress.country || '',
+          });
+        }
+
+        if (latestOrder.products) {
+          setProducts(latestOrder.products);
+        }
+      }
+    } catch (err) {
+      console.error('Error fetching user data:', err);
+      setError('Failed to load user data. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const onSubmit = async (values: FormValues) => {
+    setSubmitLoading(true);
+    setError('');
+
+    try {
+      // Prepare order data
+      const orderData = {
+        customerInfo: userId, // Reference to user ID
+        products: products.map((p) => ({
+          product: p.product._id || p.product,
+          color: p.color,
+          size: p.size,
+          quantity: p.quantity,
+          unitPrice: p.unitPrice,
+          totalPrice: p.totalPrice,
+        })),
+        shippingAddress: values.shippingAddress,
+        shippingMethod: values.shippingMethod,
+        deliveryType: values.deliveryType,
+        paymentMethod: values.paymentMethod,
+        paymentCurrency: values.paymentCurrency,
+        bkashNumber: values.bkashNumber,
+        notes: values.notes
+          ? [
+              {
+                text: values.notes,
+                createdBy: user?.name || 'Unknown User',
+                isInternal: false,
+              },
+            ]
+          : [],
+      };
+
+      // Create new order
+      const response = await fetch('/api/orders', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify(orderData),
       });
 
-      const data = await response.json();
-
       if (!response.ok) {
-        throw new Error(data.error || "Failed to create order");
+        throw new Error('Failed to create order');
       }
 
-      return { success: true, data };
-    } catch (error) {
-      console.error("Error creating order:", error);
-      return { success: false, error: (error as Error).message };
-    }
-  };
+      const order = await response.json();
+      setCreatedOrder(order);
 
-  // Handle Order Submission
-  const handleOrder = async () => {
-    try {
-      // Check if user is authenticated
-      if (!session || !session.user) {
-        toast.error("Please sign in to place an order");
-        return;
+      // Update user data if needed (when fields were previously empty)
+      const userUpdateData: Partial<typeof user> = {};
+
+      if (user && !user.phone && values.customerInfo.phone) {
+        userUpdateData.phone = values.customerInfo.phone;
       }
 
-      // Validate required fields
-      if (
-        !formData.customerInfo.name ||
-        !formData.customerInfo.email ||
-        !formData.customerInfo.phone
-      ) {
-        toast.error("Please fill in all required customer information");
-        return;
+      if (user && (!user.address || !user.address.street)) {
+        userUpdateData.address = {
+          street: values.shippingAddress.street,
+          city: values.shippingAddress.city,
+          state: values.shippingAddress.state,
+          zipCode: values.shippingAddress.postalCode,
+          country: values.shippingAddress.country,
+        };
       }
 
-      // Validate shipping address if door-to-door delivery
-      if (formData.deliveryType === "door-to-door") {
-        const { street, city, state, postalCode, country } =
-          formData.shippingAddress;
-        if (!street || !city || !state || !postalCode || !country) {
-          toast.error("Please fill in all required shipping address fields");
-          return;
+      // Only update if we have data to update
+      if (Object.keys(userUpdateData).length > 0) {
+        const userResponse = await fetch(`/api/users/${userId}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(userUpdateData),
+        });
+
+        if (!userResponse.ok) {
+          throw new Error('Failed to update user data');
         }
       }
 
-      // Create currency objects for pricing
-      const subtotalCurrency = createCurrencyObject(subtotal);
-      const shippingRateCurrency = createCurrencyObject(shippingCost);
-      const totalDiscountCurrency = createCurrencyObject(totalDiscount);
-      const totalAmountCurrency = createCurrencyObject(totalAmount);
+      // Success
+      onOpenChange(false);
+      toast.success('Order created successfully');
+      router.push('/cart');
+      router.refresh(); // Refresh the page data
 
-      // Create order object based on schema
-      const orderData = {
-        customerId: session.user.id,
-        customerInfo: {
-          name: formData.customerInfo.name,
-          email: formData.customerInfo.email,
-          phone: formData.customerInfo.phone,
-          customerType: formData.customerInfo.customerType || "regular",
-        },
-        products: orderItems.map((item) => ({
-          product: item._id,
-          title: item.products[0]?.title || "",
-          sku: item.products[0]?.sku || "",
-          color: item.products[0]?.color || "",
-          size: item.products[0]?.size || "",
-          quantity: item.quantity || 1,
-          unitPrice: createCurrencyObject(item.unitPrice.bdt),
-          totalPrice: item.totalAmount,
-        })),
-        currencyRates: {
-          usdToBdt: 121.5,
-          cnyToBdt: 17.5,
-        },
-        shippingAddress: formData.shippingAddress,
-        contactInformation: {
-          email: formData.customerInfo.email,
-          phone: formData.customerInfo.phone,
-        },
-        shippingMethod: formData.shippingMethod,
-        deliveryType: formData.deliveryType,
-        shippingRate: shippingRateCurrency,
-        totalDiscount: totalDiscountCurrency,
-        subTotal: subtotalCurrency,
-        totalAmount: totalAmountCurrency,
-        estimatedDeliveryDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
-        paymentMethod: formData.paymentMethod,
-        paymentCurrency: formData.paymentCurrency,
-        paymentDetails: {
-          status: "pending" as
-            | "pending"
-            | "paid"
-            | "failed"
-            | "refunded"
-            | "partially_refunded"
-            | "partially_paid",
-          transactions: [],
-        },
-        status: "pending" as
-          | "pending"
-          | "confirmed"
-          | "processing"
-          | "shipped"
-          | "in-transit"
-          | "out-for-delivery"
-          | "delivered"
-          | "canceled"
-          | "returned",
-        trackingHistory: [
-          {
-            status: "pending",
-            timestamp: new Date(),
-            location: "Order Processing Center",
-            notes: "Order received and pending processing",
-          },
-        ],
-        notes: [
-          {
-            text: "Order placed through website",
-            createdBy: "system",
-            isInternal: true,
-            createdAt: new Date(),
-          },
-        ],
-        metadata: {
-          source: "website",
-          tags: ["online"],
-        },
-      };
-
-      // Send the order to the API
-      const result = await createOrder(orderData);
-
-      if (!result.success) {
-        throw new Error(result.error || "Failed to place order");
+      if (values.paymentMethod === 'bkash') {
+        setShowBkashPayment(true);
       }
-
-      toast.success("Your order has been placed successfully!");
-      onClose();
-    } catch (error) {
-      console.error("Error placing order:", error);
-      toast.error(
-        (error as Error).message ||
-          "An error occurred while placing your order",
-      );
+    } catch (err) {
+      toast.error('Failed to create order. Please try again.');
+      console.error('Error creating order:', err);
+      setError('Failed to create order. Please try again.');
+    } finally {
+      setSubmitLoading(false);
     }
   };
 
-  // Define if shipping address is required based on delivery type
-  const requireShippingAddress = formData.deliveryType === "door-to-door";
-
-  if (!isOpen) return null;
+  // Helper to advance to next tab
+  const advanceTab = async (current: string) => {
+    if (current === 'customer') {
+      // Validate customer tab fields before advancing
+      const customerInfoValid = await form.trigger([
+        'customerInfo.name',
+        'customerInfo.email',
+        'customerInfo.phone',
+      ]);
+      if (customerInfoValid) {
+        setActiveTab('shipping');
+      }
+    } else if (current === 'shipping') {
+      // Validate shipping tab fields before advancing
+      const shippingAddressValid = await form.trigger([
+        'shippingAddress.street',
+        'shippingAddress.city',
+        'shippingAddress.state',
+        'shippingAddress.postalCode',
+        'shippingAddress.country',
+      ]);
+      if (shippingAddressValid) {
+        setActiveTab('payment');
+      }
+    } else if (current === 'payment') {
+      // Validate payment tab fields before advancing
+      const paymentValid = await form.trigger([
+        'shippingMethod',
+        'deliveryType',
+        'paymentMethod',
+        'paymentCurrency',
+      ]);
+      if (paymentValid) {
+        setActiveTab('review');
+      }
+    }
+  };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <motion.div
-        className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-lg bg-white p-6 shadow-lg"
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-      >
-        {/* Modal Header */}
-        <div className="flex items-center justify-between border-b pb-3">
-          <h2 className="text-xl font-bold">Complete Your Order</h2>
-          <button
-            className="text-gray-500 hover:text-gray-700"
-            onClick={onClose}
-          >
-            ✕
-          </button>
-        </div>
-
-        {/* Order Summary */}
-        <div className="mt-4 space-y-2">
-          <p>
-            <strong>Product:</strong> {productInfo.name}
-          </p>
-          <p>
-            <strong>Total Quantity:</strong> {totalQuantity} units
-          </p>
-          <p>
-            <strong>Price Per Unit:</strong> ৳ {selectedPrice}
-          </p>
-          {totalDiscount > 0 && (
-            <p className="text-green-600">
-              <strong>Total Discount:</strong> ৳ {totalDiscount}
-            </p>
-          )}
-        </div>
-
-        {/* Order Items */}
-        <div className="mt-4">
-          <h3 className="text-lg font-semibold">Ordered Items</h3>
-          <ul className="mt-2 rounded-lg border p-3">
-            {orderItems.map((item, index) => (
-              <li
-                key={index}
-                className="flex justify-between border-b py-2 last:border-b-0"
-              >
-                <div className="flex items-center gap-2">
-                  {item.products[0]?.title}{" "}
-                  {item.products[0]?.color && (
-                    <span className="flex items-center gap-2">
-                      <Image
-                        src={item.products[0].color}
-                        alt="Color Variant"
-                        width={50}
-                        height={50}
-                        className="rounded-lg"
-                      />
-                    </span>
-                  )}
-                  {item.products[0]?.size && `(${item.products[0].size})`}
-                </div>
-                <span>
-                  {item.quantity} × ৳{item.unitPrice.bdt} = ৳
-                  {item.totalAmount.bdt}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        {/* Loading indicator when fetching data */}
-        {isLoading ? (
-          <div className="my-4 flex justify-center">
-            <span className="text-gray-600">Loading your information...</span>
-          </div>
-        ) : (
-          <>
-            {/* Customer Info Form */}
-            <CustomerInfoForm
-              customerInfo={formData.customerInfo}
-              onChange={(field: string, value: string) => {
-                const updatedCustomerInfo = {
-                  ...formData.customerInfo,
-                  [field]: value,
-                };
-                handleFormDataChange("customerInfo", updatedCustomerInfo);
-              }}
-              onAddressChange={(field: string, value: string) => {
-                const updatedAddress = {
-                  ...formData.customerInfo.address,
-                  [field]: value,
-                };
-                const updatedCustomerInfo = {
-                  ...formData.customerInfo,
-                  address: updatedAddress,
-                };
-                handleFormDataChange("customerInfo", updatedCustomerInfo);
-              }}
-              session={session}
-            />
-
-            {/* Shipping Address - Only show if door-to-door */}
-            {requireShippingAddress && (
-              <ShippingAddressForm
-                shippingAddress={formData.shippingAddress}
-                onChange={(field, value) => {
-                  const updatedShippingAddress = {
-                    ...formData.shippingAddress,
-                    [field]: value,
-                  };
-                  handleFormDataChange(
-                    "shippingAddress",
-                    updatedShippingAddress,
-                  );
-                }}
-              />
-            )}
-
-            {/* Delivery Options */}
-            <DeliveryOptions
-              deliveryType={formData.deliveryType}
-              shippingMethod={formData.shippingMethod}
-              onChange={(delivery: string, location: string) => {
-                if (delivery === "deliveryType") {
-                  handleFormDataChange(
-                    "deliveryType",
-                    location as "door-to-door" | "warehouse",
-                  );
-                } else if (delivery === "shippingMethod") {
-                  handleFormDataChange(
-                    "shippingMethod",
-                    location as "air" | "sea",
-                  );
-                }
-              }}
-            />
-
-            {/* Payment Method */}
-            <PaymentMethodSelector
-              paymentMethod={formData.paymentMethod}
-              onChange={(p: string) => {
-                handleFormDataChange(
-                  "paymentMethod",
-                  p as
-                    | "bkash"
-                    | "nogod"
-                    | "rocket"
-                    | "card"
-                    | "bank-transfer"
-                    | "cash",
-                );
-              }}
-            />
-
-            {/* Payment Currency */}
-            <div className="mt-4">
-              <h3 className="text-lg font-semibold mb-2">Payment Currency</h3>
-              <div className="flex gap-4">
-                {["BDT", "USD", "CNY"].map((currency) => (
-                  <label key={currency} className="flex items-center">
-                    <input
-                      type="radio"
-                      name="paymentCurrency"
-                      value={currency}
-                      checked={formData.paymentCurrency === currency}
-                      onChange={() =>
-                        handleFormDataChange(
-                          "paymentCurrency",
-                          currency as "CNY" | "USD" | "BDT",
-                        )
-                      }
-                      className="mr-2"
-                    />
-                    {currency}
-                  </label>
-                ))}
-              </div>
+    <Dialog
+      open={open}
+      onOpenChange={onOpenChange}
+    >
+      <DialogContent className='max-w-4xl max-h-[90vh] overflow-hidden p-0'>
+        <DialogHeader className='p-6 bg-gradient-to-r from-blue-50 to-indigo-50 border-b'>
+          <div className='flex justify-between items-center'>
+            <div>
+              <DialogTitle className='text-2xl font-bold text-blue-800'>
+                Create New Order
+              </DialogTitle>
+              <DialogDescription className='text-blue-600 mt-1'>
+                Complete the form to create a new order for{' '}
+                {user?.name || 'this customer'}
+              </DialogDescription>
             </div>
+            <Badge
+              variant='outline'
+              className='bg-blue-100 text-blue-800 px-3 py-1 font-medium'
+            >
+              {formCompletion}% Complete
+            </Badge>
+          </div>
+          <Progress
+            value={formCompletion}
+            className='h-1 mt-2'
+          />
+        </DialogHeader>
 
-            {/* Order Summary */}
-            <OrderSummary
-              subtotal={subtotal}
-              shippingCost={shippingCost}
-              totalDiscount={totalDiscount}
-              totalAmount={totalAmount}
-            />
-          </>
+        {error && (
+          <AlertDialog>
+            <AlertDialogContent className='bg-white'>
+              <AlertDialogTitle>Error</AlertDialogTitle>
+              <AlertDialogDescription className='flex items-center gap-2 text-red-600'>
+                <AlertCircle className='h-5 w-5' />
+                {error}
+              </AlertDialogDescription>
+            </AlertDialogContent>
+          </AlertDialog>
         )}
 
-        {/* Order Button */}
-        <div className="mt-6 flex justify-end border-t pt-4">
-          <button
-            onClick={handleOrder}
-            className="rounded-md bg-blue-600 px-6 py-2 text-white transition-colors hover:bg-blue-700"
-            disabled={isLoading}
+        {loading ? (
+          <div className='flex flex-col justify-center items-center h-96 p-6'>
+            <Loader2 className='h-12 w-12 animate-spin text-blue-600 mb-4' />
+            <p className='text-gray-600'>Loading customer data...</p>
+          </div>
+        ) : (
+          <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className='w-full'
           >
-            Place Order
-          </button>
-        </div>
-      </motion.div>
-    </div>
+            <TabsList className='grid grid-cols-4 w-full rounded-none bg-gray-100 p-0'>
+              <TabsTrigger
+                value='customer'
+                className='py-4 data-[state=active]:bg-white data-[state=active]:border-b-2 data-[state=active]:border-blue-600 rounded-none'
+              >
+                <div className='flex items-center gap-2'>
+                  <User className='h-4 w-4' />
+                  <span>Customer</span>
+                </div>
+              </TabsTrigger>
+              <TabsTrigger
+                value='shipping'
+                className='py-4 data-[state=active]:bg-white data-[state=active]:border-b-2 data-[state=active]:border-blue-600 rounded-none'
+              >
+                <div className='flex items-center gap-2'>
+                  <MapPin className='h-4 w-4' />
+                  <span>Shipping</span>
+                </div>
+              </TabsTrigger>
+              <TabsTrigger
+                value='payment'
+                className='py-4 data-[state=active]:bg-white data-[state=active]:border-b-2 data-[state=active]:border-blue-600 rounded-none'
+              >
+                <div className='flex items-center gap-2'>
+                  <CreditCard className='h-4 w-4' />
+                  <span>Payment</span>
+                </div>
+              </TabsTrigger>
+              <TabsTrigger
+                value='review'
+                className='py-4 data-[state=active]:bg-white data-[state=active]:border-b-2 data-[state=active]:border-blue-600 rounded-none'
+              >
+                <div className='flex items-center gap-2'>
+                  <CheckCircle className='h-4 w-4' />
+                  <span>Review</span>
+                </div>
+              </TabsTrigger>
+            </TabsList>
+
+            <ScrollArea className='h-[calc(90vh-160px)]'>
+              <FormProvider {...form}>
+                <form
+                  onSubmit={form.handleSubmit(onSubmit)}
+                  className='space-y-4'
+                >
+                  <TabsContent
+                    value='customer'
+                    className='p-6 pt-4'
+                  >
+                    <CustomerInfoForm
+                      user={
+                        user
+                          ? { name: user.name, email: user.email }
+                          : undefined
+                      }
+                    />
+                    <div className='flex justify-end'>
+                      <Button
+                        type='button'
+                        onClick={() => advanceTab('customer')}
+                        className='bg-blue-600 hover:bg-blue-700'
+                      >
+                        Continue to Shipping
+                      </Button>
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent
+                    value='shipping'
+                    className='p-6 pt-4'
+                  >
+                    <ShippingAddressForm />
+                    <div className='flex justify-between'>
+                      <Button
+                        type='button'
+                        variant='outline'
+                        onClick={() => setActiveTab('customer')}
+                      >
+                        Back
+                      </Button>
+                      <Button
+                        type='button'
+                        onClick={() => advanceTab('shipping')}
+                        className='bg-blue-600 hover:bg-blue-700'
+                      >
+                        Continue to Payment
+                      </Button>
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent
+                    value='payment'
+                    className='p-6 pt-4'
+                  >
+                    <PaymentShippingForm />
+                    <div className='flex justify-between'>
+                      <Button
+                        type='button'
+                        variant='outline'
+                        onClick={() => setActiveTab('shipping')}
+                      >
+                        Back
+                      </Button>
+                      <Button
+                        type='button'
+                        onClick={() => advanceTab('payment')}
+                        className='bg-blue-600 hover:bg-blue-700'
+                      >
+                        Continue to Review
+                      </Button>
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent
+                    value='review'
+                    className='p-6 pt-4 pb-26 '
+                  >
+                    <OrderReview products={products} />
+                    <div className='flex justify-between mt-10 border-t pt-6'>
+                      {' '}
+                      {/* Increased mt-6 to mt-10 */}
+                      <Button
+                        type='button'
+                        variant='outline'
+                        onClick={() => setActiveTab('payment')}
+                      >
+                        Back
+                      </Button>
+                      <Button
+                        type='submit'
+                        disabled={submitLoading}
+                        className='bg-green-600 hover:bg-green-700 min-w-32 text-white'
+                      >
+                        {submitLoading ? (
+                          <>
+                            <Loader2 className='mr-2 h-4 w-4 animate-spin' />
+                            Processing...
+                          </>
+                        ) : (
+                          <>
+                            <CheckCircle className='mr-2 h-4 w-4' />
+                            Complete Order
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  </TabsContent>
+                </form>
+              </FormProvider>
+            </ScrollArea>
+          </Tabs>
+        )}
+
+        {showBkashPayment && createdOrder && (
+          <div className='space-y-4'>
+            <div className='bg-gray-50 p-4 rounded'>
+              <p className='text-sm text-gray-500'>Order Total</p>
+              <p className='text-2xl font-bold'>
+                ৳
+                {orderData?.products
+                  .reduce((acc, curr) => acc + curr.totalPrice.bdt, 0)
+                  .toLocaleString()}
+              </p>
+            </div>
+            <BkashPayment order={createdOrder} />
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
   );
-}
+};
+
+export default OrderModal;
