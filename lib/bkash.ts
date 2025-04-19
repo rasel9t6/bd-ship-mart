@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios from "axios";
 
 let authToken: string | null = null;
 let tokenExpiry: number | null = null;
@@ -11,30 +11,30 @@ export const getBkashAuthToken = async () => {
 
   try {
     const response = await axios.post(
-      'https://tokenized.sandbox.bka.sh/v1.2.0-beta/tokenized/checkout/token/grant',
+      "https://tokenized.sandbox.bka.sh/v1.2.0-beta/tokenized/checkout/token/grant",
       {
         app_key: process.env.BKASH_APP_KEY,
         app_secret: process.env.BKASH_APP_SECRET,
       },
       {
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           username: process.env.BKASH_USERNAME,
           password: process.env.BKASH_PASSWORD,
         },
-      }
+      },
     );
 
-    if (response.data.statusCode === '0000') {
+    if (response.data.statusCode === "0000") {
       authToken = response.data.id_token;
       // Set token expiry to 45 minutes (bKash tokens expire after 1 hour)
       tokenExpiry = Date.now() + 45 * 60 * 1000;
       return authToken;
     }
 
-    throw new Error('Failed to get bKash auth token');
+    throw new Error("Failed to get bKash auth token");
   } catch (error) {
-    console.error('bKash auth error:', error);
+    console.error("bKash auth error:", error);
     throw error;
   }
 };

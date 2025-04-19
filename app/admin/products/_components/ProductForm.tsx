@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
-import * as z from 'zod';
-import { Button } from '@/ui/button';
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
+import { Button } from "@/ui/button";
 import {
   Form,
   FormControl,
@@ -11,33 +11,33 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/ui/form';
+} from "@/ui/form";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/ui/select';
-import { Input } from '@/ui/input';
-import { Textarea } from '@/ui/textarea';
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import toast from 'react-hot-toast';
-import MultiSelect from '@/ui/custom/MultiSelect';
-import MediaUpload, { MediaType } from '@/ui/custom/MediaUpload';
-import MultiText from '@/ui/custom/MultiText';
-import { Plus, Trash2 } from 'lucide-react';
-import slugify from 'slugify';
+} from "@/ui/select";
+import { Input } from "@/ui/input";
+import { Textarea } from "@/ui/textarea";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
+import MultiSelect from "@/ui/custom/MultiSelect";
+import MediaUpload, { MediaType } from "@/ui/custom/MediaUpload";
+import MultiText from "@/ui/custom/MultiText";
+import { Plus, Trash2 } from "lucide-react";
+import slugify from "slugify";
 
 // Define the form schema with Zod
 const formSchema = z.object({
-  title: z.string().min(1, 'Title is required'),
+  title: z.string().min(1, "Title is required"),
   description: z.string().optional(),
-  sku: z.string().min(1, 'SKU is required'),
-  category: z.string().min(1, 'Category is required'),
+  sku: z.string().min(1, "SKU is required"),
+  category: z.string().min(1, "Category is required"),
   subcategories: z.array(z.string()).optional(),
-  inputCurrency: z.enum(['CNY', 'USD']),
+  inputCurrency: z.enum(["CNY", "USD"]),
   price: z.object({
     cny: z.number().min(0).optional(),
     usd: z.number().min(0).optional(),
@@ -56,14 +56,14 @@ const formSchema = z.object({
   media: z.array(
     z.object({
       url: z.string().url(),
-      type: z.enum(['image']),
-    })
+      type: z.enum(["image"]),
+    }),
   ),
   colors: z.array(
     z.object({
       url: z.string().url(),
-      type: z.enum(['image', 'video']),
-    })
+      type: z.enum(["image", "video"]),
+    }),
   ),
   sizes: z.array(z.string()).optional(),
   tags: z.array(z.string()).optional(),
@@ -78,7 +78,7 @@ const formSchema = z.object({
             usd: z.number().min(0).optional(),
             bdt: z.number().min(0).optional(),
           }),
-        })
+        }),
       )
       .optional(),
   }),
@@ -123,7 +123,7 @@ interface ProductFormType {
   category?: CategoryField;
   subcategory?: string;
   subcategories?: string[];
-  inputCurrency: 'CNY' | 'USD';
+  inputCurrency: "CNY" | "USD";
   price: {
     cny?: number;
     usd?: number;
@@ -147,7 +147,7 @@ interface ProductFormType {
 
 interface MediaItem {
   url: string;
-  type: 'image';
+  type: "image";
 }
 
 interface Props {
@@ -157,27 +157,27 @@ interface Props {
 export default function ProductForm({ initialData }: Props) {
   const router = useRouter();
   const [categories, setCategories] = useState<Category[]>([]);
-  const [subcategories, setSubcategories] = useState<Category['subcategories']>(
-    []
+  const [subcategories, setSubcategories] = useState<Category["subcategories"]>(
+    [],
   );
   const [loading, setLoading] = useState(false);
   const [selectedSubcategories, setSelectedSubcategories] = useState<string[]>(
-    []
+    [],
   );
 
   // Initialize form with React Hook Form
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      title: initialData?.title || '',
-      description: initialData?.description || '',
-      sku: initialData?.sku || '',
+      title: initialData?.title || "",
+      description: initialData?.description || "",
+      sku: initialData?.sku || "",
       category:
-        typeof initialData?.category === 'object'
-          ? String(initialData.category._id || initialData.category.id || '')
-          : '',
+        typeof initialData?.category === "object"
+          ? String(initialData.category._id || initialData.category.id || "")
+          : "",
       subcategories: initialData?.subcategories || [],
-      inputCurrency: (initialData?.inputCurrency as 'CNY' | 'USD') || 'CNY',
+      inputCurrency: (initialData?.inputCurrency as "CNY" | "USD") || "CNY",
       price: {
         cny: initialData?.price?.cny || 0,
         usd: initialData?.price?.usd || 0,
@@ -204,12 +204,12 @@ export default function ProductForm({ initialData }: Props) {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await fetch('/api/categories');
+        const res = await fetch("/api/categories");
         const data: CategoryResponse[] = await res.json();
         setCategories(data);
       } catch (error) {
-        console.error('Error fetching categories:', error);
-        toast.error('Failed to load categories');
+        console.error("Error fetching categories:", error);
+        toast.error("Failed to load categories");
       }
     };
     fetchCategories();
@@ -227,7 +227,7 @@ export default function ProductForm({ initialData }: Props) {
           (sub) => ({
             _id: sub._id,
             name: sub.name,
-          })
+          }),
         );
 
         setSubcategories(formattedSubcategories);
@@ -237,24 +237,24 @@ export default function ProductForm({ initialData }: Props) {
         setSelectedSubcategories([]);
       }
     } catch (error) {
-      console.error('Error handling category change:', error);
-      toast.error('Failed to load subcategories');
+      console.error("Error handling category change:", error);
+      toast.error("Failed to load subcategories");
     }
   };
 
   // Handle subcategory selection
   const handleSubcategoryChange = (subcategoryId: string) => {
     setSelectedSubcategories((prev) => [...prev, subcategoryId]);
-    form.setValue('subcategories', [...selectedSubcategories, subcategoryId]);
+    form.setValue("subcategories", [...selectedSubcategories, subcategoryId]);
   };
 
   const handleSubcategoryRemove = (subcategoryId: string) => {
     setSelectedSubcategories((prev) =>
-      prev.filter((id) => id !== subcategoryId)
+      prev.filter((id) => id !== subcategoryId),
     );
     form.setValue(
-      'subcategories',
-      selectedSubcategories.filter((id) => id !== subcategoryId)
+      "subcategories",
+      selectedSubcategories.filter((id) => id !== subcategoryId),
     );
   };
 
@@ -264,99 +264,99 @@ export default function ProductForm({ initialData }: Props) {
     const { usdToBdt, cnyToBdt } = currencyRates;
 
     // Handle price conversion
-    if (inputCurrency === 'CNY') {
+    if (inputCurrency === "CNY") {
       if (price.cny) {
-        form.setValue('price.bdt', price.cny * cnyToBdt);
-        form.setValue('price.usd', price.cny / 7); // Assuming 1 USD = 7 CNY
+        form.setValue("price.bdt", price.cny * cnyToBdt);
+        form.setValue("price.usd", price.cny / 7); // Assuming 1 USD = 7 CNY
       } else {
-        form.setValue('price.bdt', 0);
-        form.setValue('price.usd', 0);
+        form.setValue("price.bdt", 0);
+        form.setValue("price.usd", 0);
       }
-    } else if (inputCurrency === 'USD') {
+    } else if (inputCurrency === "USD") {
       if (price.usd) {
-        form.setValue('price.bdt', price.usd * usdToBdt);
-        form.setValue('price.cny', price.usd * 7);
+        form.setValue("price.bdt", price.usd * usdToBdt);
+        form.setValue("price.cny", price.usd * 7);
       } else {
-        form.setValue('price.bdt', 0);
-        form.setValue('price.cny', 0);
+        form.setValue("price.bdt", 0);
+        form.setValue("price.cny", 0);
       }
     }
 
     // Handle expense conversion
-    if (inputCurrency === 'CNY') {
+    if (inputCurrency === "CNY") {
       if (expense.cny) {
-        form.setValue('expense.bdt', expense.cny * cnyToBdt);
-        form.setValue('expense.usd', expense.cny / 7);
+        form.setValue("expense.bdt", expense.cny * cnyToBdt);
+        form.setValue("expense.usd", expense.cny / 7);
       } else {
-        form.setValue('expense.bdt', 0);
-        form.setValue('expense.usd', 0);
+        form.setValue("expense.bdt", 0);
+        form.setValue("expense.usd", 0);
       }
-    } else if (inputCurrency === 'USD') {
+    } else if (inputCurrency === "USD") {
       if (expense.usd) {
-        form.setValue('expense.bdt', expense.usd * usdToBdt);
-        form.setValue('expense.cny', expense.usd * 7);
+        form.setValue("expense.bdt", expense.usd * usdToBdt);
+        form.setValue("expense.cny", expense.usd * 7);
       } else {
-        form.setValue('expense.bdt', 0);
-        form.setValue('expense.cny', 0);
+        form.setValue("expense.bdt", 0);
+        form.setValue("expense.cny", 0);
       }
     }
   };
 
   // Handle media upload
   const handleMediaChange = (url: string, type: MediaType) => {
-    if (type === 'image') {
-      form.setValue('media', [{ url, type }]);
+    if (type === "image") {
+      form.setValue("media", [{ url, type }]);
     }
   };
 
   const handleMediaRemove = () => {
-    form.setValue('media', []);
+    form.setValue("media", []);
   };
 
   // Handle color variant images
   const handleColorChange = (url: string, type: MediaType) => {
-    const currentColors = form.getValues('colors') || [];
-    form.setValue('colors', [...currentColors, { url, type }]);
+    const currentColors = form.getValues("colors") || [];
+    form.setValue("colors", [...currentColors, { url, type }]);
   };
 
   const handleColorRemove = (urlToRemove: string) => {
-    const currentColors = form.getValues('colors') || [];
+    const currentColors = form.getValues("colors") || [];
     form.setValue(
-      'colors',
-      currentColors.filter((color) => color.url !== urlToRemove)
+      "colors",
+      currentColors.filter((color) => color.url !== urlToRemove),
     );
   };
 
   // Add handlers for sizes and tags
   const handleSizeChange = (size: string) => {
-    const currentSizes = form.getValues('sizes') || [];
-    form.setValue('sizes', [...currentSizes, size]);
+    const currentSizes = form.getValues("sizes") || [];
+    form.setValue("sizes", [...currentSizes, size]);
   };
 
   const handleSizeRemove = (sizeToRemove: string) => {
-    const currentSizes = form.getValues('sizes') || [];
+    const currentSizes = form.getValues("sizes") || [];
     form.setValue(
-      'sizes',
-      currentSizes.filter((size) => size !== sizeToRemove)
+      "sizes",
+      currentSizes.filter((size) => size !== sizeToRemove),
     );
   };
 
   const handleTagChange = (tag: string) => {
-    const currentTags = form.getValues('tags') || [];
-    form.setValue('tags', [...currentTags, tag]);
+    const currentTags = form.getValues("tags") || [];
+    form.setValue("tags", [...currentTags, tag]);
   };
 
   const handleTagRemove = (tagToRemove: string) => {
-    const currentTags = form.getValues('tags') || [];
+    const currentTags = form.getValues("tags") || [];
     form.setValue(
-      'tags',
-      currentTags.filter((tag) => tag !== tagToRemove)
+      "tags",
+      currentTags.filter((tag) => tag !== tagToRemove),
     );
   };
 
   // Add handlers for quantity pricing
   const handleAddRange = () => {
-    const currentRanges = form.getValues('quantityPricing.ranges') || [];
+    const currentRanges = form.getValues("quantityPricing.ranges") || [];
     const newRange = {
       minQuantity: 1,
       maxQuantity: undefined,
@@ -366,29 +366,29 @@ export default function ProductForm({ initialData }: Props) {
         bdt: 0,
       },
     };
-    form.setValue('quantityPricing.ranges', [...currentRanges, newRange]);
+    form.setValue("quantityPricing.ranges", [...currentRanges, newRange]);
   };
 
   const handleRemoveRange = (index: number) => {
-    const currentRanges = form.getValues('quantityPricing.ranges') || [];
+    const currentRanges = form.getValues("quantityPricing.ranges") || [];
     form.setValue(
-      'quantityPricing.ranges',
-      currentRanges.filter((_, i) => i !== index)
+      "quantityPricing.ranges",
+      currentRanges.filter((_, i) => i !== index),
     );
   };
 
   const handleRangeChange = (
     index: number,
-    field: 'minQuantity' | 'maxQuantity' | 'price',
-    value: number | undefined
+    field: "minQuantity" | "maxQuantity" | "price",
+    value: number | undefined,
   ) => {
-    const currentRanges = form.getValues('quantityPricing.ranges') || [];
+    const currentRanges = form.getValues("quantityPricing.ranges") || [];
     const updatedRanges = [...currentRanges];
 
-    if (field === 'price') {
-      const currency = form.getValues('inputCurrency').toLowerCase() as
-        | 'cny'
-        | 'usd';
+    if (field === "price") {
+      const currency = form.getValues("inputCurrency").toLowerCase() as
+        | "cny"
+        | "usd";
       updatedRanges[index] = {
         ...updatedRanges[index],
         price: {
@@ -403,7 +403,7 @@ export default function ProductForm({ initialData }: Props) {
       };
     }
 
-    form.setValue('quantityPricing.ranges', updatedRanges);
+    form.setValue("quantityPricing.ranges", updatedRanges);
     handleCurrencyChange(form.getValues());
   };
 
@@ -413,13 +413,13 @@ export default function ProductForm({ initialData }: Props) {
       setLoading(true);
       const endpoint = initialData?._id
         ? `/api/products/${initialData.slug}`
-        : '/api/products';
-      const method = initialData?._id ? 'PATCH' : 'POST';
+        : "/api/products";
+      const method = initialData?._id ? "PATCH" : "POST";
 
       const response = await fetch(endpoint, {
         method,
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           ...values,
@@ -431,20 +431,20 @@ export default function ProductForm({ initialData }: Props) {
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.message || 'Something went wrong');
+        throw new Error(error.message || "Something went wrong");
       }
 
       toast.success(
         initialData?._id
-          ? 'Product updated successfully'
-          : 'Product created successfully'
+          ? "Product updated successfully"
+          : "Product created successfully",
       );
-      router.push('/admin/products');
+      router.push("/admin/products");
       router.refresh();
     } catch (error) {
-      console.error('Error submitting form:', error);
+      console.error("Error submitting form:", error);
       toast.error(
-        error instanceof Error ? error.message : 'Something went wrong'
+        error instanceof Error ? error.message : "Something went wrong",
       );
     } finally {
       setLoading(false);
@@ -453,21 +453,15 @@ export default function ProductForm({ initialData }: Props) {
 
   return (
     <Form {...form}>
-      <form
-        onSubmit={form.handleSubmit(onSubmit)}
-        className='space-y-8'
-      >
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         <FormField
           control={form.control}
-          name='title'
+          name="title"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Title</FormLabel>
               <FormControl>
-                <Input
-                  placeholder='Product title'
-                  {...field}
-                />
+                <Input placeholder="Product title" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -476,15 +470,12 @@ export default function ProductForm({ initialData }: Props) {
 
         <FormField
           control={form.control}
-          name='description'
+          name="description"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Description</FormLabel>
               <FormControl>
-                <Textarea
-                  placeholder='Product description'
-                  {...field}
-                />
+                <Textarea placeholder="Product description" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -493,25 +484,22 @@ export default function ProductForm({ initialData }: Props) {
 
         <FormField
           control={form.control}
-          name='sku'
+          name="sku"
           render={({ field }) => (
             <FormItem>
               <FormLabel>SKU</FormLabel>
               <FormControl>
-                <Input
-                  placeholder='Product SKU'
-                  {...field}
-                />
+                <Input placeholder="Product SKU" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
 
-        <div className='grid grid-cols-2 gap-4'>
+        <div className="grid grid-cols-2 gap-4">
           <FormField
             control={form.control}
-            name='category'
+            name="category"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Category</FormLabel>
@@ -524,15 +512,12 @@ export default function ProductForm({ initialData }: Props) {
                 >
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder='Select a category' />
+                      <SelectValue placeholder="Select a category" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
                     {categories.map((category) => (
-                      <SelectItem
-                        key={category._id}
-                        value={category._id}
-                      >
+                      <SelectItem key={category._id} value={category._id}>
                         {category.name}
                       </SelectItem>
                     ))}
@@ -546,7 +531,7 @@ export default function ProductForm({ initialData }: Props) {
           <FormItem>
             <FormLabel>Subcategories</FormLabel>
             <MultiSelect
-              placeholder='Select subcategories'
+              placeholder="Select subcategories"
               categories={subcategories}
               value={selectedSubcategories}
               onChange={handleSubcategoryChange}
@@ -554,16 +539,16 @@ export default function ProductForm({ initialData }: Props) {
             />
           </FormItem>
         </div>
-        <div className='grid grid-cols-2 gap-4'>
+        <div className="grid grid-cols-2 gap-4">
           <FormField
             control={form.control}
-            name='currencyRates.cnyToBdt'
+            name="currencyRates.cnyToBdt"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>CNY to BDT Rate</FormLabel>
                 <FormControl>
                   <Input
-                    type='number'
+                    type="number"
                     {...field}
                     onChange={(e) => {
                       field.onChange(parseFloat(e.target.value));
@@ -578,13 +563,13 @@ export default function ProductForm({ initialData }: Props) {
 
           <FormField
             control={form.control}
-            name='currencyRates.usdToBdt'
+            name="currencyRates.usdToBdt"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>USD to BDT Rate</FormLabel>
                 <FormControl>
                   <Input
-                    type='number'
+                    type="number"
                     {...field}
                     onChange={(e) => {
                       field.onChange(parseFloat(e.target.value));
@@ -597,15 +582,15 @@ export default function ProductForm({ initialData }: Props) {
             )}
           />
         </div>
-        <div className='grid grid-cols-3 gap-4'>
+        <div className="grid grid-cols-3 gap-4">
           <FormField
             control={form.control}
-            name='inputCurrency'
+            name="inputCurrency"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Input Currency</FormLabel>
                 <Select
-                  onValueChange={(value: 'CNY' | 'USD') => {
+                  onValueChange={(value: "CNY" | "USD") => {
                     field.onChange(value);
                     handleCurrencyChange({
                       ...form.getValues(),
@@ -616,12 +601,12 @@ export default function ProductForm({ initialData }: Props) {
                 >
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder='Select currency' />
+                      <SelectValue placeholder="Select currency" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value='CNY'>CNY (¥)</SelectItem>
-                    <SelectItem value='USD'>USD ($)</SelectItem>
+                    <SelectItem value="CNY">CNY (¥)</SelectItem>
+                    <SelectItem value="USD">USD ($)</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -631,26 +616,26 @@ export default function ProductForm({ initialData }: Props) {
 
           <FormField
             control={form.control}
-            name='price'
+            name="price"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Price ({form.getValues('inputCurrency')})</FormLabel>
+                <FormLabel>Price ({form.getValues("inputCurrency")})</FormLabel>
                 <FormControl>
                   <Input
-                    type='number'
-                    placeholder={`Enter price in ${form.getValues('inputCurrency')}`}
+                    type="number"
+                    placeholder={`Enter price in ${form.getValues("inputCurrency")}`}
                     value={
                       field.value[
-                        form.getValues('inputCurrency').toLowerCase() as
-                          | 'cny'
-                          | 'usd'
-                      ] || ''
+                        form.getValues("inputCurrency").toLowerCase() as
+                          | "cny"
+                          | "usd"
+                      ] || ""
                     }
                     onChange={(e) => {
                       const value = parseFloat(e.target.value);
                       const currency = form
-                        .getValues('inputCurrency')
-                        .toLowerCase() as 'cny' | 'usd';
+                        .getValues("inputCurrency")
+                        .toLowerCase() as "cny" | "usd";
                       field.onChange({
                         ...field.value,
                         [currency]: value,
@@ -658,7 +643,7 @@ export default function ProductForm({ initialData }: Props) {
                       handleCurrencyChange({
                         ...form.getValues(),
                         price: {
-                          ...form.getValues('price'),
+                          ...form.getValues("price"),
                           [currency]: value,
                         },
                       });
@@ -674,41 +659,41 @@ export default function ProductForm({ initialData }: Props) {
             <FormLabel>BDT Price (Calculated)</FormLabel>
             <FormControl>
               <Input
-                type='number'
-                placeholder='BDT Price'
-                value={form.watch('price.bdt') || ''}
+                type="number"
+                placeholder="BDT Price"
+                value={form.watch("price.bdt") || ""}
                 disabled
-                className='bg-muted'
+                className="bg-muted"
               />
             </FormControl>
           </FormItem>
         </div>
 
-        <div className='grid grid-cols-3 gap-4'>
+        <div className="grid grid-cols-3 gap-4">
           <FormField
             control={form.control}
-            name='expense'
+            name="expense"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>
-                  Expense ({form.getValues('inputCurrency')})
+                  Expense ({form.getValues("inputCurrency")})
                 </FormLabel>
                 <FormControl>
                   <Input
-                    type='number'
-                    placeholder={`Enter expense in ${form.getValues('inputCurrency')}`}
+                    type="number"
+                    placeholder={`Enter expense in ${form.getValues("inputCurrency")}`}
                     value={
                       field.value[
-                        form.getValues('inputCurrency').toLowerCase() as
-                          | 'cny'
-                          | 'usd'
-                      ] || ''
+                        form.getValues("inputCurrency").toLowerCase() as
+                          | "cny"
+                          | "usd"
+                      ] || ""
                     }
                     onChange={(e) => {
                       const value = parseFloat(e.target.value);
                       const currency = form
-                        .getValues('inputCurrency')
-                        .toLowerCase() as 'cny' | 'usd';
+                        .getValues("inputCurrency")
+                        .toLowerCase() as "cny" | "usd";
                       field.onChange({
                         ...field.value,
                         [currency]: value,
@@ -716,7 +701,7 @@ export default function ProductForm({ initialData }: Props) {
                       handleCurrencyChange({
                         ...form.getValues(),
                         expense: {
-                          ...form.getValues('expense'),
+                          ...form.getValues("expense"),
                           [currency]: value,
                         },
                       });
@@ -732,11 +717,11 @@ export default function ProductForm({ initialData }: Props) {
             <FormLabel>BDT Expense (Calculated)</FormLabel>
             <FormControl>
               <Input
-                type='number'
-                placeholder='BDT Expense'
-                value={form.watch('expense.bdt') || ''}
+                type="number"
+                placeholder="BDT Expense"
+                value={form.watch("expense.bdt") || ""}
                 disabled
-                className='bg-muted'
+                className="bg-muted"
               />
             </FormControl>
           </FormItem>
@@ -744,13 +729,13 @@ export default function ProductForm({ initialData }: Props) {
 
         <FormField
           control={form.control}
-          name='minimumOrderQuantity'
+          name="minimumOrderQuantity"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Minimum Order Quantity</FormLabel>
               <FormControl>
                 <Input
-                  type='number'
+                  type="number"
                   {...field}
                   onChange={(e) => field.onChange(parseInt(e.target.value, 10))}
                 />
@@ -760,36 +745,36 @@ export default function ProductForm({ initialData }: Props) {
           )}
         />
 
-        <div className='space-y-4'>
+        <div className="space-y-4">
           <FormLabel>Product Media</FormLabel>
           <MediaUpload
-            value={form.watch('media') || []}
+            value={form.watch("media") || []}
             onChange={handleMediaChange}
             onRemove={handleMediaRemove}
             multiple={false}
-            accept={['image']}
-            folderId='products'
+            accept={["image"]}
+            folderId="products"
           />
         </div>
 
-        <div className='space-y-4'>
+        <div className="space-y-4">
           <FormLabel>Product Variant Images</FormLabel>
           <MediaUpload
-            value={form.watch('colors') || []}
+            value={form.watch("colors") || []}
             onChange={handleColorChange}
             onRemove={handleColorRemove}
             multiple={true}
-            accept={['image', 'video']}
-            folderId='products/variants'
+            accept={["image", "video"]}
+            folderId="products/variants"
           />
         </div>
 
-        <div className='grid grid-cols-2 gap-4'>
+        <div className="grid grid-cols-2 gap-4">
           <FormItem>
             <FormLabel>Sizes</FormLabel>
             <MultiText
-              placeholder='Add sizes (e.g., S, M, L)'
-              value={form.watch('sizes') || []}
+              placeholder="Add sizes (e.g., S, M, L)"
+              value={form.watch("sizes") || []}
               onChange={handleSizeChange}
               onRemove={handleSizeRemove}
             />
@@ -798,45 +783,45 @@ export default function ProductForm({ initialData }: Props) {
           <FormItem>
             <FormLabel>Tags</FormLabel>
             <MultiText
-              placeholder='Add tags (e.g., summer, casual)'
-              value={form.watch('tags') || []}
+              placeholder="Add tags (e.g., summer, casual)"
+              value={form.watch("tags") || []}
               onChange={handleTagChange}
               onRemove={handleTagRemove}
             />
           </FormItem>
         </div>
 
-        <div className='space-y-4'>
-          <div className='flex items-center justify-between'>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
             <FormLabel>Quantity Pricing Ranges</FormLabel>
             <Button
-              type='button'
-              variant='outline'
-              size='sm'
+              type="button"
+              variant="outline"
+              size="sm"
               onClick={handleAddRange}
             >
-              <Plus className='mr-2 h-4 w-4' />
+              <Plus className="mr-2 h-4 w-4" />
               Add Range
             </Button>
           </div>
 
-          {form.watch('quantityPricing.ranges')?.map((range, index) => (
+          {form.watch("quantityPricing.ranges")?.map((range, index) => (
             <div
               key={index}
-              className='grid grid-cols-4 gap-4 rounded-lg border p-4'
+              className="grid grid-cols-4 gap-4 rounded-lg border p-4"
             >
               <FormItem>
                 <FormLabel>Min Quantity</FormLabel>
                 <FormControl>
                   <Input
-                    type='number'
+                    type="number"
                     min={1}
-                    value={range.minQuantity || ''}
+                    value={range.minQuantity || ""}
                     onChange={(e) =>
                       handleRangeChange(
                         index,
-                        'minQuantity',
-                        parseInt(e.target.value)
+                        "minQuantity",
+                        parseInt(e.target.value),
                       )
                     }
                   />
@@ -847,15 +832,15 @@ export default function ProductForm({ initialData }: Props) {
                 <FormLabel>Max Quantity</FormLabel>
                 <FormControl>
                   <Input
-                    type='number'
+                    type="number"
                     min={range.minQuantity || 1}
-                    value={range.maxQuantity || ''}
-                    placeholder='No limit'
+                    value={range.maxQuantity || ""}
+                    placeholder="No limit"
                     onChange={(e) =>
                       handleRangeChange(
                         index,
-                        'maxQuantity',
-                        e.target.value ? parseInt(e.target.value) : undefined
+                        "maxQuantity",
+                        e.target.value ? parseInt(e.target.value) : undefined,
                       )
                     }
                   />
@@ -863,23 +848,23 @@ export default function ProductForm({ initialData }: Props) {
               </FormItem>
 
               <FormItem>
-                <FormLabel>Price ({form.getValues('inputCurrency')})</FormLabel>
+                <FormLabel>Price ({form.getValues("inputCurrency")})</FormLabel>
                 <FormControl>
                   <Input
-                    type='number'
+                    type="number"
                     min={0}
                     value={
                       range.price[
-                        form.getValues('inputCurrency').toLowerCase() as
-                          | 'cny'
-                          | 'usd'
-                      ] || ''
+                        form.getValues("inputCurrency").toLowerCase() as
+                          | "cny"
+                          | "usd"
+                      ] || ""
                     }
                     onChange={(e) =>
                       handleRangeChange(
                         index,
-                        'price',
-                        parseFloat(e.target.value)
+                        "price",
+                        parseFloat(e.target.value),
                       )
                     }
                   />
@@ -890,36 +875,33 @@ export default function ProductForm({ initialData }: Props) {
                 <FormLabel>BDT Price (Calculated)</FormLabel>
                 <FormControl>
                   <Input
-                    type='number'
-                    value={range.price.bdt || ''}
+                    type="number"
+                    value={range.price.bdt || ""}
                     disabled
-                    className='bg-muted'
+                    className="bg-muted"
                   />
                 </FormControl>
               </FormItem>
 
               <Button
-                type='button'
-                variant='ghost'
-                size='icon'
-                className='col-span-4 mt-2 hover:!bg-danger'
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="col-span-4 mt-2 hover:!bg-danger"
                 onClick={() => handleRemoveRange(index)}
               >
-                <Trash2 className='size-4 ' />
+                <Trash2 className="size-4 " />
               </Button>
             </div>
           ))}
         </div>
 
-        <Button
-          type='submit'
-          disabled={loading}
-        >
+        <Button type="submit" disabled={loading}>
           {loading
-            ? 'Saving...'
+            ? "Saving..."
             : initialData
-              ? 'Update Product'
-              : 'Create Product'}
+              ? "Update Product"
+              : "Create Product"}
         </Button>
       </form>
     </Form>

@@ -1,5 +1,5 @@
 // models/User.ts
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 // Slugify function to create URL-friendly strings
 const slugify = (text: string) => {
@@ -7,11 +7,11 @@ const slugify = (text: string) => {
     .toString()
     .toLowerCase()
     .trim()
-    .replace(/\s+/g, '-') // Replace spaces with -
-    .replace(/[^\w\-]+/g, '') // Remove all non-word chars
-    .replace(/\-\-+/g, '-') // Replace multiple - with single -
-    .replace(/^-+/, '') // Trim - from start of text
-    .replace(/-+$/, ''); // Trim - from end of text
+    .replace(/\s+/g, "-") // Replace spaces with -
+    .replace(/[^\w\-]+/g, "") // Remove all non-word chars
+    .replace(/\-\-+/g, "-") // Replace multiple - with single -
+    .replace(/^-+/, "") // Trim - from start of text
+    .replace(/-+$/, ""); // Trim - from end of text
 };
 
 const userSchema = new mongoose.Schema({
@@ -36,8 +36,8 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['user', 'admin', 'super_admin'],
-    default: 'user',
+    enum: ["user", "admin", "super_admin"],
+    default: "user",
   },
   profilePicture: {
     type: String,
@@ -74,18 +74,18 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-  orders: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Order' }],
-  wishlist: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Product' }],
-  status: { type: String, enum: ['active', 'inactive'], default: 'active' },
+  orders: [{ type: mongoose.Schema.Types.ObjectId, ref: "Order" }],
+  wishlist: [{ type: mongoose.Schema.Types.ObjectId, ref: "Product" }],
+  status: { type: String, enum: ["active", "inactive"], default: "active" },
   customerType: {
     type: String,
-    enum: ['regular', 'wholesale', 'vip'],
-    default: 'regular',
+    enum: ["regular", "wholesale", "vip"],
+    default: "regular",
   },
 });
 
 // Pre-save middleware to generate userId
-userSchema.pre('save', function (next) {
+userSchema.pre("save", function (next) {
   if (!this.userId) {
     const nameSlug = slugify(this.name);
     const timestamp = Date.now().toString().slice(-6);
@@ -94,6 +94,6 @@ userSchema.pre('save', function (next) {
   next();
 });
 
-const User = mongoose.models.User || mongoose.model('User', userSchema);
+const User = mongoose.models.User || mongoose.model("User", userSchema);
 
 export default User;

@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "lint:fix": "next lint --fix",
     "pull": "prisma db pull",
     "generate": "prisma generate",
     "studio": "prisma studio",
