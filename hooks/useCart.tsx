@@ -1,6 +1,6 @@
 // hooks/useCart.ts
-import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
 export interface CartItem {
   productId: string;
@@ -11,6 +11,7 @@ export interface CartItem {
     media?: Array<{ url: string; type: string }>;
     colors?: Array<{ url: string; type: string }>;
     sizes?: string[];
+    minimumOrderQuantity?: number;
     price?: {
       cny: number;
       usd: number;
@@ -77,7 +78,7 @@ export const useCart = create<CartState>()(
         set((state) => {
           // Check if the item already exists in the cart
           const existingItemIndex = state.items.findIndex(
-            (item) => item.item._id === newItem.item._id,
+            (item) => item.item._id === newItem.item._id
           );
 
           if (existingItemIndex !== -1) {
@@ -85,7 +86,7 @@ export const useCart = create<CartState>()(
             const updatedItems = [...state.items];
             updatedItems[existingItemIndex].quantity += newItem.quantity;
             updatedItems[existingItemIndex].totalPrice = calculateTotalPrice(
-              updatedItems[existingItemIndex],
+              updatedItems[existingItemIndex]
             );
             return { items: updatedItems };
           } else {
@@ -102,7 +103,7 @@ export const useCart = create<CartState>()(
       removeItem: (productId) => {
         set((state) => ({
           items: state.items.filter(
-            (product) => product.productId !== productId,
+            (product) => product.productId !== productId
           ),
         }));
       },
@@ -138,22 +139,22 @@ export const useCart = create<CartState>()(
               bdt: total.bdt + (itemTotalPrice?.bdt || 0),
             };
           },
-          { cny: 0, usd: 0, bdt: 0 },
+          { cny: 0, usd: 0, bdt: 0 }
         );
       },
 
       getItemCount: () => {
         return get().items.reduce(
           (count, product) => count + product.quantity,
-          0,
+          0
         );
       },
     }),
     {
-      name: "k2b-cart-storage",
-      skipHydration: typeof window === "undefined",
-    },
-  ),
+      name: 'k2b-cart-storage',
+      skipHydration: typeof window === 'undefined',
+    }
+  )
 );
 
 export default useCart;
