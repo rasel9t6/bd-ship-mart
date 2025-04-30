@@ -158,7 +158,7 @@ export default function Navbar() {
         className='flex items-center gap-2'
       >
         <Image
-          src='/k2b-logo.png'
+          src='/k2b-logo-2.png'
           width={75}
           height={75}
           alt='Logo'
