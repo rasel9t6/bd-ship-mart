@@ -222,7 +222,7 @@ export default function ProductInfo({
     addToCart();
     setTimeout(() => setIsModalOpen(true), 300);
   };
-
+  console.log(productInfo);
   return (
     <motion.div
       className='flex flex-col gap-6 rounded-lg bg-white p-6 shadow-md'

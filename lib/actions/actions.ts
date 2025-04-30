@@ -79,7 +79,15 @@ export async function getCategories() {
 export async function getCategory(categorySlug: string) {
   try {
     await connectToDB();
-    const category = await Category.findOne({ slug: categorySlug });
+    const category = await Category.findOne({ slug: categorySlug })
+      .populate({
+        path: 'subcategories',
+        model: Subcategory,
+      })
+      .populate({
+        path: 'products',
+        model: Product,
+      });
     return JSON.parse(JSON.stringify(category));
   } catch (error) {
     console.error(`${error}`);
@@ -100,7 +108,10 @@ export async function getProducts() {
 export async function getProduct({ productSlug }: { productSlug: string }) {
   try {
     await connectToDB();
-    const product = await Product.findOne({ slug: productSlug });
+    const product = await Product.findOne({ slug: productSlug }).populate({
+      path: 'categories',
+      model: Category,
+    });
     return JSON.parse(JSON.stringify(product));
   } catch (error) {
     console.error(`${error}`);

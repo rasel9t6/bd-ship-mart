@@ -1,8 +1,9 @@
 "use client";
 import { useState } from "react";
-import Image from "next/image";
+
 import { motion, AnimatePresence } from "motion/react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import Image from "next/image";
 
 interface MediaItem {
   url: string;
