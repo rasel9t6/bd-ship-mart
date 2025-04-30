@@ -1,17 +1,17 @@
-import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
+import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
 
-import Order from '@/models/Order';
+import Order from "@/models/Order";
 
-import { getBkashAuthToken } from '@/lib/bkash';
-import { authOptions } from '@/lib/authOption';
-import { connectToDB } from '@/lib/dbConnect';
+import { getBkashAuthToken } from "@/lib/bkash";
+import { authOptions } from "@/lib/authOption";
+import { connectToDB } from "@/lib/dbConnect";
 
 export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user) {
-      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
     const { amount, orderId, currency, bkashNumber } = await req.json();
@@ -23,7 +23,7 @@ export async function POST(req: Request) {
     });
 
     if (!order) {
-      return NextResponse.json({ message: 'Order not found' }, { status: 404 });
+      return NextResponse.json({ message: "Order not found" }, { status: 404 });
     }
 
     await connectToDB();
@@ -33,38 +33,38 @@ export async function POST(req: Request) {
 
     // Initialize bKash payment
     const bkashResponse = await fetch(
-      'https://tokenized.sandbox.bka.sh/v1.2.0-beta/tokenized/checkout/create',
+      "https://tokenized.sandbox.bka.sh/v1.2.0-beta/tokenized/checkout/create",
       {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          Authorization: authToken || '',
-          'X-APP-Key': process.env.BKASH_APP_KEY || '',
+          "Content-Type": "application/json",
+          Authorization: authToken || "",
+          "X-APP-Key": process.env.BKASH_APP_KEY || "",
         },
         body: JSON.stringify({
-          mode: '0011',
+          mode: "0011",
           payerReference: orderId,
           callbackURL: `${process.env.NEXT_PUBLIC_APP_URL}/api/payment/bkash/callback`,
           amount: amount[currency.toLowerCase()],
           currency: currency,
-          intent: 'sale',
+          intent: "sale",
           merchantInvoiceNumber: orderId,
           customerMsisdn: bkashNumber,
         }),
-      }
+      },
     );
 
     const bkashData = await bkashResponse.json();
 
     if (!bkashResponse.ok) {
-      throw new Error(bkashData.message || 'Failed to create bKash payment');
+      throw new Error(bkashData.message || "Failed to create bKash payment");
     }
 
     // Update order with payment initiation
     await Order.findByIdAndUpdate(order._id, {
       $set: {
-        'paymentDetails.status': 'pending',
-        'paymentDetails.transactions': [
+        "paymentDetails.status": "pending",
+        "paymentDetails.transactions": [
           {
             amount: amount,
             transactionId: bkashData.paymentID,
@@ -79,10 +79,10 @@ export async function POST(req: Request) {
       paymentUrl: bkashData.bkashURL,
     });
   } catch (error) {
-    console.error('bKash payment creation error:', error);
+    console.error("bKash payment creation error:", error);
     return NextResponse.json(
-      { message: 'Failed to create payment' },
-      { status: 500 }
+      { message: "Failed to create payment" },
+      { status: 500 },
     );
   }
 }

@@ -13,7 +13,9 @@
     "studio": "prisma studio",
     "migrate": "prisma migrate dev",
     "format": "prettier --write .",
-    "create-super-admin": "node scripts/create-super-admin.js"
+    "format:fix": "prettier --write . --ignore-path .gitignore",
+    "create-super-admin": "node scripts/create-super-admin.js",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@hookform/resolvers": "^4.1.3",

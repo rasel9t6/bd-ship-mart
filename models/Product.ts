@@ -1,6 +1,6 @@
-import mongoose, { Document, Schema } from "mongoose";
-import slugify from "slugify";
-import Category from "./Category";
+import mongoose, { Document, Schema } from 'mongoose';
+import slugify from 'slugify';
+import Category from './Category';
 
 type CurrencyRates = {
   toBDT: number;
@@ -15,7 +15,7 @@ type ConversionRates = {
 // Define media type interface
 interface IMediaItem {
   url: string;
-  type: "image" | "video";
+  type: 'image' | 'video';
 }
 
 // Create custom type for price and expense
@@ -39,12 +39,12 @@ interface IProduct extends Document {
   description?: string;
   media: IMediaItem[];
   colors: IMediaItem[];
-  category: mongoose.Types.ObjectId;
+  categories: mongoose.Types.ObjectId[];
   subcategories: mongoose.Types.ObjectId[];
   tags: string[];
   sizes: string[];
   minimumOrderQuantity: number;
-  inputCurrency: "CNY" | "USD";
+  inputCurrency: 'CNY' | 'USD';
   quantityPricing: { ranges: IRange[] };
   price: ICurrency;
   expense: ICurrency;
@@ -61,21 +61,21 @@ const CurrencySchema = new Schema<ICurrency>(
   {
     cny: {
       type: Number,
-      min: [0, "Value cannot be negative"],
+      min: [0, 'Value cannot be negative'],
       default: 0,
     },
     usd: {
       type: Number,
-      min: [0, "Value cannot be negative"],
+      min: [0, 'Value cannot be negative'],
       default: 0,
     },
     bdt: {
       type: Number,
-      min: [0, "Value cannot be negative"],
+      min: [0, 'Value cannot be negative'],
       default: 0,
     },
   },
-  { _id: false },
+  { _id: false }
 );
 
 // Create Media Item schema
@@ -86,16 +86,16 @@ const MediaItemSchema = new Schema<IMediaItem>(
       required: true,
       validate: {
         validator: (v: string) => /^https?:\/\/.+/.test(v),
-        message: "Invalid media URL format",
+        message: 'Invalid media URL format',
       },
     },
     type: {
       type: String,
-      enum: ["image", "video"],
+      enum: ['image', 'video'],
       required: true,
     },
   },
-  { _id: false },
+  { _id: false }
 );
 
 // Create Range schema
@@ -104,19 +104,19 @@ const RangeSchema = new Schema<IRange>(
     minQuantity: { type: Number, required: true, min: 1 },
     maxQuantity: {
       type: Number,
-      min: [1, "Max quantity must be at least 1"],
+      min: [1, 'Max quantity must be at least 1'],
       validate: {
         validator: function (this: IRange & Document, v: number) {
           return !v || v >= this.minQuantity;
         },
         message:
-          "Max quantity must be greater than or equal to minimum quantity",
+          'Max quantity must be greater than or equal to minimum quantity',
       },
       required: false, // Make maxQuantity explicitly optional
     },
     price: CurrencySchema,
   },
-  { _id: false },
+  { _id: false }
 );
 
 // Main Product Schema
@@ -125,9 +125,9 @@ const ProductSchema = new Schema<IProduct>(
     sku: { type: String, required: true },
     title: {
       type: String,
-      required: [true, "Product title is required"],
+      required: [true, 'Product title is required'],
       trim: true,
-      maxLength: [200, "Title cannot exceed 200 characters"],
+      maxLength: [200, 'Title cannot exceed 200 characters'],
     },
     slug: {
       type: String,
@@ -139,18 +139,20 @@ const ProductSchema = new Schema<IProduct>(
     description: {
       type: String,
       trim: true,
-      maxLength: [2000, "Description cannot exceed 2000 characters"],
+      maxLength: [2000, 'Description cannot exceed 2000 characters'],
     },
     media: [MediaItemSchema], // Updated to use MediaItemSchema
-    category: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Category",
-      required: [true, "Category is required"],
-      index: true,
-    },
+    categories: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Category',
+        required: [true, 'At least one category is required'],
+        index: true,
+      },
+    ],
     subcategories: {
       type: [mongoose.Schema.Types.ObjectId],
-      ref: "Subcategory",
+      ref: 'Subcategory',
       default: [],
     },
     tags: [String],
@@ -159,14 +161,14 @@ const ProductSchema = new Schema<IProduct>(
     minimumOrderQuantity: {
       type: Number,
       required: true,
-      min: [1, "Minimum order quantity must be at least 1"],
+      min: [1, 'Minimum order quantity must be at least 1'],
       default: 1,
     },
     inputCurrency: {
       type: String,
-      enum: ["CNY", "USD"],
-      required: [true, "Input currency is required"],
-      default: "CNY",
+      enum: ['CNY', 'USD'],
+      required: [true, 'Input currency is required'],
+      default: 'CNY',
     },
     quantityPricing: {
       ranges: {
@@ -180,7 +182,7 @@ const ProductSchema = new Schema<IProduct>(
               !this.hasOverlappingRanges(ranges)
             );
           },
-          message: "Quantity ranges cannot overlap",
+          message: 'Quantity ranges cannot overlap',
         },
       },
     },
@@ -195,12 +197,12 @@ const ProductSchema = new Schema<IProduct>(
     timestamps: true,
     toJSON: { virtuals: true },
     toObject: { virtuals: true },
-  },
+  }
 );
 
 // Instance method to check for overlapping ranges
 ProductSchema.methods.hasOverlappingRanges = function (
-  ranges: IRange[],
+  ranges: IRange[]
 ): boolean {
   for (let i = 0; i < ranges.length; i++) {
     for (let j = i + 1; j < ranges.length; j++) {
@@ -224,31 +226,31 @@ ProductSchema.methods.hasOverlappingRanges = function (
 };
 
 // Populate category details automatically
-ProductSchema.virtual("categoryDetails", {
-  ref: "Category",
-  localField: "category",
-  foreignField: "_id",
-  justOne: true,
+ProductSchema.virtual('categoryDetails', {
+  ref: 'Category',
+  localField: 'categories',
+  foreignField: '_id',
+  justOne: false,
 });
 
 // Update parent Category on product save
-ProductSchema.post("save", async function (doc: IProduct) {
+ProductSchema.post('save', async function (doc: IProduct) {
   try {
-    if (doc.category) {
-      await Category.findByIdAndUpdate(doc.category, {
+    if (doc.categories.length > 0) {
+      await Category.findByIdAndUpdate(doc.categories[0], {
         $addToSet: { products: doc._id },
       });
-      console.log(`✅ Category Updated: ${doc.category}`);
+      console.log(`✅ Category Updated: ${doc.categories[0]}`);
     }
   } catch (error) {
-    console.error("❌ Error updating Category:", error);
+    console.error('❌ Error updating Category:', error);
   }
 });
 
 // Generate slug before saving
-ProductSchema.pre<IProduct>("save", function (next) {
+ProductSchema.pre<IProduct>('save', function (next) {
   try {
-    if (!this.slug || this.isModified("title")) {
+    if (!this.slug || this.isModified('title')) {
       this.slug = slugify(this.title, { lower: true, strict: true });
     }
     next();
@@ -263,8 +265,8 @@ ProductSchema.methods.performCurrencyConversions = function () {
     inputValue && rate ? Number((inputValue * rate).toFixed(2)) : 0;
 
   const performConversion = (
-    inputCurrency: "CNY" | "USD",
-    currencyObj: ICurrency,
+    inputCurrency: 'CNY' | 'USD',
+    currencyObj: ICurrency
   ) => {
     if (!currencyObj || !this.currencyRates) return currencyObj;
 
@@ -275,12 +277,12 @@ ProductSchema.methods.performCurrencyConversions = function () {
 
     const currentRates = rates[inputCurrency];
 
-    if (inputCurrency === "USD" && currencyObj.usd) {
+    if (inputCurrency === 'USD' && currencyObj.usd) {
       currencyObj.bdt = convertCurrency(currencyObj.usd, currentRates.toBDT);
       if (!currencyObj.cny) {
         currencyObj.cny = convertCurrency(currencyObj.usd, currentRates.toCNY!);
       }
-    } else if (inputCurrency === "CNY" && currencyObj.cny) {
+    } else if (inputCurrency === 'CNY' && currencyObj.cny) {
       currencyObj.bdt = convertCurrency(currencyObj.cny, currentRates.toBDT);
       if (!currencyObj.usd) {
         currencyObj.usd = convertCurrency(currencyObj.cny, currentRates.toUSD!);
@@ -306,11 +308,11 @@ ProductSchema.methods.performCurrencyConversions = function () {
 };
 
 // Indexes
-ProductSchema.index({ title: "text", description: "text" });
+ProductSchema.index({ title: 'text', description: 'text' });
 ProductSchema.index({ createdAt: -1 });
-ProductSchema.index({ "price.cny": 1, "price.usd": 1, "price.bdt": 1 });
+ProductSchema.index({ 'price.cny': 1, 'price.usd': 1, 'price.bdt': 1 });
 
 const Product =
-  mongoose.models.Product || mongoose.model<IProduct>("Product", ProductSchema);
+  mongoose.models.Product || mongoose.model<IProduct>('Product', ProductSchema);
 
 export default Product;

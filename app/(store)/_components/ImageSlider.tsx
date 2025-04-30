@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence, PanInfo } from 'motion/react';
-import { ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from "react";
+import { motion, AnimatePresence, PanInfo } from "motion/react";
+import { ChevronLeft, ChevronRight, Pause, Play } from "lucide-react";
 
 interface ImageSliderProps {
   images?: string[];
@@ -12,12 +12,12 @@ interface ImageSliderProps {
 }
 
 const defaultImages = [
-  '/banner.webp',
-  '/banner-1.webp',
-  '/banner-2.webp',
-  '/banner-3.webp',
-  '/banner-4.webp',
-  '/banner-5.webp',
+  "/banner.webp",
+  "/banner-1.webp",
+  "/banner-2.webp",
+  "/banner-3.webp",
+  "/banner-4.webp",
+  "/banner-5.webp",
 ];
 
 const ImageSlider: React.FC<ImageSliderProps> = ({
@@ -37,7 +37,7 @@ const ImageSlider: React.FC<ImageSliderProps> = ({
         (currentIndex + newDirection + images.length) % images.length;
       setPage([newIndex, newDirection]);
     },
-    [currentIndex, images.length]
+    [currentIndex, images.length],
   );
 
   useEffect(() => {
@@ -73,80 +73,77 @@ const ImageSlider: React.FC<ImageSliderProps> = ({
       if (swipe < -swipeConfidenceThreshold) paginate(1);
       else if (swipe > swipeConfidenceThreshold) paginate(-1);
     },
-    [paginate]
+    [paginate],
   );
 
   return (
-    <div className='relative mx-auto w-full h-full overflow-hidden rounded-lg shadow-md bg-gray-100'>
-      <AnimatePresence
-        initial={false}
-        custom={direction}
-      >
+    <div className="relative mx-auto w-full h-full overflow-hidden rounded-lg shadow-md bg-gray-100">
+      <AnimatePresence initial={false} custom={direction}>
         <motion.img
           key={currentIndex}
           src={images[currentIndex]}
           alt={`Slide ${currentIndex + 1}`}
           custom={direction}
           variants={slideVariants}
-          initial='enter'
-          animate='center'
-          exit='exit'
+          initial="enter"
+          animate="center"
+          exit="exit"
           transition={{
-            x: { type: 'spring', stiffness: 300, damping: 30, mass: 1.8 },
+            x: { type: "spring", stiffness: 300, damping: 30, mass: 1.8 },
             opacity: { duration: 0.5 },
           }}
-          drag='x'
+          drag="x"
           dragConstraints={{ left: 0, right: 0 }}
           dragElastic={1}
           onDragEnd={handleDragEnd}
-          className='absolute inset-0 size-full cursor-grab object-cover select-none'
-          draggable='false'
+          className="absolute inset-0 size-full cursor-grab object-cover select-none"
+          draggable="false"
         />
       </AnimatePresence>
 
       {/* Gradient overlay for better text contrast */}
-      <div className='absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-60'></div>
+      <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-60"></div>
 
       {!hideControls && (
-        <div className='absolute inset-x-0 bottom-4 z-10 flex items-center justify-center gap-3 sm:gap-4'>
+        <div className="absolute inset-x-0 bottom-4 z-10 flex items-center justify-center gap-3 sm:gap-4">
           <button
-            className='rounded-full bg-bondi-blue/80 p-1.5 sm:p-2 shadow-lg transition-all duration-300 hover:bg-bondi-blue focus:outline-none focus:ring-2 focus:ring-white'
+            className="rounded-full bg-bondi-blue/80 p-1.5 sm:p-2 shadow-lg transition-all duration-300 hover:bg-bondi-blue focus:outline-none focus:ring-2 focus:ring-white"
             onClick={() => paginate(-1)}
-            aria-label='Previous slide'
+            aria-label="Previous slide"
           >
-            <ChevronLeft className='size-3.5 sm:size-4 text-white lg:size-6' />
+            <ChevronLeft className="size-3.5 sm:size-4 text-white lg:size-6" />
           </button>
           <button
-            className='rounded-full bg-bondi-blue/80 p-1.5 sm:p-2 shadow-lg hover:bg-bondi-blue focus:outline-none focus:ring-2 focus:ring-white'
+            className="rounded-full bg-bondi-blue/80 p-1.5 sm:p-2 shadow-lg hover:bg-bondi-blue focus:outline-none focus:ring-2 focus:ring-white"
             onClick={() => setIsPlaying((prev) => !prev)}
-            aria-label={isPlaying ? 'Pause slideshow' : 'Play slideshow'}
+            aria-label={isPlaying ? "Pause slideshow" : "Play slideshow"}
           >
             {isPlaying ? (
-              <Pause className='size-3.5 sm:size-4 text-white lg:size-6' />
+              <Pause className="size-3.5 sm:size-4 text-white lg:size-6" />
             ) : (
-              <Play className='size-3.5 sm:size-4 text-white lg:size-6' />
+              <Play className="size-3.5 sm:size-4 text-white lg:size-6" />
             )}
           </button>
           <button
-            className='rounded-full bg-bondi-blue/80 p-1.5 sm:p-2 shadow-lg hover:bg-bondi-blue focus:outline-none focus:ring-2 focus:ring-white'
+            className="rounded-full bg-bondi-blue/80 p-1.5 sm:p-2 shadow-lg hover:bg-bondi-blue focus:outline-none focus:ring-2 focus:ring-white"
             onClick={() => paginate(1)}
-            aria-label='Next slide'
+            aria-label="Next slide"
           >
-            <ChevronRight className='size-3.5 sm:size-4 text-white lg:size-6' />
+            <ChevronRight className="size-3.5 sm:size-4 text-white lg:size-6" />
           </button>
         </div>
       )}
 
       <div
         className={`absolute left-1/2 z-10 flex -translate-x-1/2 space-x-1.5 sm:space-x-2 ${
-          hideControls ? 'bottom-3 sm:bottom-4' : 'bottom-14 sm:bottom-16'
+          hideControls ? "bottom-3 sm:bottom-4" : "bottom-14 sm:bottom-16"
         }`}
       >
         {images.map((_, index) => (
           <button
             key={index}
             className={`h-1.5 w-1.5 sm:size-2 rounded-full transition-all duration-300 ${
-              currentIndex === index ? 'bg-white w-3 sm:w-4' : 'bg-white/50'
+              currentIndex === index ? "bg-white w-3 sm:w-4" : "bg-white/50"
             }`}
             onClick={() => setPage([index, index > currentIndex ? 1 : -1])}
             aria-label={`Go to slide ${index + 1}`}

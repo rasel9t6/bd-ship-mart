@@ -1,44 +1,41 @@
-'use client';
+"use client";
 
-import { Badge } from '@/ui/badge';
-import { ColumnDef } from '@tanstack/react-table';
-import { format } from 'date-fns';
-import { Button } from '@/ui/button';
-import { Eye, MoreHorizontal } from 'lucide-react';
+import { Badge } from "@/ui/badge";
+import { ColumnDef } from "@tanstack/react-table";
+import { format } from "date-fns";
+import { Button } from "@/ui/button";
+import { Eye, MoreHorizontal } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuTrigger,
-} from '@/ui/dropdown-menu';
-import { useRouter } from 'next/navigation';
+} from "@/ui/dropdown-menu";
+import { useRouter } from "next/navigation";
 
-import Link from 'next/link';
-import { OrderType } from '@/types/next-utils';
+import Link from "next/link";
+import { OrderType } from "@/types/next-utils";
 
 const ActionsCell = ({ order }: { order: OrderType }) => {
   const router = useRouter();
 
   return (
-    <div className='flex items-center justify-end gap-2'>
+    <div className="flex items-center justify-end gap-2">
       <Button
-        variant='ghost'
-        size='icon'
+        variant="ghost"
+        size="icon"
         onClick={() => router.push(`/admin/orders/${order._id}`)}
       >
-        <Eye className='h-4 w-4' />
+        <Eye className="h-4 w-4" />
       </Button>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button
-            variant='ghost'
-            size='icon'
-          >
-            <MoreHorizontal className='h-4 w-4' />
+          <Button variant="ghost" size="icon">
+            <MoreHorizontal className="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align='end'>
+        <DropdownMenuContent align="end">
           <DropdownMenuLabel>Actions</DropdownMenuLabel>
           <DropdownMenuItem
             onClick={() => router.push(`/admin/orders/${order._id}`)}
@@ -58,28 +55,28 @@ const ActionsCell = ({ order }: { order: OrderType }) => {
 
 export const columns: ColumnDef<OrderType>[] = [
   {
-    accessorKey: 'orderId',
-    header: 'Order ID',
+    accessorKey: "orderId",
+    header: "Order ID",
     cell: ({ row }) => (
       <Link
         href={`/orders/${row.original.orderId}`}
-        className='text-primary hover:underline'
+        className="text-primary hover:underline"
       >
         {row.original.orderId}
       </Link>
     ),
   },
   {
-    accessorKey: 'customerInfo.name',
-    header: 'Customer',
+    accessorKey: "customerInfo.name",
+    header: "Customer",
     cell: ({ row }) => {
-      const customerName = row.original.customerInfo?.name || 'N/A';
+      const customerName = row.original.customerInfo?.name || "N/A";
       return <span>{customerName}</span>;
     },
   },
   {
-    accessorKey: 'products',
-    header: 'Products',
+    accessorKey: "products",
+    header: "Products",
     cell: ({ row }) => {
       const products = row.original.products;
       const totalItems = products.reduce((sum, p) => sum + p.quantity, 0);
@@ -87,54 +84,54 @@ export const columns: ColumnDef<OrderType>[] = [
     },
   },
   {
-    accessorKey: 'status',
-    header: 'Status',
+    accessorKey: "status",
+    header: "Status",
     cell: ({ row }) => {
       const status = row.original.status;
       let badgeVariant:
-        | 'default'
-        | 'secondary'
-        | 'destructive'
-        | 'outline'
-        | 'success'
-        | 'warning' = 'default';
+        | "default"
+        | "secondary"
+        | "destructive"
+        | "outline"
+        | "success"
+        | "warning" = "default";
 
       switch (status) {
-        case 'pending':
-          badgeVariant = 'warning';
+        case "pending":
+          badgeVariant = "warning";
           break;
-        case 'processing':
-          badgeVariant = 'secondary';
+        case "processing":
+          badgeVariant = "secondary";
           break;
-        case 'shipped':
-          badgeVariant = 'secondary';
+        case "shipped":
+          badgeVariant = "secondary";
           break;
-        case 'delivered':
-          badgeVariant = 'success';
+        case "delivered":
+          badgeVariant = "success";
           break;
-        case 'canceled':
-          badgeVariant = 'destructive';
+        case "canceled":
+          badgeVariant = "destructive";
           break;
         default:
-          badgeVariant = 'default';
+          badgeVariant = "default";
       }
 
       return <Badge variant={badgeVariant}>{status}</Badge>;
     },
   },
   {
-    accessorKey: 'paymentDetails.status',
-    header: 'Payment',
+    accessorKey: "paymentDetails.status",
+    header: "Payment",
     cell: ({ row }) => {
       const status = row.original.paymentDetails.status;
       return (
         <Badge
           variant={
-            status === 'paid'
-              ? 'success'
-              : status === 'pending'
-                ? 'warning'
-                : 'destructive'
+            status === "paid"
+              ? "success"
+              : status === "pending"
+                ? "warning"
+                : "destructive"
           }
         >
           {status}
@@ -143,8 +140,8 @@ export const columns: ColumnDef<OrderType>[] = [
     },
   },
   {
-    accessorKey: 'totalAmount',
-    header: 'Total Amount',
+    accessorKey: "totalAmount",
+    header: "Total Amount",
     cell: ({ row }) => {
       const amount = row.original.products.map((p) => p.totalPrice);
       console.log(row.original.products.map((p) => p.totalPrice));
@@ -152,15 +149,15 @@ export const columns: ColumnDef<OrderType>[] = [
     },
   },
   {
-    accessorKey: 'shippingMethod',
-    header: 'Shipping',
+    accessorKey: "shippingMethod",
+    header: "Shipping",
     cell: ({ row }) => {
       const method = row.original.shippingMethod;
       const delivery = row.original.deliveryType;
       return (
-        <div className='flex flex-col'>
-          <span className='capitalize'>{method}</span>
-          <span className='text-xs capitalize text-muted-foreground'>
+        <div className="flex flex-col">
+          <span className="capitalize">{method}</span>
+          <span className="text-xs capitalize text-muted-foreground">
             {delivery}
           </span>
         </div>
@@ -168,14 +165,14 @@ export const columns: ColumnDef<OrderType>[] = [
     },
   },
   {
-    accessorKey: 'createdAt',
-    header: 'Date',
+    accessorKey: "createdAt",
+    header: "Date",
     cell: ({ row }) => {
-      return format(new Date(row.original.createdAt), 'MMM dd, yyyy');
+      return format(new Date(row.original.createdAt), "MMM dd, yyyy");
     },
   },
   {
-    id: 'actions',
+    id: "actions",
     cell: ({ row }) => <ActionsCell order={row.original} />,
   },
 ];

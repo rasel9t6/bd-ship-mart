@@ -164,20 +164,22 @@ export default function CheckoutPage() {
                     <div>
                       <p className="text-sm text-gray-500">Total Amount</p>
                       <p className="font-semibold">
-                        ৳{order.totalAmount.bdt.toLocaleString()}
+                        ৳{(order.totalAmount?.bdt || 0).toLocaleString()}
                       </p>
                     </div>
                     <div>
                       <p className="text-sm text-gray-500">Payment Status</p>
                       <p
                         className={`font-semibold ${
-                          order.paymentDetails.status === "pending"
+                          order.paymentDetails?.status === "pending"
                             ? "text-yellow-600"
                             : "text-green-600"
                         }`}
                       >
-                        {order.paymentDetails.status.charAt(0).toUpperCase() +
-                          order.paymentDetails.status.slice(1)}
+                        {(order.paymentDetails?.status || "pending")
+                          .charAt(0)
+                          .toUpperCase() +
+                          (order.paymentDetails?.status || "pending").slice(1)}
                       </p>
                     </div>
                   </div>
@@ -192,15 +194,17 @@ export default function CheckoutPage() {
                           <Image
                             height={16}
                             width={16}
-                            src={item.product.images[0]}
-                            alt={item.product.title}
+                            src={item.product?.images?.[0] || "/k2b-logo.png"}
+                            alt={item.product?.title || "Product image"}
                             className="w-12 h-12 object-cover rounded"
                           />
                           <div>
-                            <p className="font-medium">{item.product.title}</p>
+                            <p className="font-medium">
+                              {item.product?.title || "Untitled Product"}
+                            </p>
                             <p className="text-sm text-gray-500">
                               Qty: {item.quantity} × ৳
-                              {item.unitPrice.bdt.toLocaleString()}
+                              {(item.unitPrice?.bdt || 0).toLocaleString()}
                             </p>
                           </div>
                         </div>
@@ -225,7 +229,7 @@ export default function CheckoutPage() {
                   <div className="bg-gray-50 p-4 rounded">
                     <p className="text-sm text-gray-500">Order Total</p>
                     <p className="text-2xl font-bold">
-                      ৳{selectedOrder.totalAmount.bdt.toLocaleString()}
+                      ৳{(selectedOrder.totalAmount?.bdt || 0).toLocaleString()}
                     </p>
                   </div>
                   <BkashPayment order={selectedOrder} />
