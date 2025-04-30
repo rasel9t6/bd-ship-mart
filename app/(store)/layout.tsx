@@ -1,5 +1,5 @@
 import FooterPage from "./footer/page";
-import Navbar from "./products/_components/Navbar";
+import Navbar from "./_components/Navbar";
 
 export default function layout({ children }: { children: React.ReactNode }) {
   return (
