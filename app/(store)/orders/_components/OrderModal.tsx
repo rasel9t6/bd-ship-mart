@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { useState, useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { FormProvider } from "react-hook-form";
+import { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { FormProvider } from 'react-hook-form';
 
 import {
   Loader2,
@@ -14,51 +14,51 @@ import {
   MapPin,
   CreditCard,
   CheckCircle,
-} from "lucide-react";
-import { Button } from "@/ui/button";
-import { Badge } from "@/ui/badge";
-import { Progress } from "@/ui/progress";
-import { ScrollArea } from "@/ui/scroll-area";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/ui/tabs";
+} from 'lucide-react';
+import { Button } from '@/ui/button';
+import { Badge } from '@/ui/badge';
+import { Progress } from '@/ui/progress';
+import { ScrollArea } from '@/ui/scroll-area';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/ui/tabs';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
-} from "@/ui/dialog";
+} from '@/ui/dialog';
 import {
   AlertDialog,
   AlertDialogContent,
   AlertDialogDescription,
   AlertDialogTitle,
-} from "@/ui/alert-dialog";
+} from '@/ui/alert-dialog';
 
-import { CustomerInfoForm } from "./CustomerInfoForm";
-import { ShippingAddressForm } from "./ShippingAddressForm";
-import { PaymentShippingForm } from "./PaymentShippingForm";
-import { OrderReview } from "./OrderReview";
-import toast from "react-hot-toast";
-import { BkashPayment } from "./BkashPayment";
+import { CustomerInfoForm } from './CustomerInfoForm';
+import { ShippingAddressForm } from './ShippingAddressForm';
+import { PaymentShippingForm } from './PaymentShippingForm';
+import { OrderReview } from './OrderReview';
+import toast from 'react-hot-toast';
+import { BkashPayment } from './BkashPayment';
 
 // Form schema using Zod
 const formSchema = z.object({
   customerInfo: z.object({
-    name: z.string().min(1, "Name is required"),
-    email: z.string().email("Valid email is required"),
-    phone: z.string().min(1, "Phone is required"),
+    name: z.string().min(1, 'Name is required'),
+    email: z.string().email('Valid email is required'),
+    phone: z.string().min(1, 'Phone is required'),
   }),
   shippingAddress: z.object({
-    street: z.string().min(1, "Street is required"),
-    city: z.string().min(1, "City is required"),
-    state: z.string().min(1, "State is required"),
-    postalCode: z.string().min(1, "Postal code is required"),
-    country: z.string().min(1, "Country is required"),
+    street: z.string().min(1, 'Street is required'),
+    city: z.string().min(1, 'City is required'),
+    state: z.string().min(1, 'State is required'),
+    postalCode: z.string().min(1, 'Postal code is required'),
+    country: z.string().min(1, 'Country is required'),
   }),
-  shippingMethod: z.enum(["air", "sea"]),
-  deliveryType: z.enum(["door-to-door", "warehouse"]),
-  paymentMethod: z.enum(["cash", "card", "bkash"]),
-  paymentCurrency: z.enum(["BDT", "USD", "CNY"]),
+  shippingMethod: z.enum(['air', 'sea']),
+  deliveryType: z.enum(['door-to-door', 'warehouse']),
+  paymentMethod: z.enum(['cash', 'card', 'bkash']),
+  paymentCurrency: z.enum(['BDT', 'USD', 'CNY']),
   bkashNumber: z.string().optional(),
   notes: z.string().optional(),
 });
@@ -97,6 +97,11 @@ interface CreatedOrder {
   _id: string;
   orderId: string;
   totalAmount: {
+    bdt: number;
+    usd: number;
+    cny: number;
+  };
+  subTotal: {
     bdt: number;
     usd: number;
     cny: number;
@@ -142,12 +147,14 @@ const OrderModal = ({
         bdt: number;
       };
       totalPrice: {
+        cny: number;
+        usd: number;
         bdt: number;
       };
     }>
   >([]);
-  const [error, setError] = useState("");
-  const [activeTab, setActiveTab] = useState("customer");
+  const [error, setError] = useState('');
+  const [activeTab, setActiveTab] = useState('customer');
   const [formCompletion, setFormCompletion] = useState(0);
   const [showBkashPayment, setShowBkashPayment] = useState(false);
   const [createdOrder, setCreatedOrder] = useState<CreatedOrder | null>(null);
@@ -157,25 +164,25 @@ const OrderModal = ({
     resolver: zodResolver(formSchema),
     defaultValues: {
       customerInfo: {
-        name: "",
-        email: "",
-        phone: "",
+        name: '',
+        email: '',
+        phone: '',
       },
       shippingAddress: {
-        street: "",
-        city: "",
-        state: "",
-        postalCode: "",
-        country: "Bangladesh",
+        street: '',
+        city: '',
+        state: '',
+        postalCode: '',
+        country: 'Bangladesh',
       },
-      shippingMethod: "air",
-      deliveryType: "door-to-door",
-      paymentMethod: "bkash",
-      paymentCurrency: "BDT",
-      bkashNumber: "",
-      notes: "",
+      shippingMethod: 'air',
+      deliveryType: 'door-to-door',
+      paymentMethod: 'bkash',
+      paymentCurrency: 'BDT',
+      bkashNumber: '',
+      notes: '',
     },
-    mode: "onChange",
+    mode: 'onChange',
   });
 
   // Initialize products from orderData if available
@@ -184,7 +191,7 @@ const OrderModal = ({
       const formattedProducts = orderData.products.map((product) => ({
         product: {
           _id: product.product,
-          name: productInfo?.name || "Product",
+          name: productInfo?.name || 'Product',
         },
         color: product.color || [],
         size: product.size || [],
@@ -242,16 +249,16 @@ const OrderModal = ({
       setUser(data);
 
       // Set form values based on user data
-      form.setValue("customerInfo.name", data.name || "");
-      form.setValue("customerInfo.email", data.email || "");
-      form.setValue("customerInfo.phone", data.phone || "");
+      form.setValue('customerInfo.name', data.name || '');
+      form.setValue('customerInfo.email', data.email || '');
+      form.setValue('customerInfo.phone', data.phone || '');
 
       if (data.address) {
-        form.setValue("shippingAddress.street", data.address.street || "");
-        form.setValue("shippingAddress.city", data.address.city || "");
-        form.setValue("shippingAddress.state", data.address.state || "");
-        form.setValue("shippingAddress.postalCode", data.address.zipCode || "");
-        form.setValue("shippingAddress.country", data.address.country || "");
+        form.setValue('shippingAddress.street', data.address.street || '');
+        form.setValue('shippingAddress.city', data.address.city || '');
+        form.setValue('shippingAddress.state', data.address.state || '');
+        form.setValue('shippingAddress.postalCode', data.address.zipCode || '');
+        form.setValue('shippingAddress.country', data.address.country || '');
       }
 
       // Get latest order if exists
@@ -260,28 +267,28 @@ const OrderModal = ({
 
         // Pre-fill form with latest order data
         if (latestOrder.shippingMethod) {
-          form.setValue("shippingMethod", latestOrder.shippingMethod);
+          form.setValue('shippingMethod', latestOrder.shippingMethod);
         }
 
         if (latestOrder.deliveryType) {
-          form.setValue("deliveryType", latestOrder.deliveryType);
+          form.setValue('deliveryType', latestOrder.deliveryType);
         }
 
         if (latestOrder.paymentMethod) {
-          form.setValue("paymentMethod", latestOrder.paymentMethod);
+          form.setValue('paymentMethod', latestOrder.paymentMethod);
         }
 
         if (latestOrder.paymentCurrency) {
-          form.setValue("paymentCurrency", latestOrder.paymentCurrency);
+          form.setValue('paymentCurrency', latestOrder.paymentCurrency);
         }
 
         if (latestOrder.shippingAddress) {
-          form.setValue("shippingAddress", {
-            street: latestOrder.shippingAddress.street || "",
-            city: latestOrder.shippingAddress.city || "",
-            state: latestOrder.shippingAddress.state || "",
-            postalCode: latestOrder.shippingAddress.postalCode || "",
-            country: latestOrder.shippingAddress.country || "",
+          form.setValue('shippingAddress', {
+            street: latestOrder.shippingAddress.street || '',
+            city: latestOrder.shippingAddress.city || '',
+            state: latestOrder.shippingAddress.state || '',
+            postalCode: latestOrder.shippingAddress.postalCode || '',
+            country: latestOrder.shippingAddress.country || '',
           });
         }
 
@@ -290,8 +297,8 @@ const OrderModal = ({
         }
       }
     } catch (err) {
-      console.error("Error fetching user data:", err);
-      setError("Failed to load user data. Please try again.");
+      console.error('Error fetching user data:', err);
+      setError('Failed to load user data. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -306,12 +313,26 @@ const OrderModal = ({
 
   const onSubmit = async (values: FormValues) => {
     setSubmitLoading(true);
-    setError("");
+    setError('');
 
     try {
+      // Calculate subTotal as sum of all product total prices
+      const subTotal = products.reduce(
+        (acc, product) => ({
+          cny: acc.cny + (product.totalPrice.cny || 0),
+          usd: acc.usd + (product.totalPrice.usd || 0),
+          bdt: acc.bdt + (product.totalPrice.bdt || 0),
+        }),
+        { cny: 0, usd: 0, bdt: 0 }
+      );
+
+      // For now, totalAmount equals subTotal
+      // This can be modified later to include shipping, taxes, or discounts
+      const totalAmount = { ...subTotal };
+
       // Prepare order data
       const orderData = {
-        customerInfo: userId, // Reference to user ID
+        customerInfo: userId,
         products: products.map((p) => ({
           product: p.product._id || p.product,
           color: p.color,
@@ -326,28 +347,30 @@ const OrderModal = ({
         paymentMethod: values.paymentMethod,
         paymentCurrency: values.paymentCurrency,
         bkashNumber: values.bkashNumber,
+        subTotal, // Sum of all product total prices
+        totalAmount, // Currently same as subTotal, can be modified later
         notes: values.notes
           ? [
               {
                 text: values.notes,
-                createdBy: user?.name || "Unknown User",
+                createdBy: user?.name || 'Unknown User',
                 isInternal: false,
               },
             ]
           : [],
       };
-
+      console.log('orderData', orderData);
       // Create new order
-      const response = await fetch("/api/orders", {
-        method: "POST",
+      const response = await fetch('/api/orders', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify(orderData),
       });
 
       if (!response.ok) {
-        throw new Error("Failed to create order");
+        throw new Error('Failed to create order');
       }
 
       const order = await response.json();
@@ -373,31 +396,31 @@ const OrderModal = ({
       // Only update if we have data to update
       if (Object.keys(userUpdateData).length > 0) {
         const userResponse = await fetch(`/api/users/${userId}`, {
-          method: "PATCH",
+          method: 'PATCH',
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
           },
           body: JSON.stringify(userUpdateData),
         });
 
         if (!userResponse.ok) {
-          throw new Error("Failed to update user data");
+          throw new Error('Failed to update user data');
         }
       }
 
       // Success
       onOpenChange(false);
-      toast.success("Order created successfully");
-      router.push("/cart");
+      toast.success('Order created successfully');
+      router.push('/cart');
       router.refresh(); // Refresh the page data
 
-      if (values.paymentMethod === "bkash") {
+      if (values.paymentMethod === 'bkash') {
         setShowBkashPayment(true);
       }
     } catch (err) {
-      toast.error("Failed to create order. Please try again.");
-      console.error("Error creating order:", err);
-      setError("Failed to create order. Please try again.");
+      toast.error('Failed to create order. Please try again.');
+      console.error('Error creating order:', err);
+      setError('Failed to create order. Please try again.');
     } finally {
       setSubmitLoading(false);
     }
@@ -405,72 +428,78 @@ const OrderModal = ({
 
   // Helper to advance to next tab
   const advanceTab = async (current: string) => {
-    if (current === "customer") {
+    if (current === 'customer') {
       // Validate customer tab fields before advancing
       const customerInfoValid = await form.trigger([
-        "customerInfo.name",
-        "customerInfo.email",
-        "customerInfo.phone",
+        'customerInfo.name',
+        'customerInfo.email',
+        'customerInfo.phone',
       ]);
       if (customerInfoValid) {
-        setActiveTab("shipping");
+        setActiveTab('shipping');
       }
-    } else if (current === "shipping") {
+    } else if (current === 'shipping') {
       // Validate shipping tab fields before advancing
       const shippingAddressValid = await form.trigger([
-        "shippingAddress.street",
-        "shippingAddress.city",
-        "shippingAddress.state",
-        "shippingAddress.postalCode",
-        "shippingAddress.country",
+        'shippingAddress.street',
+        'shippingAddress.city',
+        'shippingAddress.state',
+        'shippingAddress.postalCode',
+        'shippingAddress.country',
       ]);
       if (shippingAddressValid) {
-        setActiveTab("payment");
+        setActiveTab('payment');
       }
-    } else if (current === "payment") {
+    } else if (current === 'payment') {
       // Validate payment tab fields before advancing
       const paymentValid = await form.trigger([
-        "shippingMethod",
-        "deliveryType",
-        "paymentMethod",
-        "paymentCurrency",
+        'shippingMethod',
+        'deliveryType',
+        'paymentMethod',
+        'paymentCurrency',
       ]);
       if (paymentValid) {
-        setActiveTab("review");
+        setActiveTab('review');
       }
     }
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden p-0">
-        <DialogHeader className="p-6 bg-gradient-to-r from-blue-50 to-indigo-50 border-b">
-          <div className="flex justify-between items-center">
+    <Dialog
+      open={open}
+      onOpenChange={onOpenChange}
+    >
+      <DialogContent className='max-w-4xl max-h-[90vh] overflow-hidden p-0'>
+        <DialogHeader className='p-6 bg-gradient-to-r from-blue-50 to-indigo-50 border-b'>
+          <div className='flex justify-between items-center'>
             <div>
-              <DialogTitle className="text-2xl font-bold text-blue-800">
+              <DialogTitle className='text-2xl font-bold text-blue-800'>
                 Create New Order
               </DialogTitle>
-              <DialogDescription className="text-blue-600 mt-1">
-                Complete the form to create a new order for{" "}
-                {user?.name || "this customer"}
+              <DialogDescription className='text-blue-600 mt-1'>
+                Complete the form to create a new order for{' '}
+                {user?.name || 'this customer'}
               </DialogDescription>
             </div>
             <Badge
-              variant="outline"
-              className="bg-blue-100 text-blue-800 px-3 py-1 font-medium"
+              variant='outline'
+              className='bg-blue-100 text-blue-800 px-3 py-1 font-medium'
             >
               {formCompletion}% Complete
             </Badge>
           </div>
-          <Progress value={formCompletion} className="h-1 mt-2" />
+          <Progress
+            value={formCompletion}
+            className='h-1 mt-2'
+          />
         </DialogHeader>
 
         {error && (
           <AlertDialog>
-            <AlertDialogContent className="bg-white">
+            <AlertDialogContent className='bg-white'>
               <AlertDialogTitle>Error</AlertDialogTitle>
-              <AlertDialogDescription className="flex items-center gap-2 text-red-600">
-                <AlertCircle className="h-5 w-5" />
+              <AlertDialogDescription className='flex items-center gap-2 text-red-600'>
+                <AlertCircle className='h-5 w-5' />
                 {error}
               </AlertDialogDescription>
             </AlertDialogContent>
@@ -478,62 +507,65 @@ const OrderModal = ({
         )}
 
         {loading ? (
-          <div className="flex flex-col justify-center items-center h-96 p-6">
-            <Loader2 className="h-12 w-12 animate-spin text-blue-600 mb-4" />
-            <p className="text-gray-600">Loading customer data...</p>
+          <div className='flex flex-col justify-center items-center h-96 p-6'>
+            <Loader2 className='h-12 w-12 animate-spin text-blue-600 mb-4' />
+            <p className='text-gray-600'>Loading customer data...</p>
           </div>
         ) : (
           <Tabs
             value={activeTab}
             onValueChange={setActiveTab}
-            className="w-full"
+            className='w-full'
           >
-            <TabsList className="grid grid-cols-4 w-full rounded-none bg-gray-100 p-0">
+            <TabsList className='grid grid-cols-4 w-full rounded-none bg-gray-100 p-0'>
               <TabsTrigger
-                value="customer"
-                className="py-4 data-[state=active]:bg-white data-[state=active]:border-b-2 data-[state=active]:border-blue-600 rounded-none"
+                value='customer'
+                className='py-4 data-[state=active]:bg-white data-[state=active]:border-b-2 data-[state=active]:border-blue-600 rounded-none'
               >
-                <div className="flex items-center gap-2">
-                  <User className="h-4 w-4" />
+                <div className='flex items-center gap-2'>
+                  <User className='h-4 w-4' />
                   <span>Customer</span>
                 </div>
               </TabsTrigger>
               <TabsTrigger
-                value="shipping"
-                className="py-4 data-[state=active]:bg-white data-[state=active]:border-b-2 data-[state=active]:border-blue-600 rounded-none"
+                value='shipping'
+                className='py-4 data-[state=active]:bg-white data-[state=active]:border-b-2 data-[state=active]:border-blue-600 rounded-none'
               >
-                <div className="flex items-center gap-2">
-                  <MapPin className="h-4 w-4" />
+                <div className='flex items-center gap-2'>
+                  <MapPin className='h-4 w-4' />
                   <span>Shipping</span>
                 </div>
               </TabsTrigger>
               <TabsTrigger
-                value="payment"
-                className="py-4 data-[state=active]:bg-white data-[state=active]:border-b-2 data-[state=active]:border-blue-600 rounded-none"
+                value='payment'
+                className='py-4 data-[state=active]:bg-white data-[state=active]:border-b-2 data-[state=active]:border-blue-600 rounded-none'
               >
-                <div className="flex items-center gap-2">
-                  <CreditCard className="h-4 w-4" />
+                <div className='flex items-center gap-2'>
+                  <CreditCard className='h-4 w-4' />
                   <span>Payment</span>
                 </div>
               </TabsTrigger>
               <TabsTrigger
-                value="review"
-                className="py-4 data-[state=active]:bg-white data-[state=active]:border-b-2 data-[state=active]:border-blue-600 rounded-none"
+                value='review'
+                className='py-4 data-[state=active]:bg-white data-[state=active]:border-b-2 data-[state=active]:border-blue-600 rounded-none'
               >
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="h-4 w-4" />
+                <div className='flex items-center gap-2'>
+                  <CheckCircle className='h-4 w-4' />
                   <span>Review</span>
                 </div>
               </TabsTrigger>
             </TabsList>
 
-            <ScrollArea className="h-[calc(90vh-160px)]">
+            <ScrollArea className='h-[calc(90vh-160px)]'>
               <FormProvider {...form}>
                 <form
                   onSubmit={form.handleSubmit(onSubmit)}
-                  className="space-y-4"
+                  className='space-y-4'
                 >
-                  <TabsContent value="customer" className="p-6 pt-4">
+                  <TabsContent
+                    value='customer'
+                    className='p-6 pt-4'
+                  >
                     <CustomerInfoForm
                       user={
                         user
@@ -541,82 +573,91 @@ const OrderModal = ({
                           : undefined
                       }
                     />
-                    <div className="flex justify-end">
+                    <div className='flex justify-end'>
                       <Button
-                        type="button"
-                        onClick={() => advanceTab("customer")}
-                        className="bg-blue-600 hover:bg-blue-700"
+                        type='button'
+                        onClick={() => advanceTab('customer')}
+                        className='bg-blue-600 hover:bg-blue-700'
                       >
                         Continue to Shipping
                       </Button>
                     </div>
                   </TabsContent>
 
-                  <TabsContent value="shipping" className="p-6 pt-4">
+                  <TabsContent
+                    value='shipping'
+                    className='p-6 pt-4'
+                  >
                     <ShippingAddressForm />
-                    <div className="flex justify-between">
+                    <div className='flex justify-between'>
                       <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => setActiveTab("customer")}
+                        type='button'
+                        variant='outline'
+                        onClick={() => setActiveTab('customer')}
                       >
                         Back
                       </Button>
                       <Button
-                        type="button"
-                        onClick={() => advanceTab("shipping")}
-                        className="bg-blue-600 hover:bg-blue-700"
+                        type='button'
+                        onClick={() => advanceTab('shipping')}
+                        className='bg-blue-600 hover:bg-blue-700'
                       >
                         Continue to Payment
                       </Button>
                     </div>
                   </TabsContent>
 
-                  <TabsContent value="payment" className="p-6 pt-4">
+                  <TabsContent
+                    value='payment'
+                    className='p-6 pt-4'
+                  >
                     <PaymentShippingForm />
-                    <div className="flex justify-between">
+                    <div className='flex justify-between'>
                       <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => setActiveTab("shipping")}
+                        type='button'
+                        variant='outline'
+                        onClick={() => setActiveTab('shipping')}
                       >
                         Back
                       </Button>
                       <Button
-                        type="button"
-                        onClick={() => advanceTab("payment")}
-                        className="bg-blue-600 hover:bg-blue-700"
+                        type='button'
+                        onClick={() => advanceTab('payment')}
+                        className='bg-blue-600 hover:bg-blue-700'
                       >
                         Continue to Review
                       </Button>
                     </div>
                   </TabsContent>
 
-                  <TabsContent value="review" className="p-6 pt-4 pb-26 ">
+                  <TabsContent
+                    value='review'
+                    className='p-6 pt-4 pb-26 '
+                  >
                     <OrderReview products={products} />
-                    <div className="flex justify-between mt-10 border-t pt-6">
-                      {" "}
+                    <div className='flex justify-between mt-10 border-t pt-6'>
+                      {' '}
                       {/* Increased mt-6 to mt-10 */}
                       <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => setActiveTab("payment")}
+                        type='button'
+                        variant='outline'
+                        onClick={() => setActiveTab('payment')}
                       >
                         Back
                       </Button>
                       <Button
-                        type="submit"
+                        type='submit'
                         disabled={submitLoading}
-                        className="bg-green-600 hover:bg-green-700 min-w-32 text-white"
+                        className='bg-green-600 hover:bg-green-700 min-w-32 text-white'
                       >
                         {submitLoading ? (
                           <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            <Loader2 className='mr-2 h-4 w-4 animate-spin' />
                             Processing...
                           </>
                         ) : (
                           <>
-                            <CheckCircle className="mr-2 h-4 w-4" />
+                            <CheckCircle className='mr-2 h-4 w-4' />
                             Complete Order
                           </>
                         )}
@@ -630,15 +671,18 @@ const OrderModal = ({
         )}
 
         {showBkashPayment && createdOrder && (
-          <div className="space-y-4">
-            <div className="bg-gray-50 p-4 rounded">
-              <p className="text-sm text-gray-500">Order Total</p>
-              <p className="text-2xl font-bold">
-                ৳
-                {orderData?.products
-                  .reduce((acc, curr) => acc + curr.totalPrice.bdt, 0)
-                  .toLocaleString()}
-              </p>
+          <div className='space-y-4'>
+            <div className='bg-gray-50 p-4 rounded'>
+              <p className='text-sm text-gray-500'>Order Total</p>
+              <div className='space-y-2'>
+                <p className='text-2xl font-bold'>
+                  ৳{createdOrder.totalAmount.bdt.toLocaleString()}
+                </p>
+                <div className='text-sm text-gray-500'>
+                  <p>USD: ${createdOrder.totalAmount.usd.toLocaleString()}</p>
+                  <p>CNY: ¥{createdOrder.totalAmount.cny.toLocaleString()}</p>
+                </div>
+              </div>
             </div>
             <BkashPayment order={createdOrder} />
           </div>
