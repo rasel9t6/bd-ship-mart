@@ -58,7 +58,16 @@ export const getSalesPerMonth = async () => {
     }));
   }
 };
-
+export const getTotalCustomers = async () => {
+  try {
+    await connectToDB();
+    const users = await User.countDocuments({ role: 'user' });
+    return users;
+  } catch (error) {
+    console.error('Error fetching total customers:', error);
+    return 0;
+  }
+};
 export async function getCurrencyRate() {
   const res = await fetch(`${process.env.NEXT_PUBLIC_EXCHANGE_RATE_API_URL}`);
   const currencyRate = await res.json();
@@ -165,33 +174,5 @@ export async function getUserOrders(userId: string | undefined) {
   }
 }
 
-export const getTotalCustomers = async () => {
-  try {
-    await connectToDB();
-    const users = await User.countDocuments({ role: 'user' });
-    return users;
-  } catch (error) {
-    console.error('Error fetching total customers:', error);
-    return 0;
-  }
-};
 
-// export async function getProductDetails(productId: string) {
-//   try {
-//     await connectToDB();
-//     const product = await Product.findById(productId)
-//       .populate({
-//         path: 'category',
-//         model: Category,
-//         populate: {
-//           path: 'subcategories',
-//           model: Subcategory,
-//         },
-//       })
-//       .lean();
-//     return JSON.parse(JSON.stringify(product));
-//   } catch (error) {
-//     console.error(`${error}`);
-//     return null;
-//   }
-// }
+

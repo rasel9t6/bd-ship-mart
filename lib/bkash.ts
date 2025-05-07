@@ -41,6 +41,16 @@ async function getBkashToken(): Promise<string> {
     hasAppSecret: !!config.appSecret,
     hasUsername: !!config.username,
     hasPassword: !!config.password,
+    // Add additional logging to check actual values (first few chars)
+    appKeyPrefix: config.appKey
+      ? config.appKey.substring(0, 5) + '...'
+      : 'missing',
+    usernamePrefix: config.username
+      ? config.username.substring(0, 5) + '...'
+      : 'missing',
+    passwordLength: config.password
+      ? `${config.password.length} chars`
+      : 'missing',
   });
 
   // Validate required credentials
@@ -56,31 +66,46 @@ async function getBkashToken(): Promise<string> {
   }
 
   try {
-    console.log('Requesting bKash token with config:', {
-      appKey: config.appKey,
-      username: config.username,
-      // Don't log sensitive data
-    });
+    console.log(
+      'Requesting bKash token with URL:',
+      `${BKASH_BASE_URL}/token/grant`
+    );
 
+    // Ensure tokenized payment auth structure is correct
     const tokenRequestBody = {
       app_key: config.appKey,
       app_secret: config.appSecret,
       username: config.username,
       password: config.password,
-      grant_type: 'password',
-      scope: 'tokenized',
     };
+
+    // Log the structure (not the actual values)
+    console.log('Token request structure:', Object.keys(tokenRequestBody));
 
     const response = await fetch(`${BKASH_BASE_URL}/token/grant`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        accept: 'application/json',
+        username: config.username,
+        password: config.password,
         'X-APP-Key': config.appKey,
       },
       body: JSON.stringify(tokenRequestBody),
     });
 
-    const data = await response.json();
+    // Log the raw response for debugging
+    const rawResponse = await response.text();
+    console.log('Raw bKash API response:', rawResponse);
+
+    let data;
+    try {
+      data = JSON.parse(rawResponse);
+    } catch (e) {
+      console.error('Failed to parse bKash response as JSON:', e);
+      throw new Error('Invalid response format from bKash API');
+    }
+
     console.log('bKash token response:', {
       status: response.status,
       ok: response.ok,
@@ -293,7 +318,7 @@ export async function updateOrderPaymentStatus(
     bkash: {
       paymentID: paymentData.paymentID,
       merchantInvoiceNumber: orderId,
-      status: status.toUpperCase(),
+      status: 'INITIATED',
       statusCode: paymentData.statusCode,
       statusMessage: paymentData.statusMessage,
       paymentExecuteTime: new Date(),

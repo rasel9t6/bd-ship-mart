@@ -90,7 +90,6 @@ export async function POST(request: Request) {
       paymentUrl: paymentResponse.bkashURL,
       paymentID: paymentResponse.paymentID,
       amount: finalAmount,
-   
     });
   } catch (error) {
     console.error('bKash payment creation error:', error);

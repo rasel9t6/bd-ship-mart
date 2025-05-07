@@ -344,8 +344,14 @@ export default function CheckoutPage() {
         }
 
         const data = await response.json();
-        console.log('Fetched orders:', data); // Debug log
-        setOrders(data);
+        // Filter orders with payment status 'pending' or 'failed'
+        const filteredOrders = data.filter(
+          (order: Order) =>
+            order.paymentDetails?.status === 'pending' ||
+            order.paymentDetails?.status === 'failed'
+        );
+        console.log('Filtered orders:', filteredOrders); // Debug log
+        setOrders(filteredOrders);
       } catch (error) {
         console.error('Error fetching orders:', error);
         setError(
@@ -458,32 +464,34 @@ export default function CheckoutPage() {
                   }`}
                   onClick={() => setSelectedOrder(order)}
                 >
-                  <CardHeader>
-                    <CardTitle className='flex justify-between items-center'>
-                      <span className='text-lg'>Order #{order.orderId}</span>
+                  <CardHeader className='pb-2'>
+                    <CardTitle className='flex justify-between items-center text-base'>
+                      <span>Order #{order.orderId}</span>
                       <span className='text-sm font-normal text-gray-500'>
                         {new Date(order.createdAt).toLocaleDateString()}
                       </span>
                     </CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <div className='space-y-4'>
-                      <div className='grid grid-cols-2 gap-4'>
-                        <div className='bg-gray-50 p-3 rounded-lg'>
-                          <p className='text-sm text-gray-500'>Total Amount</p>
-                          <p className='font-semibold text-lg'>
+                  <CardContent className='pt-0'>
+                    <div className='space-y-3'>
+                      <div className='grid grid-cols-2 gap-3'>
+                        <div className='bg-gray-50 p-2 rounded-lg'>
+                          <p className='text-xs text-gray-500'>Total Amount</p>
+                          <p className='font-semibold'>
                             ৳{(order.totalAmount?.bdt || 0).toLocaleString()}
                           </p>
                         </div>
-                        <div className='bg-gray-50 p-3 rounded-lg'>
-                          <p className='text-sm text-gray-500'>
+                        <div className='bg-gray-50 p-2 rounded-lg'>
+                          <p className='text-xs text-gray-500'>
                             Payment Status
                           </p>
                           <p
                             className={`font-semibold ${
                               order.paymentDetails?.status === 'pending'
                                 ? 'text-yellow-600'
-                                : 'text-green-600'
+                                : order.paymentDetails?.status === 'failed'
+                                  ? 'text-red-600'
+                                  : 'text-green-600'
                             }`}
                           >
                             {(order.paymentDetails?.status || 'pending')
@@ -496,14 +504,14 @@ export default function CheckoutPage() {
                         </div>
                       </div>
                       <div>
-                        <p className='text-sm text-gray-500 mb-2'>Products</p>
-                        <div className='space-y-2'>
+                        <p className='text-xs text-gray-500 mb-1'>Products</p>
+                        <div className='grid grid-cols-2 gap-2'>
                           {order.products.map((item, index) => (
                             <div
                               key={index}
-                              className='flex items-center gap-4 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors'
+                              className='flex items-center gap-2 p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors'
                             >
-                              <div className='relative w-16 h-16'>
+                              <div className='relative w-12 h-12'>
                                 <Image
                                   fill
                                   src={
@@ -513,11 +521,11 @@ export default function CheckoutPage() {
                                   className='object-cover rounded-md'
                                 />
                               </div>
-                              <div className='flex-1'>
-                                <p className='font-medium'>
+                              <div className='flex-1 min-w-0'>
+                                <p className='font-medium text-sm truncate'>
                                   {item.product?.title || 'Untitled Product'}
                                 </p>
-                                <div className='text-sm text-gray-500 space-y-1'>
+                                <div className='text-xs text-gray-500 space-y-0.5'>
                                   <p>
                                     Qty: {item.quantity} × ৳
                                     {(
@@ -531,7 +539,26 @@ export default function CheckoutPage() {
                                     ).toLocaleString()}
                                   </p>
                                   {item.color.length > 0 && (
-                                    <p>Color: {item.color.join(', ')}</p>
+                                    <div className='flex items-center gap-1'>
+                                      <p>Color:</p>
+                                      <div className='flex gap-0.5'>
+                                        {item.color.map(
+                                          (colorUrl, colorIndex) => (
+                                            <div
+                                              key={colorIndex}
+                                              className='relative w-4 h-4 rounded-full overflow-hidden border border-gray-200'
+                                            >
+                                              <Image
+                                                src={colorUrl}
+                                                alt={`Color ${colorIndex + 1}`}
+                                                fill
+                                                className='object-cover'
+                                              />
+                                            </div>
+                                          )
+                                        )}
+                                      </div>
+                                    </div>
                                   )}
                                   {item.size.length > 0 && (
                                     <p>Size: {item.size.join(', ')}</p>
