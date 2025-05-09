@@ -1,11 +1,11 @@
-import FooterPage from "./footer/page";
-import Navbar from "./_components/Navbar";
+import FooterPage from './footer/page';
+import Navbar from './_components/Navbar';
 
 export default function layout({ children }: { children: React.ReactNode }) {
   return (
-    <div>
+    <div className='min-h-screen flex flex-col'>
       <Navbar />
-      {children}
+      <main className='flex-1 mt-24 mb-16'>{children}</main>
       <FooterPage />
     </div>
   );

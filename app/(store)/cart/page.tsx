@@ -1,16 +1,11 @@
 'use client';
 
-import { useState, useRef } from 'react';
-import Image from 'next/image';
+import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import toast from 'react-hot-toast';
 import {
-  Trash2,
   ShoppingCart,
-  Plus,
-  Minus,
   ShoppingBag,
   AlertCircle,
   ArrowLeft,
@@ -18,84 +13,50 @@ import {
 
 import { Button } from '@/ui/button';
 import { Card, CardContent, CardFooter } from '@/ui/card';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/ui/table';
+import { Table, TableBody, TableCell, TableRow } from '@/ui/table';
 import { Alert, AlertDescription, AlertTitle } from '@/ui/alert';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/ui/select';
 import { Separator } from '@/ui/separator';
 
-import { useCart } from '@/hooks/useCart';
+import { useCart, CartProduct, CartProductVariant } from '@/hooks/useCart';
 import OrderModal from '../orders/_components/OrderModal';
+
+import toast from 'react-hot-toast';
+import EditCartItemModal from './_components/EditCartItemModal';
+import React from 'react';
 
 export default function CartPage() {
   const router = useRouter();
   const { data: session } = useSession();
   const [orderModalOpen, setOrderModalOpen] = useState(false);
-  const [selectedCurrency, setSelectedCurrency] = useState<
-    'BDT' | 'USD' | 'CNY'
-  >('BDT');
-  // Add a ref to track the last toast time for each product
-  const lastToastTimeRef = useRef<Record<string, number>>({});
+  const [selectedCurrency] = useState<'BDT' | 'USD' | 'CNY'>('BDT');
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<CartProduct | null>(
+    null
+  );
+  const [editingVariantIndex, setEditingVariantIndex] = useState<number | null>(
+    null
+  );
 
-  const {
-    items,
-    removeItem,
-    updateQuantity,
-    getSubTotal,
-    getItemCount,
-    clearCart,
-  } = useCart();
+  const { products, removeProduct, updateProduct } = useCart();
 
-  const subTotal = getSubTotal();
-  const itemCount = getItemCount();
-  const hasItems = items.length > 0;
+  // Flatten all variants for summary and modal
+  const allVariants = products.flatMap((p) =>
+    p.variants.map((v) => ({ ...v, product: p.product }))
+  );
+
+  const itemCount = allVariants.reduce((sum, v) => sum + v.quantity, 0);
+  const subTotal = {
+    bdt: allVariants.reduce((sum, v) => sum + (v.totalPrice?.bdt || 0), 0),
+    usd: allVariants.reduce((sum, v) => sum + (v.totalPrice?.usd || 0), 0),
+    cny: allVariants.reduce((sum, v) => sum + (v.totalPrice?.cny || 0), 0),
+  };
+  const hasItems = products.length > 0;
 
   // Currency symbols
   const currencySymbols = {
     BDT: '৳',
     USD: '$',
     CNY: '¥',
-  };
-
-  const handleQuantityChange = (productId: string, newQuantity: number) => {
-    // Find the specific cart item to get its minimum order quantity
-    const cartItem = items.find((item) => item.productId === productId);
-    if (!cartItem) return;
-
-    // Get minimum order quantity from the product, default to 1 if not specified
-    const minOrderQty = cartItem.item.minimumOrderQuantity || 1;
-
-    // Check if new quantity is below minimum order quantity
-    if (newQuantity < minOrderQty) {
-      // Set to minimum order quantity instead
-      updateQuantity(productId, minOrderQty);
-
-      // Check if we should show a toast (no more than once per 2 seconds per product)
-      const now = Date.now();
-      const lastToastTime = lastToastTimeRef.current[productId] || 0;
-      if (now - lastToastTime > 2000) {
-        toast.error(
-          `Minimum order quantity for this product is ${minOrderQty}`
-        );
-        lastToastTimeRef.current[productId] = now;
-      }
-
-      return;
-    }
-
-    updateQuantity(productId, newQuantity);
   };
 
   const handleCheckout = () => {
@@ -110,36 +71,21 @@ export default function CartPage() {
     router.push('/checkout');
   };
 
-  const handleOrderModal = () => {
-    if (!hasItems) return;
-
-    if (!session) {
-      router.push('/login?redirect=/cart');
-      return;
-    }
-
-    setOrderModalOpen(true);
-  };
-
-  // Prepare order data for modal
+  // Fix orderData for OrderModal
   const orderData = {
-    products: items.map((item) => ({
-      product: item.item._id,
-      color: item.color,
-      size: item.size,
-      quantity: item.quantity,
-      unitPrice: item.item.price || {
-        cny: 0,
-        usd: 0,
-        bdt: 0,
-      },
-      totalPrice: item.totalPrice,
+    products: allVariants.map((v) => ({
+      product: v.product,
+      color: [v.color],
+      size: [v.size],
+      quantity: v.quantity,
+      unitPrice: v.unitPrice,
+      totalPrice: v.totalPrice,
     })),
-    subTotal: subTotal,
+    subTotal,
   };
   console.log(
     'Cart items>>',
-    items.map((item) => item.item.title)
+    products.map((item) => item.product)
   );
   if (!hasItems) {
     return (
@@ -188,211 +134,76 @@ export default function CartPage() {
               <CardContent className='p-0'>
                 <div className='overflow-x-auto'>
                   <Table>
-                    <TableHeader className='bg-gray-50'>
-                      <TableRow>
-                        <TableHead className='w-1/2 py-4'>Product</TableHead>
-                        <TableHead className='py-4'>Price</TableHead>
-                        <TableHead className='py-4'>Quantity</TableHead>
-                        <TableHead className='py-4'>Total</TableHead>
-                        <TableHead className='w-10 py-4'></TableHead>
-                      </TableRow>
-                    </TableHeader>
                     <TableBody>
-                      {items.map((item, index) => (
-                        <TableRow
-                          key={index}
-                          className='hover:bg-gray-50 transition-colors'
-                        >
-                          <TableCell className='py-4'>
-                            <div className='flex items-center space-x-4'>
-                              <div className='relative h-20 w-20 rounded bg-gray-100 overflow-hidden border border-gray-200'>
-                                {item.item.media?.[0]?.url ? (
-                                  <Image
-                                    src={item.item.media[0].url}
-                                    alt={item.item.title || 'Product image'}
-                                    fill
-                                    className='object-cover'
-                                  />
-                                ) : (
-                                  <div className='flex h-full w-full items-center justify-center bg-gray-200'>
-                                    <ShoppingBag className='h-8 w-8 text-gray-400' />
-                                  </div>
-                                )}
-                              </div>
-                              <div>
-                                <h3 className='font-medium text-gray-900'>
-                                  {item.item.title || 'Unnamed Product'}
-                                </h3>
-                                <div className='text-sm text-gray-500 mt-1 flex items-center gap-2'>
-                                  {item.color && item.color[0] && (
-                                    <div className='flex items-center'>
-                                      <span className='mr-1'>Color:</span>
-                                      <div className='relative h-6 w-6 rounded-full overflow-hidden inline-block border border-gray-200'>
-                                        <Image
-                                          src={
-                                            item.color[0].startsWith('http')
-                                              ? item.color[0]
-                                              : `/api/media/${item.color[0]}`
-                                          }
-                                          alt='Color variant'
-                                          fill
-                                          className='object-cover'
-                                        />
-                                      </div>
-                                    </div>
-                                  )}
-                                  {item.size && item.size[0] && (
-                                    <span>Size: {item.size[0]}</span>
-                                  )}
-                                </div>
-                                {/* Display all available variants */}
-                                <div className='text-xs text-gray-400 mt-1'>
-                                  {item.item.colors &&
-                                    item.item.colors.length > 0 && (
-                                      <div className='flex items-center gap-1 mt-1'>
-                                        <span>Available Colors:</span>
-                                        <div className='flex gap-1'>
-                                          {item.item.colors.map(
-                                            (color, idx) => (
-                                              <div
-                                                key={idx}
-                                                className='relative h-4 w-4 rounded-full overflow-hidden border border-gray-200'
-                                              >
-                                                <Image
-                                                  src={
-                                                    color.url.startsWith('http')
-                                                      ? color.url
-                                                      : `/api/media/${color.url}`
-                                                  }
-                                                  alt={`Color ${idx + 1}`}
-                                                  fill
-                                                  className='object-cover'
-                                                />
-                                              </div>
-                                            )
-                                          )}
-                                        </div>
-                                      </div>
-                                    )}
-                                  {item.item.sizes &&
-                                    item.item.sizes.length > 0 && (
-                                      <div className='flex items-center gap-1 mt-1'>
-                                        <span>Available Sizes:</span>
-                                        <div className='flex gap-1'>
-                                          {item.item.sizes.map((size, idx) => (
-                                            <span
-                                              key={idx}
-                                              className={`text-xs px-1 py-0.5 rounded ${
-                                                size === item.size[0]
-                                                  ? 'bg-blue-100 text-blue-800'
-                                                  : 'bg-gray-100 text-gray-600'
-                                              }`}
-                                            >
-                                              {size}
-                                            </span>
-                                          ))}
-                                        </div>
-                                      </div>
-                                    )}
-                                </div>
-                              </div>
-                            </div>
-                          </TableCell>
-                          <TableCell className='text-gray-700'>
-                            {currencySymbols[selectedCurrency]}
-                            {item.item.price?.[
-                              selectedCurrency.toLowerCase() as
-                                | 'bdt'
-                                | 'usd'
-                                | 'cny'
-                            ]?.toLocaleString() || '0'}
-                          </TableCell>
-                          <TableCell>
-                            <div className='flex items-center space-x-2'>
-                              <Button
-                                variant='outline'
-                                size='icon'
-                                className='h-8 w-8 border-gray-300 hover:bg-gray-100'
-                                onClick={() =>
-                                  handleQuantityChange(
-                                    item.productId,
-                                    item.quantity - 1
-                                  )
-                                }
-                              >
-                                <Minus className='h-4 w-4' />
-                              </Button>
-                              <span className='w-8 text-center font-medium'>
-                                {item.quantity}
-                              </span>
-                              <Button
-                                variant='outline'
-                                size='icon'
-                                className='h-8 w-8 border-gray-300 hover:bg-gray-100'
-                                onClick={() =>
-                                  handleQuantityChange(
-                                    item.productId,
-                                    item.quantity + 1
-                                  )
-                                }
-                              >
-                                <Plus className='h-4 w-4' />
-                              </Button>
-                            </div>
-                          </TableCell>
-                          <TableCell className='font-medium text-gray-900'>
-                            {currencySymbols[selectedCurrency]}
-                            {item.totalPrice?.[
-                              selectedCurrency.toLowerCase() as
-                                | 'bdt'
-                                | 'usd'
-                                | 'cny'
-                            ]?.toLocaleString() || '0'}
-                          </TableCell>
-                          <TableCell>
-                            <Button
-                              variant='ghost'
-                              size='icon'
-                              onClick={() => removeItem(item.productId)}
-                              className='text-red-500 hover:text-red-700 hover:bg-red-50'
+                      {products.map((product) => (
+                        <React.Fragment key={product.product}>
+                          <TableRow className='bg-gray-50'>
+                            <TableCell
+                              colSpan={5}
+                              className='font-bold text-lg'
                             >
-                              <Trash2 className='h-4 w-4' />
-                            </Button>
-                          </TableCell>
-                        </TableRow>
+                              Product: {product.product}
+                            </TableCell>
+                          </TableRow>
+                          {product.variants.map((variant, variantIdx) => (
+                            <TableRow
+                              key={variantIdx}
+                              className='hover:bg-gray-50 transition-colors'
+                            >
+                              <TableCell className='py-4'>
+                                <div className='flex items-center space-x-4'>
+                                  <div className='relative h-10 w-10 rounded bg-gray-100 overflow-hidden border border-gray-200'>
+                                    {variant.color && (
+                                      <img
+                                        src={
+                                          variant.color.startsWith('http')
+                                            ? variant.color
+                                            : `/api/media/${variant.color}`
+                                        }
+                                        alt='Color variant'
+                                        className='object-cover w-full h-full'
+                                      />
+                                    )}
+                                  </div>
+                                  <div>
+                                    <div className='text-sm text-gray-500 mt-1 flex items-center gap-2'>
+                                      <span>Size: {variant.size}</span>
+                                    </div>
+                                  </div>
+                                </div>
+                              </TableCell>
+                              <TableCell className='text-gray-700'>
+                                ৳{variant.unitPrice.bdt}
+                              </TableCell>
+                              <TableCell>
+                                <span className='w-8 text-center font-medium'>
+                                  {variant.quantity}
+                                </span>
+                              </TableCell>
+                              <TableCell className='font-medium text-gray-900'>
+                                ৳{variant.totalPrice.bdt}
+                              </TableCell>
+                              <TableCell>
+                                <Button
+                                  variant='outline'
+                                  size='sm'
+                                  onClick={() => {
+                                    setEditingProduct(product);
+                                    setEditingVariantIndex(variantIdx);
+                                    setEditModalOpen(true);
+                                  }}
+                                >
+                                  Edit
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </React.Fragment>
                       ))}
                     </TableBody>
                   </Table>
                 </div>
               </CardContent>
-              <CardFooter className='flex justify-between py-5 px-6 bg-gray-50 border-t border-gray-200'>
-                <Button
-                  variant='outline'
-                  onClick={clearCart}
-                  className='text-red-500 hover:bg-red-50 border-red-200'
-                >
-                  <Trash2 className='h-4 w-4 mr-2' />
-                  Clear Cart
-                </Button>
-                <div className='flex items-center space-x-2'>
-                  <span className='text-sm text-gray-500'>Currency:</span>
-                  <Select
-                    value={selectedCurrency}
-                    onValueChange={(value) =>
-                      setSelectedCurrency(value as 'BDT' | 'USD' | 'CNY')
-                    }
-                  >
-                    <SelectTrigger className='w-[100px] border-gray-300'>
-                      <SelectValue placeholder='Currency' />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value='BDT'>BDT (৳)</SelectItem>
-                      <SelectItem value='USD'>USD ($)</SelectItem>
-                      <SelectItem value='CNY'>CNY (¥)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </CardFooter>
             </Card>
           </div>
 
@@ -439,16 +250,6 @@ export default function CartPage() {
                 >
                   Proceed to Checkout
                 </Button>
-
-                <Button
-                  className='w-full border-blue-200 text-blue-700 hover:bg-blue-50'
-                  variant='outline'
-                  size='lg'
-                  onClick={handleOrderModal}
-                  disabled={!hasItems}
-                >
-                  Quick Order
-                </Button>
               </CardFooter>
             </Card>
 
@@ -473,6 +274,28 @@ export default function CartPage() {
           onOpenChange={setOrderModalOpen}
           userId={session.user.id}
           orderData={orderData}
+        />
+      )}
+
+      {/* Edit Modal for a variant */}
+      {editingProduct && editingVariantIndex !== null && (
+        <EditCartItemModal
+          open={editModalOpen}
+          item={editingProduct.variants[editingVariantIndex]}
+          onClose={() => setEditModalOpen(false)}
+          onUpdate={(updatedVariant: CartProductVariant) => {
+            const updatedVariants = [...editingProduct.variants];
+            updatedVariants[editingVariantIndex] = updatedVariant;
+            updateProduct({ ...editingProduct, variants: updatedVariants });
+            setEditModalOpen(false);
+          }}
+          onDelete={() => {
+            removeProduct(editingProduct.product, editingVariantIndex);
+            setEditModalOpen(false);
+          }}
+          onMinQty={() =>
+            toast.error('Cannot go below minimum order quantity!')
+          }
         />
       )}
     </div>

@@ -195,14 +195,17 @@ export default function ProductInfo({
           usd: productInfo.price.usd * item.quantity,
         };
 
-        cart.addItem({
-          productId: productInfo._id,
-          item: productInfo as ProductType & { _id: string },
-          quantity: item.quantity,
-          color: [item.color],
-          size: [item.size],
-          unitPrice,
-          totalPrice,
+        cart.addProduct({
+          product: productInfo.slug,
+          variants: [
+            {
+              color: item.color,
+              size: item.size,
+              quantity: item.quantity,
+              unitPrice,
+              totalPrice,
+            },
+          ],
         });
       }
     });
