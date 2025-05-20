@@ -4,7 +4,7 @@ import "./globals.css";
 import AuthProvider from "@/context/AuthProvider";
 import ToasterProvider from "@/context/ToasterProvider";
 import { cn } from "@/lib/utils";
-
+import { SpeedInsights } from "@vercel/speed-insights/next";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -39,6 +39,7 @@ export default function RootLayout({
       >
         <ToasterProvider />
         <AuthProvider>{children}</AuthProvider>
+        <SpeedInsights /> 
       </body>
     </html>
   );
