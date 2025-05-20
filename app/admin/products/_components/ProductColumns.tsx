@@ -109,9 +109,10 @@ export const columns: ColumnDef<ProductType>[] = [
       const subcategories =
         typeof row.original.category === "object" &&
         row.original.category &&
+        "subcategories" in row.original.category &&
         Array.isArray(row.original.category.subcategories)
           ? row.original.category.subcategories
-              .map((sub) => sub.name)
+              .map((sub: { name: string }) => sub.name)
               .join(", ")
           : "N/A";
 

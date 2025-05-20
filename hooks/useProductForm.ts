@@ -57,14 +57,17 @@ const getDefaultValues = (initialData?: ProductType): ProductFormValues => ({
         typeof item === "string" ? item : item.url,
       )
     : [],
-  category: {
-    name: initialData?.category?.name || "",
-    subcategories: Array.isArray(initialData?.category?.subcategories)
-      ? initialData.category.subcategories.map((sub) => ({
-          name: typeof sub === "string" ? sub : sub.name,
-        }))
-      : [],
-  },
+  category: initialData?.category
+    ? {
+        name: initialData.category.name,
+        subcategories: Array.isArray(initialData.subcategories)
+          ? initialData.subcategories.map((sub) => ({ name: sub.name }))
+          : [{ name: "" }],
+      }
+    : {
+        name: "",
+        subcategories: [{ name: "" }],
+      },
   tags: Array.isArray(initialData?.tags) ? initialData.tags : [],
   sizes: Array.isArray(initialData?.sizes) ? initialData.sizes : [],
   colors: Array.isArray(initialData?.colors)
@@ -190,10 +193,17 @@ export const useProductForm = ({
           typeof item === "string" ? item : item.url,
         )
       : [],
-    category: initialData?.category || {
-      name: "",
-      subcategories: [],
-    },
+    category: initialData?.category
+      ? {
+          name: initialData.category.name,
+          subcategories: Array.isArray(initialData.subcategories)
+            ? initialData.subcategories.map((sub) => ({ name: sub.name }))
+            : [{ name: "" }],
+        }
+      : {
+          name: "",
+          subcategories: [{ name: "" }],
+        },
     subcategories: Array.isArray(initialData?.subcategories)
       ? initialData.subcategories.map((sub) =>
           typeof sub === "string" ? sub : "",

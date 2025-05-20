@@ -1,6 +1,6 @@
 // hooks/useCart.ts
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
 export interface CartProductVariant {
   color: string;
@@ -59,8 +59,8 @@ export interface CartState {
     bdt: number;
   };
   estimatedDeliveryDate?: Date;
-  paymentMethod: 'cash' | 'card' | 'bkash';
-  paymentCurrency: 'CNY' | 'USD' | 'BDT';
+  paymentMethod: "cash" | "card" | "bkash";
+  paymentCurrency: "CNY" | "USD" | "BDT";
   // Cart actions
   addProduct: (product: CartProduct) => void;
   removeProduct: (productId: string, variantIndex?: number) => void;
@@ -70,14 +70,14 @@ export interface CartState {
     details: Partial<
       Omit<
         CartState,
-        | 'products'
-        | 'addProduct'
-        | 'removeProduct'
-        | 'updateProduct'
-        | 'clearCart'
-        | 'setOrderDetails'
+        | "products"
+        | "addProduct"
+        | "removeProduct"
+        | "updateProduct"
+        | "clearCart"
+        | "setOrderDetails"
       >
-    >
+    >,
   ) => void;
 }
 
@@ -87,27 +87,27 @@ export const useCart = create<CartState>()(
       products: [],
       currencyRates: { usdToBdt: 121.5, cnyToBdt: 17.5 },
       shippingAddress: {
-        street: '',
-        city: '',
-        state: '',
-        postalCode: '',
-        country: '',
+        street: "",
+        city: "",
+        state: "",
+        postalCode: "",
+        country: "",
       },
-      shippingMethod: '',
-      deliveryType: '',
+      shippingMethod: "",
+      deliveryType: "",
       shippingRate: { cny: 0, usd: 0, bdt: 0 },
       totalAmount: { cny: 0, usd: 0, bdt: 0 },
       totalDiscount: { cny: 0, usd: 0, bdt: 0 },
       subTotal: { cny: 0, usd: 0, bdt: 0 },
-      paymentMethod: 'cash',
-      paymentCurrency: 'BDT',
+      paymentMethod: "cash",
+      paymentCurrency: "BDT",
       estimatedDeliveryDate: undefined,
 
       addProduct: (newProduct) =>
         set((state) => {
           // Check if product already exists
           const existingProductIndex = state.products.findIndex(
-            (p) => p.product === newProduct.product
+            (p) => p.product === newProduct.product,
           );
           if (existingProductIndex !== -1) {
             // Merge variants (by color+size)
@@ -116,7 +116,7 @@ export const useCart = create<CartState>()(
             newProduct.variants.forEach((newVariant) => {
               const matchIndex = updatedVariants.findIndex(
                 (v) =>
-                  v.color === newVariant.color && v.size === newVariant.size
+                  v.color === newVariant.color && v.size === newVariant.size,
               );
               if (matchIndex !== -1) {
                 // Update quantity and price
@@ -142,7 +142,7 @@ export const useCart = create<CartState>()(
             return {
               ...state,
               products: state.products.map((p, i) =>
-                i === existingProductIndex ? updatedProduct : p
+                i === existingProductIndex ? updatedProduct : p,
               ),
             };
           } else {
@@ -156,10 +156,10 @@ export const useCart = create<CartState>()(
       removeProduct: (productId, variantIndex) =>
         set((state) => {
           const productIndex = state.products.findIndex(
-            (p) => p.product === productId
+            (p) => p.product === productId,
           );
           if (productIndex === -1) return state;
-          if (typeof variantIndex === 'number') {
+          if (typeof variantIndex === "number") {
             // Remove only the variant
             const updatedVariants = state.products[
               productIndex
@@ -174,7 +174,7 @@ export const useCart = create<CartState>()(
               return {
                 ...state,
                 products: state.products.map((p, i) =>
-                  i === productIndex ? { ...p, variants: updatedVariants } : p
+                  i === productIndex ? { ...p, variants: updatedVariants } : p,
                 ),
               };
             }
@@ -189,7 +189,7 @@ export const useCart = create<CartState>()(
       updateProduct: (updatedProduct) =>
         set((state) => ({
           products: state.products.map((p) =>
-            p.product === updatedProduct.product ? updatedProduct : p
+            p.product === updatedProduct.product ? updatedProduct : p,
           ),
         })),
       clearCart: () =>
@@ -203,8 +203,8 @@ export const useCart = create<CartState>()(
           ...details,
         })),
     }),
-    { name: 'k2b-cart-storage' }
-  )
+    { name: "k2b-cart-storage" },
+  ),
 );
 
 export default useCart;

@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useSession } from 'next-auth/react';
-import { FaHeart } from 'react-icons/fa6';
-import React, { useState } from 'react';
-import { ProductInfoType, ProductType, UserType } from '@/types/next-utils';
-import toast from 'react-hot-toast';
+import { useSession } from "next-auth/react";
+import { FaHeart } from "react-icons/fa6";
+import React, { useState } from "react";
+import { ProductInfoType, ProductType, UserType } from "@/types/next-utils";
+import toast from "react-hot-toast";
 
 interface HeartFavoriteProps {
   product: ProductInfoType | ProductType;
@@ -22,20 +22,20 @@ export default function HeartFavorite({
 
   const handleWishlist = async () => {
     if (!session?.user) {
-      toast.error('Please sign in to add to wishlist');
+      toast.error("Please sign in to add to wishlist");
       return;
     }
 
     try {
-      const res = await fetch('/api/users/wishlist', {
-        method: 'POST',
+      const res = await fetch("/api/users/wishlist", {
+        method: "POST",
         body: JSON.stringify({
           productId: product._id,
         }),
       });
 
       if (!res.ok) {
-        throw new Error('Failed to update wishlist');
+        throw new Error("Failed to update wishlist");
       }
 
       const data = await res.json();
@@ -43,10 +43,10 @@ export default function HeartFavorite({
       if (updateSignedInUser) {
         updateSignedInUser(data);
       }
-      toast.success(isWishlist ? 'Removed from wishlist' : 'Added to wishlist');
+      toast.success(isWishlist ? "Removed from wishlist" : "Added to wishlist");
     } catch (err) {
-      console.error('Error updating wishlist:', err);
-      toast.error('Failed to update wishlist');
+      console.error("Error updating wishlist:", err);
+      toast.error("Failed to update wishlist");
     }
   };
 
@@ -54,11 +54,11 @@ export default function HeartFavorite({
     <div>
       <button
         onClick={handleWishlist}
-        className='p-1.5 rounded-full bg-white shadow-sm hover:bg-gray-100'
+        className="p-1.5 rounded-full bg-white shadow-sm hover:bg-gray-100"
       >
         <FaHeart
           className={`h-4 w-4 ${
-            isWishlist ? 'text-red-500 fill-red-500' : 'text-gray-500'
+            isWishlist ? "text-red-500 fill-red-500" : "text-gray-500"
           }`}
         />
       </button>

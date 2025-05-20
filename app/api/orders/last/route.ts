@@ -1,35 +1,35 @@
-import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import Order from '@/models/Order';
-import mongoose from 'mongoose';
-import { authOptions } from '@/lib/authOption';
-import { connectToDB } from '@/lib/dbConnect';
+import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import Order from "@/models/Order";
+import mongoose from "mongoose";
+import { authOptions } from "@/lib/authOption";
+import { connectToDB } from "@/lib/dbConnect";
 
 export async function GET(request: Request) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Ensure database connection
     await connectToDB();
 
     const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId');
+    const userId = searchParams.get("userId");
 
     if (!userId) {
       return NextResponse.json(
-        { error: 'User ID is required' },
-        { status: 400 }
+        { error: "User ID is required" },
+        { status: 400 },
       );
     }
 
     // Validate userId format
     if (!mongoose.Types.ObjectId.isValid(userId)) {
       return NextResponse.json(
-        { error: 'Invalid user ID format' },
-        { status: 400 }
+        { error: "Invalid user ID format" },
+        { status: 400 },
       );
     }
 
@@ -38,7 +38,7 @@ export async function GET(request: Request) {
 
     const lastOrder = await Order.findOne({ customerInfo: userObjectId })
       .sort({ createdAt: -1 })
-      .populate('customerInfo', 'name email phone')
+      .populate("customerInfo", "name email phone")
       .lean();
 
     if (!lastOrder) {
@@ -47,10 +47,10 @@ export async function GET(request: Request) {
 
     return NextResponse.json(lastOrder);
   } catch (error) {
-    console.error('Error fetching last order:', error);
+    console.error("Error fetching last order:", error);
     return NextResponse.json(
-      { error: 'Failed to fetch last order' },
-      { status: 500 }
+      { error: "Failed to fetch last order" },
+      { status: 500 },
     );
   }
 }

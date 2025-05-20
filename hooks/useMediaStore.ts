@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { removeMedia, uploadFile } from '@/lib/actions/media.action';
-import { create } from 'zustand';
+import { removeMedia, uploadFile } from "@/lib/actions/media.action";
+import { create } from "zustand";
 
 // Define a media type to handle both images and videos
 interface MediaItem {
   url: string;
-  type: 'image' | 'video';
+  type: "image" | "video";
 }
 
 interface MediaStore {
@@ -24,26 +24,26 @@ export const useMediaStore = create<MediaStore>((set) => ({
 
   // Upload multiple files (images and videos)
   uploadMedia: async (files, folder) => {
-    console.log('Original files:', files);
+    console.log("Original files:", files);
     const filesArray = (
       Array.isArray(files) ? files : Array.from(files)
     ) as File[];
-    console.log('Converted filesArray:', filesArray);
+    console.log("Converted filesArray:", filesArray);
 
     if (!filesArray.length) {
-      console.error('No files to upload.');
+      console.error("No files to upload.");
       return [];
     }
     try {
       set({ loading: true });
       const uploadPromises = filesArray.map(async (file: File) => {
         const formData = new FormData();
-        formData.append('file', file);
+        formData.append("file", file);
         const result = await uploadFile(formData, folder);
 
         if (result) {
           // Determine media type
-          const type = file.type.startsWith('image') ? 'image' : 'video';
+          const type = file.type.startsWith("image") ? "image" : "video";
 
           // Update the store with the new media
           set((state) => ({
@@ -61,7 +61,7 @@ export const useMediaStore = create<MediaStore>((set) => ({
       // Filter out null results
       return results.filter(Boolean) as string[];
     } catch (error) {
-      console.error('Failed to upload media:', error);
+      console.error("Failed to upload media:", error);
       set({ loading: false });
       throw error;
     }
@@ -85,7 +85,7 @@ export const useMediaStore = create<MediaStore>((set) => ({
         loading: false,
       }));
     } catch (error) {
-      console.error('Failed to remove media:', error);
+      console.error("Failed to remove media:", error);
       set({ loading: false });
       throw error;
     }
