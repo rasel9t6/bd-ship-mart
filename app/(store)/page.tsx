@@ -5,7 +5,7 @@ import ProductList from "./_components/ProductList";
 
 export default function Home() {
   return (
-    <main className="relative min-h-screen bg-neutral-100 text-neutral-900">
+    <main className="relative min-h-screen bg-background text-foreground">
       <div className="flex">
         <LeftSidebar />
 

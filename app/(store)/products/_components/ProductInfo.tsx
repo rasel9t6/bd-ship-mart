@@ -7,7 +7,6 @@ import { motion } from 'motion/react';
 import toast from 'react-hot-toast';
 import useCart from '@/hooks/useCart';
 import { ProductType } from '@/types/next-utils';
-import OrderModal from '../../orders/_components/OrderModal';
 import { useSession } from 'next-auth/react';
 import {
   Table,
@@ -17,6 +16,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/ui/table';
+import { useRouter } from 'next/navigation';
 
 type OrderItem = {
   color: string;
@@ -24,42 +24,15 @@ type OrderItem = {
   quantity: number;
 };
 
-// Define an interface for order data that will be passed to the modal
-interface OrderData {
-  products: {
-    product: string; // Product ID
-    color: string[];
-    size: string[];
-    quantity: number;
-    unitPrice: {
-      cny: number;
-      usd: number;
-      bdt: number;
-    };
-    totalPrice: {
-      cny: number;
-      usd: number;
-      bdt: number;
-    };
-  }[];
-  subTotal: {
-    cny: number;
-    usd: number;
-    bdt: number;
-  };
-}
-
 export default function ProductInfo({
   productInfo,
 }: {
   productInfo: ProductType;
 }) {
   const cart = useCart();
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const router = useRouter();
   const minOrderQty = productInfo.minimumOrderQuantity || 1;
   const { data: session } = useSession();
-  // State for order data to pass to modal
-  const [orderData, setOrderData] = useState<OrderData | null>(null);
 
   // Initialize order items with color variants and ZERO quantity
   const [orderItems, setOrderItems] = useState<OrderItem[]>(
@@ -125,55 +98,6 @@ export default function ProductInfo({
     }
   };
 
-  // Prepare order data from the current items
-  const prepareOrderData = () => {
-    // Only include items with quantity > 0
-    const validItems = orderItems.filter((item) => item.quantity > 0);
-
-    // Get price per unit based on total quantity
-    const unitPrice = {
-      bdt: selectedPrice,
-      cny: productInfo.price.cny,
-      usd: productInfo.price.usd,
-    };
-
-    // Calculate subtotal
-    const subTotal = {
-      bdt: 0,
-      cny: 0,
-      usd: 0,
-    };
-
-    // Prepare products array for order data
-    const products = validItems.map((item) => {
-      // Calculate total price for this item
-      const itemTotalPrice = {
-        bdt: unitPrice.bdt * item.quantity,
-        cny: unitPrice.cny * item.quantity,
-        usd: unitPrice.usd * item.quantity,
-      };
-
-      // Add to subtotal
-      subTotal.bdt += itemTotalPrice.bdt;
-      subTotal.cny += itemTotalPrice.cny;
-      subTotal.usd += itemTotalPrice.usd;
-
-      return {
-        product: productInfo._id,
-        color: [item.color],
-        size: [item.size],
-        quantity: item.quantity,
-        unitPrice: unitPrice,
-        totalPrice: itemTotalPrice,
-      };
-    });
-
-    return {
-      products,
-      subTotal,
-    };
-  };
-
   // Add to cart with minimum quantity validation
   const addToCart = () => {
     if (totalQuantity < minOrderQty) {
@@ -210,12 +134,12 @@ export default function ProductInfo({
       }
     });
 
-    toast.success('Added to cart!');
     setOrderItems(orderItems.map((item) => ({ ...item, quantity: 0 })));
+    toast.success('Added to cart!');
   };
 
-  // Handle Order Now
-  const handleOrderNow = () => {
+  // Handle Buy Now
+  const handleBuyNow = () => {
     if (!session?.user?.id) {
       toast.error('Please login to place an order');
       return;
@@ -226,14 +150,33 @@ export default function ProductInfo({
       return;
     }
 
-    // Prepare the order data to pass to the modal
-    const preparedOrderData = prepareOrderData();
-    setOrderData(preparedOrderData);
+    // Prepare product data for checkout
+    const checkoutItems = orderItems
+      .filter((item) => item.quantity > 0)
+      .map((item) => ({
+        product: productInfo.slug,
+        color: item.color,
+        size: item.size,
+        quantity: item.quantity,
+        unitPrice: {
+          bdt: selectedPrice,
+          cny: productInfo.price.cny,
+          usd: productInfo.price.usd,
+        },
+        totalPrice: {
+          bdt: selectedPrice * item.quantity,
+          cny: productInfo.price.cny * item.quantity,
+          usd: productInfo.price.usd * item.quantity,
+        },
+      }));
 
-    // Add to cart and open modal
-    addToCart();
-    setTimeout(() => setIsModalOpen(true), 300);
+    // Store checkout items in session storage
+    sessionStorage.setItem('checkoutItems', JSON.stringify(checkoutItems));
+
+    // Redirect to checkout
+    router.push('/checkout');
   };
+
   console.log(productInfo);
   return (
     <motion.div
@@ -458,12 +401,12 @@ export default function ProductInfo({
               ? 'cursor-not-allowed bg-gray-400'
               : 'bg-bondi-blue-600 hover:bg-bondi-blue-700'
           }`}
-          onClick={handleOrderNow}
+          onClick={handleBuyNow}
           disabled={totalQuantity < minOrderQty}
           whileHover={totalQuantity >= minOrderQty ? { scale: 1.03 } : {}}
           whileTap={totalQuantity >= minOrderQty ? { scale: 0.97 } : {}}
         >
-          Order Now
+          Buy Now
         </motion.button>
       </motion.div>
 
@@ -476,20 +419,6 @@ export default function ProductInfo({
         >
           You must order at least {minOrderQty} units to place an order.
         </motion.div>
-      )}
-
-      {/* Order Modal */}
-      {isModalOpen && orderData && (
-        <OrderModal
-          open={isModalOpen}
-          onOpenChange={setIsModalOpen}
-          userId={session?.user?.id || ''}
-          orderData={orderData}
-          productInfo={{
-            _id: productInfo._id,
-            name: productInfo.title,
-          }}
-        />
       )}
     </motion.div>
   );

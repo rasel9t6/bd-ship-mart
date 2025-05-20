@@ -1,9 +1,13 @@
+'use server';
+
 import Order from '@/models/Order';
 import { connectToDB } from '../dbConnect';
 import Category from '@/models/Category';
 import Product from '@/models/Product';
 import User from '@/models/User';
 import Subcategory from '@/models/Subcategory';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/authOption';
 const apiUrl = process.env.NEXT_PUBLIC_APP_URL || '';
 
 if (!apiUrl) {
@@ -174,5 +178,29 @@ export async function getUserOrders(userId: string | undefined) {
   }
 }
 
+export async function getUserData() {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      throw new Error('Unauthorized');
+    }
 
+    await connectToDB();
+    const user = await User.findById(session.user.id)
+      .populate({
+        path: 'orders',
+        model: Order,
+        options: { sort: { createdAt: -1 } },
+      })
+      .select('-password');
 
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    return JSON.parse(JSON.stringify(user));
+  } catch (error) {
+    console.error('[GET_USER_DATA_ERROR]', error);
+    throw error;
+  }
+}

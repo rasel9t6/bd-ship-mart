@@ -1,18 +1,18 @@
-import { AuthOptions } from "next-auth";
-import CredentialsProvider from "next-auth/providers/credentials";
-import GoogleProvider from "next-auth/providers/google";
-import User from "@/models/User";
-import { comparePassword, hashPassword } from "@/lib/password-utils";
-import { connectToDB } from "@/lib/dbConnect";
-import toast from "react-hot-toast";
+import { AuthOptions } from 'next-auth';
+import CredentialsProvider from 'next-auth/providers/credentials';
+import GoogleProvider from 'next-auth/providers/google';
+import User from '@/models/User';
+import { comparePassword, hashPassword } from '@/lib/password-utils';
+import { connectToDB } from '@/lib/dbConnect';
+import toast from 'react-hot-toast';
 
 export const authOptions: AuthOptions = {
   providers: [
     CredentialsProvider({
-      name: "Credentials",
+      name: 'Credentials',
       credentials: {
-        email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" },
+        email: { label: 'Email', type: 'email' },
+        password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
         // Ensure database connection
@@ -26,7 +26,7 @@ export const authOptions: AuthOptions = {
         // Find user by email
         const user = await User.findOne({
           email: credentials.email.toLowerCase(),
-        }).select("+password");
+        }).select('+password');
 
         if (!user) {
           return null;
@@ -35,7 +35,7 @@ export const authOptions: AuthOptions = {
         // Verify password
         const isValidPassword = await comparePassword(
           credentials.password,
-          user.password,
+          user.password
         );
 
         if (!isValidPassword) {
@@ -44,7 +44,7 @@ export const authOptions: AuthOptions = {
 
         // Check email verification (optional)
         if (!user.emailVerified) {
-          throw new Error("Please verify your email first");
+          throw new Error('Please verify your email first');
         }
 
         // Return user object for session
@@ -53,6 +53,10 @@ export const authOptions: AuthOptions = {
           email: user.email,
           name: user.name,
           role: user.role,
+          profilePicture: user.profilePicture,
+          userId: user.userId,
+          status: user.status,
+          customerType: user.customerType,
         };
       },
     }),
@@ -72,7 +76,9 @@ export const authOptions: AuthOptions = {
             name: profile.name,
             email: profile.email,
             emailVerified: true,
-            role: "user",
+            role: 'user',
+            status: 'active',
+            customerType: 'regular',
             // Use a placeholder password or generate a random one
             password: await hashPassword(Math.random().toString(36).slice(-8)),
           });
@@ -83,15 +89,19 @@ export const authOptions: AuthOptions = {
           name: user.name,
           email: user.email,
           role: user.role,
+          profilePicture: user.profilePicture,
+          userId: user.userId,
+          status: user.status,
+          customerType: user.customerType,
         };
       },
     }),
   ],
 
   pages: {
-    signIn: "/auth/login",
-    error: "/auth/error",
-    verifyRequest: "/auth/verify-request",
+    signIn: '/auth/login',
+    error: '/auth/error',
+    verifyRequest: '/auth/verify-request',
   },
 
   callbacks: {
@@ -99,14 +109,22 @@ export const authOptions: AuthOptions = {
       if (user) {
         token.id = user.id;
         token.role = user.role;
+        token.profilePicture = user.profilePicture;
+        token.userId = user.userId;
+        token.status = user.status;
+        token.customerType = user.customerType;
       }
       return token;
     },
 
     async session({ session, token }) {
       if (session.user) {
-        session.user.id = token.id as string;
-        session.user.role = token.role as string;
+        session.user.id = token.id;
+        session.user.role = token.role;
+        session.user.profilePicture = token.profilePicture;
+        session.user.userId = token.userId;
+        session.user.status = token.status;
+        session.user.customerType = token.customerType;
       }
       return session;
     },
@@ -114,15 +132,15 @@ export const authOptions: AuthOptions = {
 
   events: {
     async signIn() {
-      toast.success("Successfully signed in");
+      toast.success('Successfully signed in');
     },
     async createUser() {
-      toast.success("User account created successfully");
+      toast.success('User account created successfully');
     },
   },
 
   session: {
-    strategy: "jwt",
+    strategy: 'jwt',
     maxAge: 30 * 24 * 60 * 60,
   },
 

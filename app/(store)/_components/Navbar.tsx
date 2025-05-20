@@ -239,7 +239,7 @@ export default function Navbar() {
         {session ? (
           <div className='flex items-center gap-2'>
             <Link
-              href={`/profile/${session.user?.id}`}
+              href={`/profile/${session.user?.userId}`}
               className='flex items-center gap-2 hover:text-bondi-blue-400'
             >
               {session.user?.image ? (

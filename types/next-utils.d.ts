@@ -1,5 +1,5 @@
 // types/next-utils.d.ts
-import type { Document, Types } from "mongoose";
+import type { Document, Types } from 'mongoose';
 
 // Currency interface to match the schema
 interface ICurrency {
@@ -53,7 +53,7 @@ interface OrderType extends Document {
     name: string;
     email: string;
     phone?: string;
-    customerType: "regular" | "wholesale" | "vip";
+    customerType: 'regular' | 'wholesale' | 'vip';
   };
   products: IOrderProduct[];
   currencyRates: {
@@ -79,27 +79,27 @@ interface OrderType extends Document {
   subTotal: ICurrency;
   estimatedDeliveryDate?: Date;
   paymentMethod: string; // "cash" or "card"
-  paymentCurrency: "CNY" | "USD" | "BDT";
+  paymentCurrency: 'CNY' | 'USD' | 'BDT';
   paymentDetails: {
     status:
-      | "pending"
-      | "paid"
-      | "failed"
-      | "refunded"
-      | "partially_refunded"
-      | "partially_paid";
+      | 'pending'
+      | 'paid'
+      | 'failed'
+      | 'refunded'
+      | 'partially_refunded'
+      | 'partially_paid';
     transactions: ITransaction[];
   };
   status:
-    | "pending"
-    | "confirmed"
-    | "processing"
-    | "shipped"
-    | "in-transit"
-    | "out-for-delivery"
-    | "delivered"
-    | "canceled"
-    | "returned";
+    | 'pending'
+    | 'confirmed'
+    | 'processing'
+    | 'shipped'
+    | 'in-transit'
+    | 'out-for-delivery'
+    | 'delivered'
+    | 'canceled'
+    | 'returned';
   trackingHistory: ITrackingEntry[];
   notes: INote[];
   metadata: {
@@ -203,8 +203,8 @@ interface CustomerType extends Document {
     country?: string;
   };
   orders?: Types.ObjectId[];
-  status?: "active" | "inactive";
-  customerType?: "regular" | "wholesale" | "vip";
+  status?: 'active' | 'inactive';
+  customerType?: 'regular' | 'wholesale' | 'vip';
   createdAt: Date;
   updatedAt: Date;
 }
@@ -218,13 +218,15 @@ interface ProductType extends Document {
     cny: number;
     usd: number;
   };
-  currency: "BDT" | "USD";
-  category: {
+  currency: 'BDT' | 'USD';
+  category?: {
+    _id: string;
     name: string;
-    subcategories: {
-      name: string;
-    }[];
   };
+  subcategories?: {
+    _id: string;
+    name: string;
+  }[];
   slug: string;
   priceInBDT: number;
   priceInUSD: number;
@@ -232,19 +234,18 @@ interface ProductType extends Document {
   updatedAt: Date;
   media: {
     url: string;
-    type: "image" | "video";
+    type: 'image' | 'video';
   }[];
   expense: {
     bdt: number;
     cny: number;
     usd: number;
   };
-  subcategories?: string[];
   tags?: string[];
   sizes?: string[];
   colors?: {
     url: string;
-    type: "image" | "video";
+    type: 'image' | 'video';
   }[];
   inputCurrency?: string;
   minimumOrderQuantity?: number;
@@ -318,7 +319,7 @@ interface UserType extends Document {
   email: string;
   image: string;
   password: string;
-  role: "user" | "admin" | "super_admin";
+  role: 'user' | 'admin' | 'super_admin';
   profilePicture?: string | null;
   phone?: string | null;
   address?: {

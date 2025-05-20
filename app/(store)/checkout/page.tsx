@@ -1,86 +1,296 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useCart } from '@/hooks/useCart';
 import { Button } from '@/ui/button';
 import { Card, CardContent } from '@/ui/card';
 import toast from 'react-hot-toast';
 import Image from 'next/image';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/ui/form';
+import { Input } from '@/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/ui/select';
+import { Textarea } from '@/ui/textarea';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+} from '@/ui/command';
+import { Popover, PopoverContent, PopoverTrigger } from '@/ui/popover';
+import { Check, ChevronsUpDown } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { useRouter } from 'next/navigation';
 
 const districts = [
-  'Dhaka',
-  'Chattogram',
-  'Khulna',
-  'Rajshahi',
+  'Bagerhat',
+  'Bandarban',
+  'Barguna',
   'Barisal',
-  'Sylhet',
-  'Rangpur',
+  'Bhola',
+  'Bogra',
+  'Brahmanbaria',
+  'Chandpur',
+  'Chapainawabganj',
+  'Chattogram',
+  'Chuadanga',
+  'Comilla',
+  "Cox's Bazar",
+  'Dhaka',
+  'Dinajpur',
+  'Faridpur',
+  'Feni',
+  'Gaibandha',
+  'Gazipur',
+  'Gopalganj',
+  'Habiganj',
+  'Jamalpur',
+  'Jessore',
+  'Jhalokati',
+  'Jhenaidah',
+  'Joypurhat',
+  'Khagrachari',
+  'Khulna',
+  'Kishoreganj',
+  'Kurigram',
+  'Kushtia',
+  'Lakshmipur',
+  'Lalmonirhat',
+  'Madaripur',
+  'Magura',
+  'Manikganj',
+  'Meherpur',
+  'Moulvibazar',
+  'Munshiganj',
   'Mymensingh',
+  'Naogaon',
+  'Narail',
+  'Narayanganj',
+  'Narsingdi',
+  'Natore',
+  'Netrokona',
+  'Nilphamari',
+  'Noakhali',
+  'Pabna',
+  'Panchagarh',
+  'Patuakhali',
+  'Pirojpur',
+  'Rajbari',
+  'Rajshahi',
+  'Rangamati',
+  'Rangpur',
+  'Satkhira',
+  'Shariatpur',
+  'Sherpur',
+  'Sirajganj',
+  'Sunamganj',
+  'Sylhet',
+  'Tangail',
+  'Thakurgaon',
 ];
 const countries = ['Bangladesh'];
-const deliveryMethods = ['Home Delivery', 'Office Collection'];
+const deliveryTypes = ['Home Delivery', 'Office Collection'];
 
 const shippingMethods = [
   {
-    id: 'air-express',
-    name: 'Air Express',
-    cost: 5000,
+    id: 'air',
+    name: 'Air',
     days: '3-5',
     description: 'Fastest delivery by air',
   },
   {
-    id: 'air-standard',
-    name: 'Air Standard',
-    cost: 3500,
-    days: '5-7',
-    description: 'Standard air shipping',
-  },
-  {
-    id: 'sea-express',
-    name: 'Sea Express',
-    cost: 2500,
+    id: 'sea',
+    name: 'Sea',
     days: '15-20',
     description: 'Fastest sea shipping',
   },
-  {
-    id: 'sea-standard',
-    name: 'Sea Standard',
-    cost: 1500,
-    days: '25-30',
-    description: 'Standard sea shipping',
-  },
 ];
+
+const paymentMethods = [
+  { id: 'cash', name: 'Cash on Delivery' },
+  { id: 'card', name: 'Credit/Debit Card' },
+  { id: 'bkash', name: 'bKash' },
+];
+
+interface CheckoutItem {
+  product: string;
+  color: string;
+  size: string;
+  quantity: number;
+  unitPrice: {
+    bdt: number;
+    cny: number;
+    usd: number;
+  };
+  totalPrice: {
+    bdt: number;
+    cny: number;
+    usd: number;
+  };
+}
+
+interface CartProduct {
+  product: string;
+  variants: Array<{
+    color: string;
+    size: string;
+    quantity: number;
+    unitPrice: {
+      bdt: number;
+      cny: number;
+      usd: number;
+    };
+    totalPrice: {
+      bdt: number;
+      cny: number;
+      usd: number;
+    };
+  }>;
+}
+
+// Form validation schema
+const checkoutSchema = z.object({
+  name: z.string().min(1, 'Name is required'),
+  email: z.string().email('Invalid email address'),
+  phone: z.string().min(1, 'Phone is required'),
+  country: z.string().min(1, 'Country is required'),
+  district: z.string().min(1, 'District is required'),
+  city: z.string().min(1, 'City is required'),
+  street: z.string().min(1, 'Street address is required'),
+  postalCode: z.string().min(1, 'Postal code is required'),
+  deliveryType: z.string().min(1, 'Delivery type is required'),
+  shippingMethod: z.string().min(1, 'Shipping method is required'),
+  paymentMethod: z.enum(['cash', 'card', 'bkash'], {
+    required_error: 'Payment method is required',
+  }),
+  orderNote: z.string().optional(),
+  coupon: z.string().optional(),
+});
+
+type CheckoutFormData = z.infer<typeof checkoutSchema>;
 
 export default function CheckoutPage() {
   const { data: session } = useSession();
+  const { products: cartProducts, clearCart } = useCart();
+  const [checkoutItems, setCheckoutItems] = useState<CheckoutItem[]>([]);
+  const [couponApplied, setCouponApplied] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [districtOpen, setDistrictOpen] = useState(false);
   const router = useRouter();
-  const { products, clearCart } = useCart();
+
+  const form = useForm<CheckoutFormData>({
+    resolver: zodResolver(checkoutSchema),
+    defaultValues: {
+      name: '',
+      email: '',
+      phone: '',
+      country: 'Bangladesh',
+      district: '',
+      city: '',
+      street: '',
+      postalCode: '',
+      deliveryType: deliveryTypes[0],
+      shippingMethod: shippingMethods[0].id,
+      paymentMethod: 'cash',
+    },
+  });
+
+  // Update form with session data when available
+  useEffect(() => {
+    if (session?.user) {
+      form.setValue('name', session.user.name || '');
+      form.setValue('email', session.user.email || '');
+      form.setValue('phone', session.user.phone || '');
+    }
+  }, [session, form]);
+
+  // Fetch last order data and update form
+  useEffect(() => {
+    const fetchLastOrder = async () => {
+      if (!session?.user?.id) return;
+
+      try {
+        const response = await fetch(
+          `/api/orders/last?userId=${session.user.id}`
+        );
+        if (response.ok) {
+          const data = await response.json();
+          if (data) {
+            // Update form with last order data
+            form.setValue(
+              'phone',
+              data.customerInfo?.phone || session?.user?.phone || ''
+            );
+            form.setValue(
+              'country',
+              data.shippingAddress?.country || 'Bangladesh'
+            );
+            form.setValue('district', data.shippingAddress?.state || '');
+            form.setValue('city', data.shippingAddress?.city || '');
+            form.setValue('street', data.shippingAddress?.street || '');
+            form.setValue('postalCode', data.shippingAddress?.postalCode || '');
+            form.setValue(
+              'deliveryType',
+              data.deliveryType || deliveryTypes[0]
+            );
+            form.setValue(
+              'shippingMethod',
+              data.shippingMethod || shippingMethods[0].id
+            );
+            form.setValue('paymentMethod', data.paymentMethod || 'cash');
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching last order:', error);
+      }
+    };
+
+    fetchLastOrder();
+  }, [session?.user?.id, form]);
+
+  // Load checkout items from session storage on mount
+  useEffect(() => {
+    const storedItems = sessionStorage.getItem('checkoutItems');
+    if (storedItems) {
+      setCheckoutItems(JSON.parse(storedItems));
+      // Clear the stored items after loading
+      sessionStorage.removeItem('checkoutItems');
+    }
+  }, []);
+
+  // Use either checkout items or cart products
+  const products = checkoutItems.length > 0 ? checkoutItems : cartProducts;
 
   // Flatten all variants for summary and calculations
-  const allVariants = products.flatMap((p) =>
-    p.variants.map((v) => ({ ...v, product: p.product }))
-  );
-
-  // Form state
-  const [form, setForm] = useState({
-    name: session?.user?.name || '',
-    email: session?.user?.email || '',
-    phone: '',
-    emergencyPhone: '',
-    country: 'Bangladesh',
-    district: '',
-    city: '',
-    address: '',
-    deliveryMethod: deliveryMethods[0],
-    shippingMethod: shippingMethods[0].id,
-    orderNote: '',
-    coupon: '',
+  const allVariants = products.flatMap((p) => {
+    if ('variants' in p) {
+      // Handle cart products
+      return (p as CartProduct).variants.map((v) => ({
+        ...v,
+        product: p.product,
+      }));
+    } else {
+      // Handle direct checkout items
+      return [p as CheckoutItem];
+    }
   });
-  const [couponApplied, setCouponApplied] = useState(false);
-
-  const [loading, setLoading] = useState(false);
 
   // Price calculations
   const subTotal = allVariants.reduce(
@@ -89,60 +299,91 @@ export default function CheckoutPage() {
   );
   const productPrice = subTotal;
   const eidDiscount = couponApplied ? Math.round(productPrice * 0.05) : 0;
-  const selectedShipping = shippingMethods.find(
-    (s) => s.id === form.shippingMethod
-  );
-  const shippingCost = selectedShipping?.cost || 0;
-  const finalPrice = productPrice - eidDiscount + shippingCost;
-  const partialPayment = Math.round(finalPrice * 0.7);
-  const payOnDelivery = finalPrice - partialPayment;
-
-  // Handlers
-  const handleInput = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-    >
-  ) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+  const finalPrice = productPrice - eidDiscount;
 
   const handleApplyCoupon = () => {
-    if (form.coupon.trim().toLowerCase() === 'eidchamak') {
+    const coupon = form.watch('coupon');
+    if (coupon?.trim().toLowerCase() === 'eidchamak') {
       setCouponApplied(true);
-
       toast.success('Coupon applied!');
     } else {
       setCouponApplied(false);
-
       toast.error('Invalid coupon code');
     }
   };
 
-  const handleOrder = async () => {
-    // Basic validation
-    if (
-      !form.name ||
-      !form.email ||
-      !form.phone ||
-      !form.district ||
-      !form.city ||
-      !form.address
-    ) {
-      toast.error('Please fill in all required fields.');
+  const onSubmit = async (data: CheckoutFormData) => {
+    if (allVariants.length === 0) {
+      toast.error('No items to order.');
       return;
     }
-    if (products.length === 0) {
-      toast.error('Your cart is empty.');
-      return;
-    }
+
     setLoading(true);
-    // Simulate order placement
-    setTimeout(() => {
-      setLoading(false);
-      clearCart();
+
+    try {
+      // Fetch product IDs for all products
+      const productIds = await Promise.all(
+        allVariants.map(async (item) => {
+          const response = await fetch(`/api/products/by-slug/${item.product}`);
+          if (!response.ok) throw new Error('Failed to fetch product');
+          const product = await response.json();
+          return product._id;
+        })
+      );
+
+      // Prepare order data according to the Order model
+      const orderData = {
+        customerInfo: session?.user?.id,
+        products: allVariants.map((item, index) => ({
+          product: productIds[index],
+          color: [item.color],
+          size: [item.size],
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
+          totalPrice: item.totalPrice,
+        })),
+        shippingAddress: {
+          street: data.street,
+          city: data.city,
+          state: data.district,
+          postalCode: data.postalCode,
+          country: data.country,
+        },
+        shippingMethod: data.shippingMethod,
+        deliveryType: data.deliveryType,
+        paymentMethod: data.paymentMethod,
+        paymentCurrency: 'BDT',
+        notes: data.orderNote
+          ? [{ text: data.orderNote, isInternal: false }]
+          : [],
+      };
+
+      const response = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(orderData),
+      });
+
+      if (!response.ok) throw new Error('Failed to create order');
+
+      const order = await response.json();
+
+      // Clear cart and show success message
+      if (checkoutItems.length === 0) {
+        clearCart();
+      }
       toast.success('Order placed successfully!');
-      router.push('/orders');
-    }, 1500);
+
+      // Redirect to bKash payment if selected
+      if (data.paymentMethod === 'bkash') {
+        router.push(`/payment/bkash?orderId=${order._id}`);
+      } else {
+        router.push('/orders');
+      }
+    } catch {
+      setLoading(false);
+      toast.error('Failed to place order. Please try again.');
+    }
   };
 
   return (
@@ -151,162 +392,340 @@ export default function CheckoutPage() {
         {/* Left: Checkout Form */}
         <div className='flex-1 bg-white rounded-lg shadow p-6'>
           <h2 className='text-2xl font-bold mb-6'>CHECKOUT</h2>
-          <form className='space-y-4'>
-            <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-              <div>
-                <label className='block text-sm font-medium mb-1'>Name *</label>
-                <input
+          <Form {...form}>
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className='space-y-4'
+            >
+              {/* Personal Information */}
+              <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                <FormField
+                  control={form.control}
                   name='name'
-                  value={form.name}
-                  onChange={handleInput}
-                  className='w-full border rounded px-3 py-2'
-                  required
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Name <span className='text-red-500'>*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
-              <div>
-                <label className='block text-sm font-medium mb-1'>
-                  Phone / Email *
-                </label>
-                <input
+                <FormField
+                  control={form.control}
                   name='email'
-                  value={form.email}
-                  onChange={handleInput}
-                  className='w-full border rounded px-3 py-2'
-                  required
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Email <span className='text-red-500'>*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          type='email'
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
               </div>
-            </div>
-            <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-              <div>
-                <label className='block text-sm font-medium mb-1'>
-                  Emergency Phone *
-                </label>
-                <input
-                  name='emergencyPhone'
-                  value={form.emergencyPhone}
-                  onChange={handleInput}
-                  className='w-full border rounded px-3 py-2'
-                  required
+              <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                <FormField
+                  control={form.control}
+                  name='phone'
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Phone <span className='text-red-500'>*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          type='tel'
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
-              <div>
-                <label className='block text-sm font-medium mb-1'>
-                  Country *
-                </label>
-                <select
+                <FormField
+                  control={form.control}
                   name='country'
-                  value={form.country}
-                  onChange={handleInput}
-                  className='w-full border rounded px-3 py-2'
-                >
-                  {countries.map((c) => (
-                    <option key={c}>{c}</option>
-                  ))}
-                </select>
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Country <span className='text-red-500'>*</span>
+                      </FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder='Select country' />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {countries.map((country) => (
+                            <SelectItem
+                              key={country}
+                              value={country}
+                            >
+                              {country}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
-            </div>
-            <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-              <div>
-                <label className='block text-sm font-medium mb-1'>
-                  District *
-                </label>
-                <select
+
+              {/* Address Information */}
+              <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                <FormField
+                  control={form.control}
                   name='district'
-                  value={form.district}
-                  onChange={handleInput}
-                  className='w-full border rounded px-3 py-2'
-                >
-                  <option value=''>Select</option>
-                  {districts.map((d) => (
-                    <option key={d}>{d}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className='block text-sm font-medium mb-1'>
-                  City / Upazila *
-                </label>
-                <input
+                  render={({ field }) => (
+                    <FormItem className='flex flex-col'>
+                      <FormLabel>
+                        District <span className='text-red-500'>*</span>
+                      </FormLabel>
+                      <Popover
+                        open={districtOpen}
+                        onOpenChange={setDistrictOpen}
+                      >
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant='outline'
+                              role='combobox'
+                              className={cn(
+                                'w-full justify-between',
+                                !field.value && 'text-muted-foreground'
+                              )}
+                            >
+                              {field.value
+                                ? districts.find(
+                                    (district) => district === field.value
+                                  )
+                                : 'Select district'}
+                              <ChevronsUpDown className='ml-2 h-4 w-4 shrink-0 opacity-50' />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className='w-full p-0'>
+                          <Command className='max-h-[300px]'>
+                            <CommandInput placeholder='Search district...' />
+                            <CommandEmpty>No district found.</CommandEmpty>
+                            <CommandGroup className='max-h-[250px] overflow-y-auto'>
+                              {districts.map((district) => (
+                                <CommandItem
+                                  value={district}
+                                  key={district}
+                                  onSelect={() => {
+                                    form.setValue('district', district);
+                                    setDistrictOpen(false);
+                                  }}
+                                >
+                                  <Check
+                                    className={cn(
+                                      'mr-2 h-4 w-4',
+                                      district === field.value
+                                        ? 'opacity-100'
+                                        : 'opacity-0'
+                                    )}
+                                  />
+                                  {district}
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
                   name='city'
-                  value={form.city}
-                  onChange={handleInput}
-                  className='w-full border rounded px-3 py-2'
-                  required
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        City / Upazila <span className='text-red-500'>*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
               </div>
-            </div>
-            <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-              <div>
-                <label className='block text-sm font-medium mb-1'>
-                  Address *
-                </label>
-                <input
-                  name='address'
-                  value={form.address}
-                  onChange={handleInput}
-                  className='w-full border rounded px-3 py-2'
-                  required
+              <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                <FormField
+                  control={form.control}
+                  name='street'
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Street Address <span className='text-red-500'>*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name='postalCode'
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Postal Code <span className='text-red-500'>*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          placeholder='e.g., 1000'
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
               </div>
-              <div>
-                <label className='block text-sm font-medium mb-1'>
-                  Delivery Method *
-                </label>
-                <select
-                  name='deliveryMethod'
-                  value={form.deliveryMethod}
-                  onChange={handleInput}
-                  className='w-full border rounded px-3 py-2'
-                >
-                  {deliveryMethods.map((m) => (
-                    <option key={m}>{m}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
-            <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-              <div>
-                <label className='block text-sm font-medium mb-1'>
-                  Shipping Method *
-                </label>
-                <select
+
+              {/* Delivery & Shipping */}
+              <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                <FormField
+                  control={form.control}
+                  name='deliveryType'
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Delivery Type <span className='text-red-500'>*</span>
+                      </FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder='Select delivery type' />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {deliveryTypes.map((type) => (
+                            <SelectItem
+                              key={type}
+                              value={type}
+                            >
+                              {type}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
                   name='shippingMethod'
-                  value={form.shippingMethod}
-                  onChange={handleInput}
-                  className='w-full border rounded px-3 py-2'
-                >
-                  {shippingMethods.map((method) => (
-                    <option
-                      key={method.id}
-                      value={method.id}
-                    >
-                      {method.name} - ৳{method.cost} ({method.days} days)
-                    </option>
-                  ))}
-                </select>
-                {form.shippingMethod && (
-                  <p className='text-xs text-gray-500 mt-1'>
-                    {
-                      shippingMethods.find((m) => m.id === form.shippingMethod)
-                        ?.description
-                    }
-                  </p>
-                )}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Shipping Method <span className='text-red-500'>*</span>
+                      </FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder='Select shipping method' />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {shippingMethods.map((method) => (
+                            <SelectItem
+                              key={method.id}
+                              value={method.id}
+                            >
+                              {method.name} ({method.days} days)
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
-            </div>
-            <div>
-              <label className='block text-sm font-medium mb-1'>
-                Order Note
-              </label>
-              <textarea
+
+              {/* Payment Information */}
+              <div className='grid grid-cols-1 gap-4'>
+                <FormField
+                  control={form.control}
+                  name='paymentMethod'
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Payment Method <span className='text-red-500'>*</span>
+                      </FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder='Select payment method' />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {paymentMethods.map((method) => (
+                            <SelectItem
+                              key={method.id}
+                              value={method.id}
+                            >
+                              {method.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <FormField
+                control={form.control}
                 name='orderNote'
-                value={form.orderNote}
-                onChange={handleInput}
-                className='w-full border rounded px-3 py-2'
-                rows={2}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Order Note</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        {...field}
+                        rows={2}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
-          </form>
+            </form>
+          </Form>
         </div>
 
         {/* Right: Order Summary */}
@@ -318,48 +737,43 @@ export default function CheckoutPage() {
                   <span>Product Price</span>
                   <span>৳{productPrice}</span>
                 </div>
-                <div className='flex justify-between text-sm mb-2'>
-                  <span>Shipping Cost</span>
-                  <span className='text-gray-500 text-xs'>
-                    Will be calculated when product arrives from China
-                  </span>
-                </div>
                 <div className='flex justify-between font-semibold text-base border-t pt-2 mt-2'>
                   <span>Final Price</span>
-                  <span>৳{productPrice}</span>
+                  <span>৳{finalPrice}</span>
                 </div>
               </div>
-              <div className='bg-gray-100 rounded p-3 mb-4 text-center'>
-                <div className='font-semibold'>
-                  70% Payment - ৳{partialPayment}
+              <Form {...form}>
+                <div className='flex mb-4'>
+                  <FormField
+                    control={form.control}
+                    name='coupon'
+                    render={({ field }) => (
+                      <FormItem className='flex-1'>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            placeholder='Coupon Code'
+                            className='rounded-r-none'
+                            disabled={couponApplied}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <Button
+                    type='button'
+                    className='rounded-l-none'
+                    onClick={handleApplyCoupon}
+                    disabled={couponApplied}
+                  >
+                    Apply
+                  </Button>
                 </div>
-                <div className='text-xs mt-1'>
-                  Pay on Delivery ৳{payOnDelivery} + Shipping & Courier Charges{' '}
-                  <span className='inline-block align-middle ml-1'>ℹ️</span>
-                </div>
-              </div>
-              <div className='flex mb-4'>
-                <input
-                  type='text'
-                  name='coupon'
-                  value={form.coupon}
-                  onChange={handleInput}
-                  placeholder='Coupon Code'
-                  className='flex-1 border rounded-l px-3 py-2'
-                  disabled={couponApplied}
-                />
-                <Button
-                  type='button'
-                  className='rounded-l-none'
-                  onClick={handleApplyCoupon}
-                  disabled={couponApplied}
-                >
-                  Apply
-                </Button>
-              </div>
+              </Form>
               <Button
                 className='w-full'
-                onClick={handleOrder}
+                onClick={form.handleSubmit(onSubmit)}
                 disabled={loading}
               >
                 {loading ? 'Placing Order...' : 'Place Order & Pay'}
@@ -440,15 +854,9 @@ export default function CheckoutPage() {
                     <span>Subtotal</span>
                     <span>৳{subTotal}</span>
                   </div>
-                  <div className='flex justify-between text-sm'>
-                    <span>Shipping</span>
-                    <span className='text-gray-500 text-xs'>
-                      Will be calculated when product arrives from China
-                    </span>
-                  </div>
                   <div className='flex justify-between font-semibold text-base border-t pt-2 mt-2'>
                     <span>Total</span>
-                    <span>৳{productPrice}</span>
+                    <span>৳{finalPrice}</span>
                   </div>
                 </div>
               </div>
