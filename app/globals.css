@@ -2,7 +2,7 @@
 @config '../tailwind.config.ts';
 :root {
   /* Base colors from your custom palette */
-  --background: 180 100% 98%; /* Near white with slight blue tint */
+  --background: 180 100% 96%; /* Near white with slight blue tint */
   --foreground: 0 0% 38%; /* gray-1/gray-500 */
   --card: 180 100% 98%; /* Same as background */
   --card-foreground: 0 0% 38%; /* gray-1/gray-500 */

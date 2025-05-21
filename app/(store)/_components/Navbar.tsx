@@ -1,59 +1,100 @@
-"use client";
+'use client';
 
-import { useSession, signIn, signOut } from "next-auth/react";
-import { Search, ShoppingCart, Menu, CircleUserRound } from "lucide-react";
-import Image from "next/image";
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { useState, FormEvent, useEffect } from "react";
-import { FaHeart } from "react-icons/fa6";
-import { HiShoppingBag } from "react-icons/hi2";
-import toast from "react-hot-toast";
-import useCart from "@/hooks/useCart";
-import { Session } from "next-auth";
+import { useSession, signIn } from 'next-auth/react';
+import { Search, Menu, CircleUserRound } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { FaHeart } from 'react-icons/fa6';
+import { HiShoppingBag, HiShoppingCart } from 'react-icons/hi2';
+import { Session } from 'next-auth';
+import { Button } from '@/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/ui/dropdown-menu';
+import { Avatar, AvatarFallback, AvatarImage } from '@/ui/avatar';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/ui/sheet';
+import useCart from '@/hooks/useCart';
 
 // Navigation links data
 const NAV_LINKS = [
-  { path: "/wishlist", icon: <FaHeart size={24} />, label: "Wishlist" },
-  { path: "/orders", icon: <HiShoppingBag size={24} />, label: "Orders" },
+  { path: '/wishlist', icon: <FaHeart size={24} />, label: 'Wishlist' },
+  { path: '/orders', icon: <HiShoppingBag size={24} />, label: 'Orders' },
 ];
-interface SearchTypes {
+
+const SearchBar = ({
+  query,
+  setQuery,
+  onSearch,
+}: {
   query: string;
   setQuery: (value: string) => void;
   onSearch: () => void;
-}
-// Separate components for better organization
-const SearchBar = ({ query, setQuery, onSearch }: SearchTypes) => (
-  <div className="flex items-center gap-3 rounded-full bg-white px-3 py-1">
+}) => (
+  <form
+    onSubmit={(e) => {
+      e.preventDefault();
+      onSearch();
+    }}
+    className='flex items-center gap-3 rounded-full bg-white px-3 py-1 w-full max-w-xs sm:max-w-md md:max-w-lg transition-all duration-300 focus-within:shadow-md'
+  >
     <input
-      className="px-3 py-1 outline-none max-sm:max-w-[120px]"
-      placeholder="Search..."
+      className='px-3 py-1 outline-none w-full bg-transparent'
+      placeholder='Search...'
       value={query}
       onChange={(e) => setQuery(e.target.value)}
     />
-    <button disabled={query === ""} onClick={onSearch}>
-      <Search className="size-6 cursor-pointer text-bondi-blue-600 transition-colors duration-300 hover:text-bondi-blue-400" />
+    <button
+      type='submit'
+      disabled={query === ''}
+      className='p-2 rounded-full hover:bg-bondi-blue-100 focus:bg-bondi-blue-200 transition-colors'
+    >
+      <Search className='size-6 cursor-pointer text-bondi-blue-600 transition-colors duration-300 hover:text-bondi-blue-400' />
     </button>
-  </div>
+  </form>
 );
 
 const NavLinks = ({
   pathname,
   session,
+  onClick,
+  className = '',
+  mobile = false,
 }: {
   pathname: string;
   session: Session | null;
+  onClick?: () => void;
+  className?: string;
+  mobile?: boolean;
 }) => (
-  <nav className="flex items-center justify-center gap-4 text-base-bold text-white max-lg:hidden">
-    {NAV_LINKS.map(({ path, icon }) => (
+  <nav
+    className={`flex flex-col gap-4 ${!mobile ? 'lg:flex-row lg:items-center lg:gap-2' : ''} ${className}`.trim()}
+  >
+    {NAV_LINKS.map(({ path, icon, label }) => (
       <Link
         key={path}
-        href={session ? path : "/auth/login"}
-        className={`transition-all duration-300 hover:text-bondi-blue-400 ${
-          pathname === path && "text-white"
-        }`}
+        href={session ? path : '/auth/login'}
+        className={
+          mobile
+            ? `flex items-center gap-2 text-bondi-blue-600 font-medium rounded-md px-2 py-2 hover:text-bondi-blue-400 transition` // mobile style
+            : `flex items-center gap-2 px-2 py-1 rounded-md transition-all duration-200 text-white/80 hover:text-white hover:bg-white/10 ${pathname === path ? 'text-white font-semibold underline underline-offset-4' : ''}` // desktop style
+        }
+        onClick={onClick}
       >
         {icon}
+        <span className='lg:hidden'>{label}</span>
       </Link>
     ))}
   </nav>
@@ -64,15 +105,9 @@ export default function Navbar() {
   const router = useRouter();
   const cart = useCart();
   const { data: session } = useSession();
-  const [dropdownMenu, setDropdownMenu] = useState(false);
-  const [authDropdown, setAuthDropdown] = useState(false);
-  const [showLoginForm, setShowLoginForm] = useState(false);
-  const [showRegisterForm, setShowRegisterForm] = useState(false);
-  const [query, setQuery] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [query, setQuery] = useState('');
   const [mounted, setMounted] = useState(false);
 
-  // Fix hydration mismatch by only showing client-side elements after mounting
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -82,352 +117,285 @@ export default function Navbar() {
     router.push(`/search?${searchQuery}`);
   };
 
-  const handleCredentialLogin = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setIsLoading(true);
-
-    const formData = new FormData(e.currentTarget);
-    const email = formData.get("email") as string;
-    const password = formData.get("password") as string;
-
-    try {
-      const result = await signIn("credentials", {
-        email,
-        password,
-        redirect: false,
-      });
-
-      if (result?.error) {
-        toast.error(result.error);
-      } else {
-        setAuthDropdown(false);
-        setShowLoginForm(false);
-        toast.success("Logged in successfully!");
-        router.refresh();
-      }
-    } catch {
-      toast.error("Something went wrong!");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleRegister = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setIsLoading(true);
-
-    const formData = new FormData(e.currentTarget);
-    const email = formData.get("email") as string;
-    const password = formData.get("password") as string;
-    const name = formData.get("name") as string;
-
-    try {
-      const res = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password, name }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || "Something went wrong!");
-      }
-
-      toast.success("Registration successful! Please log in.");
-      setShowRegisterForm(false);
-      setShowLoginForm(true);
-    } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Something went wrong!",
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   return (
-    <header className="fixed top-0 z-50 flex w-full items-center justify-between bg-bondi-blue-500 px-6 py-3">
-      <Link href="/" className="flex items-center gap-2">
-        <Image
-          src="/k2b-logo-2.png"
-          width={75}
-          height={75}
-          alt="Logo"
-          className=""
-        />
-      </Link>
-
-      <SearchBar query={query} setQuery={setQuery} onSearch={handleSearch} />
-
-      <div className="relative flex items-center justify-center gap-3">
-        <Link
-          title="Cart"
-          href="/cart"
-          className="relative flex items-center rounded-full text-white transition-all duration-300 hover:text-bondi-blue-400 max-sm:hidden"
-        >
-          <ShoppingCart className="size-6" />
-          {mounted &&
-            cart.products.reduce(
-              (sum, p) =>
-                sum + p.variants.reduce((vSum, v) => vSum + v.quantity, 0),
-              0,
-            ) > 0 && (
-              <span className="absolute -right-2.5 -top-2.5 flex size-5 items-center justify-center rounded-full bg-blaze-orange-500 text-center text-xs font-bold">
-                {cart.products.reduce(
-                  (sum, p) =>
-                    sum + p.variants.reduce((vSum, v) => vSum + v.quantity, 0),
-                  0,
-                )}
-              </span>
-            )}
-        </Link>
-        <NavLinks pathname={pathname} session={session} />
-        <Menu
-          className="hidden cursor-pointer text-white sm:block lg:hidden"
-          onClick={() => setDropdownMenu(!dropdownMenu)}
-        />
-
-        {mounted && dropdownMenu && (
-          <div className="absolute right-5 top-12 flex w-28 flex-col gap-4 rounded-lg border bg-white p-3 text-base-bold text-bondi-blue-500 md:w-fit lg:hidden">
-            {NAV_LINKS.map(({ path, label, icon }) => (
-              <Link
-                key={path}
-                href={session ? path : "/auth/login"}
-                className="flex items-center gap-1 hover:text-bondi-blue"
-              >
-                {icon}
-                {label}
-              </Link>
-            ))}
+    <header className='fixed top-0 z-50 w-full bg-bondi-blue-500 shadow-md'>
+      <div className='grid grid-cols-3 items-center px-3 py-2 sm:px-6 sm:py-3 lg:px-8'>
+        {/* Logo (left aligned) */}
+        <div className='flex items-center justify-self-start'>
+          <Link
+            href='/'
+            className='flex items-center gap-2 min-w-[60px]'
+          >
+            <Image
+              src='/k2b-logo-2.png'
+              width={48}
+              height={48}
+              alt='Logo'
+              className='w-10 h-10 sm:w-[60px] sm:h-[60px] lg:w-[75px] lg:h-[75px] object-contain'
+            />
+            <span className='hidden sm:inline text-white font-semibold text-xs sm:text-base'>
+              K2B EXPRESS
+            </span>
+          </Link>
+        </div>
+        {/* Search bar: always centered in grid */}
+        <div className='flex items-center justify-center'>
+          <div className='w-full max-w-full lg:hidden'>
+            <SearchBar
+              query={query}
+              setQuery={setQuery}
+              onSearch={handleSearch}
+            />
+          </div>
+          <div className='hidden lg:block w-full max-w-xl mx-auto'>
+            <SearchBar
+              query={query}
+              setQuery={setQuery}
+              onSearch={handleSearch}
+            />
+          </div>
+        </div>
+        {/* Hamburger menu or nav (right aligned) */}
+        <div className='flex items-center justify-self-end'>
+          {/* Desktop nav & icons */}
+          <div className='hidden lg:flex items-center gap-4'>
+            <NavLinks
+              pathname={pathname}
+              session={session}
+              className='space-x-2'
+            />
             <Link
-              href="/cart"
-              className="flex w-full flex-col items-center justify-center gap-1 rounded-lg border px-2 py-1 text-bondi-blue transition-all duration-300 hover:bg-bondi-blue hover:text-white sm:flex-row"
+              title='Cart'
+              href='/cart'
+              className='relative flex items-center gap-2 rounded-md px-3 py-2 text-white/90 hover:bg-white/10 hover:text-white transition font-semibold'
             >
-              <ShoppingCart />
-              <p className="text-nowrap text-base-bold">
-                Cart (
-                {mounted
-                  ? cart.products.reduce(
-                      (sum, p) =>
+              <HiShoppingCart className='size-6' />
+              <span>Cart</span>
+              {mounted &&
+                cart.products.reduce(
+                  (sum: number, p: { variants: { quantity: number }[] }) =>
+                    sum +
+                    p.variants.reduce(
+                      (vSum: number, v: { quantity: number }) =>
+                        vSum + v.quantity,
+                      0
+                    ),
+                  0
+                ) > 0 && (
+                  <span className='absolute -right-2.5 -top-2.5 flex size-5 items-center justify-center rounded-full bg-blaze-orange-500 text-center text-xs font-bold'>
+                    {cart.products.reduce(
+                      (sum: number, p: { variants: { quantity: number }[] }) =>
                         sum +
-                        p.variants.reduce((vSum, v) => vSum + v.quantity, 0),
-                      0,
-                    )
-                  : 0}
-                )
-              </p>
+                        p.variants.reduce(
+                          (vSum: number, v: { quantity: number }) =>
+                            vSum + v.quantity,
+                          0
+                        ),
+                      0
+                    )}
+                  </span>
+                )}
             </Link>
+            {session ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant='ghost'
+                    size='icon'
+                    className='p-0'
+                  >
+                    <Avatar>
+                      <AvatarImage
+                        src={session.user?.image || undefined}
+                        alt={session.user?.name || 'User'}
+                      />
+                      <AvatarFallback>
+                        {session.user?.name?.[0] || 'U'}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align='end'>
+                  <DropdownMenuLabel>{session.user?.name}</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link href={`/profile/${session.user?.userId}`}>
+                      Profile
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href='/orders'>Orders</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href='/wishlist'>Wishlist</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={() =>
+                      signIn('google', { callbackUrl: '/auth/login' })
+                    }
+                  >
+                    Sign Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Button
+                asChild
+                variant='outline'
+                className='flex items-center gap-2 border-white text-white hover:bg-white hover:text-bondi-blue-600 transition font-medium px-4 py-2 '
+              >
+                <Link href='/auth/login'>
+                  <CircleUserRound />
+                  <span>Sign In</span>
+                </Link>
+              </Button>
+            )}
           </div>
-        )}
-
-        {session ? (
-          <div className="flex items-center gap-2">
-            <Link
-              href={`/profile/${session.user?.userId}`}
-              className="flex items-center gap-2 hover:text-bondi-blue-400"
+          {/* Mobile menu button */}
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button
+                variant='ghost'
+                size='icon'
+                className='lg:hidden ml-2 text-white hover:text-bondi-blue-400'
+                aria-label='Open menu'
+              >
+                <Menu className='size-7' />
+              </Button>
+            </SheetTrigger>
+            <SheetContent
+              side='right'
+              className='p-0 w-72'
             >
-              {session.user?.image ? (
-                <Image
-                  src={session.user.image}
-                  width={32}
-                  height={32}
-                  alt={session.user.name || "User"}
-                  className="rounded-full"
+              <SheetHeader className='p-4 border-b'>
+                <SheetTitle>
+                  <Link
+                    href='/'
+                    className='flex items-center gap-2'
+                  >
+                    <Image
+                      src='/k2b-logo-2.png'
+                      width={40}
+                      height={40}
+                      alt='Logo'
+                      className='w-8 h-8 object-contain'
+                    />
+                    <span className='font-semibold text-bondi-blue-600'>
+                      K2B EXPRESS
+                    </span>
+                  </Link>
+                </SheetTitle>
+              </SheetHeader>
+              <div className='p-4 flex flex-col gap-2'>
+                <SearchBar
+                  query={query}
+                  setQuery={setQuery}
+                  onSearch={handleSearch}
                 />
-              ) : (
-                <CircleUserRound className="text-white" />
-              )}
-              <span className="text-white max-sm:hidden">
-                {session.user?.name}
-              </span>
-            </Link>
-            <button
-              onClick={() => signOut({ callbackUrl: "/auth/login" })}
-              className="text-white hover:text-bondi-blue-400"
-            >
-              Sign Out
-            </button>
-          </div>
-        ) : (
-          <div className="relative">
-            <button
-              onClick={() => setAuthDropdown(!authDropdown)}
-              className="flex items-center gap-2 text-white hover:text-bondi-blue-400"
-            >
-              <CircleUserRound />
-              <span className="max-sm:hidden">Sign In</span>
-            </button>
-
-            {mounted && authDropdown && (
-              <div className="absolute right-0 top-10 flex w-80 flex-col gap-2 rounded-lg border bg-white p-4 shadow-lg">
-                {!showLoginForm && !showRegisterForm ? (
-                  <>
-                    <button
-                      onClick={() => {
-                        signIn("google", { callbackUrl: "/" });
-                        setAuthDropdown(false);
-                      }}
-                      className="flex items-center justify-center gap-2 rounded-lg bg-white px-4 py-2 text-gray-700 shadow-sm transition-all hover:shadow-md"
-                    >
-                      <Image
-                        src="https://img.icons8.com/color/48/000000/google-logo.png"
-                        width={20}
-                        height={20}
-                        alt="Google"
-                      />
-                      Sign in with Google
-                    </button>
-                    <div className="relative my-2">
-                      <div className="absolute inset-0 flex items-center">
-                        <div className="w-full border-t border-gray-300" />
-                      </div>
-                      <div className="relative flex justify-center text-sm">
-                        <span className="bg-white px-2 text-gray-500">Or</span>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => setShowLoginForm(true)}
-                      className="rounded-lg bg-bondi-blue-500 px-4 py-2 text-white transition-colors hover:bg-bondi-blue-600"
-                    >
-                      Sign in with Email
-                    </button>
-                    <button
-                      onClick={() => setShowRegisterForm(true)}
-                      className="rounded-lg border border-bondi-blue-500 px-4 py-2 text-bondi-blue-500 transition-colors hover:bg-bondi-blue-50"
-                    >
-                      Create Account
-                    </button>
-                  </>
-                ) : showLoginForm ? (
-                  <form
-                    onSubmit={handleCredentialLogin}
-                    className="flex flex-col gap-3"
-                  >
-                    <h2 className="text-xl font-semibold text-gray-900">
-                      Sign In
-                    </h2>
-                    <div>
-                      <label
-                        htmlFor="email"
-                        className="block text-sm text-gray-700"
+                <NavLinks
+                  pathname={pathname}
+                  session={session}
+                  mobile={true}
+                  className='gap-2'
+                />
+                <Link
+                  title='Cart'
+                  href='/cart'
+                  className='flex items-center gap-2 rounded-md px-2 py-2 font-medium text-bondi-blue-600 hover:text-bondi-blue-400 transition'
+                >
+                  <HiShoppingCart className='size-6' />
+                  <span>Cart</span>
+                  {mounted &&
+                    cart.products.reduce(
+                      (sum: number, p: { variants: { quantity: number }[] }) =>
+                        sum +
+                        p.variants.reduce(
+                          (vSum: number, v: { quantity: number }) =>
+                            vSum + v.quantity,
+                          0
+                        ),
+                      0
+                    ) > 0 && (
+                      <span className='absolute -right-2.5 -top-2.5 flex size-5 items-center justify-center rounded-full bg-blaze-orange-500 text-center text-xs font-bold'>
+                        {cart.products.reduce(
+                          (
+                            sum: number,
+                            p: { variants: { quantity: number }[] }
+                          ) =>
+                            sum +
+                            p.variants.reduce(
+                              (vSum: number, v: { quantity: number }) =>
+                                vSum + v.quantity,
+                              0
+                            ),
+                          0
+                        )}
+                      </span>
+                    )}
+                </Link>
+                {session ? (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant='ghost'
+                        size='icon'
+                        className='flex items-center gap-2 rounded-md px-2 py-2 font-medium text-bondi-blue-600 hover:text-bondi-blue-400 transition p-0'
                       >
-                        Email
-                      </label>
-                      <input
-                        type="email"
-                        name="email"
-                        id="email"
-                        required
-                        className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-bondi-blue-500 focus:outline-none"
-                      />
-                    </div>
-                    <div>
-                      <label
-                        htmlFor="password"
-                        className="block text-sm text-gray-700"
+                        <Avatar>
+                          <AvatarImage
+                            src={session.user?.image || undefined}
+                            alt={session.user?.name || 'User'}
+                          />
+                          <AvatarFallback>
+                            {session.user?.name?.[0] || 'U'}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span>{session.user?.name}</span>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align='end'>
+                      <DropdownMenuLabel>
+                        {session.user?.name}
+                      </DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem asChild>
+                        <Link href={`/profile/${session.user?.userId}`}>
+                          Profile
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link href='/orders'>Orders</Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link href='/wishlist'>Wishlist</Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onClick={() =>
+                          signIn('google', { callbackUrl: '/auth/login' })
+                        }
                       >
-                        Password
-                      </label>
-                      <input
-                        type="password"
-                        name="password"
-                        id="password"
-                        required
-                        className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-bondi-blue-500 focus:outline-none"
-                      />
-                    </div>
-                    <button
-                      type="submit"
-                      disabled={isLoading}
-                      className="rounded-lg bg-bondi-blue-500 px-4 py-2 text-white transition-colors hover:bg-bondi-blue-600 disabled:opacity-50"
-                    >
-                      {isLoading ? "Signing in..." : "Sign In"}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setShowLoginForm(false)}
-                      className="text-sm text-gray-500 hover:text-gray-700"
-                    >
-                      Back to options
-                    </button>
-                  </form>
+                        Sign Out
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 ) : (
-                  <form
-                    onSubmit={handleRegister}
-                    className="flex flex-col gap-3"
+                  <Button
+                    asChild
+                    variant='ghost'
+                    className='flex items-center gap-2 rounded-md px-2 py-2 font-medium hover:text-accent transition bg-accent text-white hover:font-semibold'
                   >
-                    <h2 className="text-xl font-semibold text-gray-900">
-                      Create Account
-                    </h2>
-                    <div>
-                      <label
-                        htmlFor="name"
-                        className="block text-sm text-gray-700"
-                      >
-                        Name
-                      </label>
-                      <input
-                        type="text"
-                        name="name"
-                        id="name"
-                        required
-                        className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-bondi-blue-500 focus:outline-none"
-                      />
-                    </div>
-                    <div>
-                      <label
-                        htmlFor="email"
-                        className="block text-sm text-gray-700"
-                      >
-                        Email
-                      </label>
-                      <input
-                        type="email"
-                        name="email"
-                        id="email"
-                        required
-                        className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-bondi-blue-500 focus:outline-none"
-                      />
-                    </div>
-                    <div>
-                      <label
-                        htmlFor="password"
-                        className="block text-sm text-gray-700"
-                      >
-                        Password
-                      </label>
-                      <input
-                        type="password"
-                        name="password"
-                        id="password"
-                        required
-                        minLength={6}
-                        className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-bondi-blue-500 focus:outline-none"
-                      />
-                    </div>
-                    <button
-                      type="submit"
-                      disabled={isLoading}
-                      className="rounded-lg bg-bondi-blue-500 px-4 py-2 text-white transition-colors hover:bg-bondi-blue-600 disabled:opacity-50"
-                    >
-                      {isLoading ? "Creating account..." : "Create Account"}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setShowRegisterForm(false)}
-                      className="text-sm text-gray-500 hover:text-gray-700"
-                    >
-                      Back to options
-                    </button>
-                  </form>
+                    <Link href='/auth/login'>
+                      <CircleUserRound />
+                      <span>Sign In</span>
+                    </Link>
+                  </Button>
                 )}
               </div>
-            )}
-          </div>
-        )}
+            </SheetContent>
+          </Sheet>
+        </div>
       </div>
     </header>
   );
