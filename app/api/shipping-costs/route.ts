@@ -1,8 +1,8 @@
-import { NextResponse } from 'next/server';
-import { connectToDB } from '@/lib/dbConnect';
-import Category from '@/models/Category';
-import Subcategory from '@/models/Subcategory';
-import { Document } from 'mongoose';
+import { NextResponse } from "next/server";
+import { connectToDB } from "@/lib/dbConnect";
+import Category from "@/models/Category";
+import Subcategory from "@/models/Subcategory";
+import { Document } from "mongoose";
 
 interface ShippingCost {
   byAir: { min: number; max: number };
@@ -38,12 +38,12 @@ export async function GET() {
     // Fetch all categories with their subcategories
     const categories = (await Category.find({ isActive: true })
       .populate({
-        path: 'subcategories',
+        path: "subcategories",
         model: Subcategory,
         match: { isActive: true },
-        select: 'name slug shippingCharge',
+        select: "name slug shippingCharge",
       })
-      .select('name slug shippingCharge')
+      .select("name slug shippingCharge")
       .sort({ sortOrder: 1 })) as CategoryDocument[];
 
     // Transform the data to match the expected format
@@ -75,17 +75,17 @@ export async function GET() {
 
         return acc;
       },
-      {}
+      {},
     );
 
     return NextResponse.json(shippingCostsData);
   } catch (error) {
-    console.error('[SHIPPING_COSTS_GET]', error);
+    console.error("[SHIPPING_COSTS_GET]", error);
     return NextResponse.json(
-      { error: 'Failed to fetch shipping costs' },
-      { status: 500 }
+      { error: "Failed to fetch shipping costs" },
+      { status: 500 },
     );
   }
 }
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";

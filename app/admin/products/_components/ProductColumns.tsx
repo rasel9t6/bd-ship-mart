@@ -98,31 +98,25 @@ export const columns: ColumnDef<ProductType>[] = [
     accessorKey: "category",
     header: "Category",
     cell: ({ row }) => {
-      const category =
-        typeof row.original.category === "object" && row.original.category
-          ? row.original.category.name
-          : typeof row.original.category === "string"
-            ? row.original.category
-            : "N/A";
-
-      // Only attempt to access subcategories if category is an object
-      const subcategories =
-        typeof row.original.category === "object" &&
-        row.original.category &&
-        "subcategories" in row.original.category &&
-        Array.isArray(row.original.category.subcategories)
-          ? row.original.category.subcategories
-              .map((sub: { name: string }) => sub.name)
-              .join(", ")
+      // Use categories and subcategories arrays from ProductType
+      const categories = Array.isArray(row.original.categories)
+        ? row.original.categories
+        : [];
+      const subcategories = Array.isArray(row.original.subcategories)
+        ? row.original.subcategories
+        : [];
+      const category = categories.length > 0 ? categories[0].name : "N/A";
+      const subcategoryNames =
+        subcategories.length > 0
+          ? subcategories.map((sub: { name: string }) => sub.name).join(", ")
           : "N/A";
-
       return (
         <div>
           <p>
             <strong>Category:</strong> {category}
           </p>
           <p>
-            <strong>Subcategories:</strong> {subcategories}
+            <strong>Subcategories:</strong> {subcategoryNames}
           </p>
         </div>
       );

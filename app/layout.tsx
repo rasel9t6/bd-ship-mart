@@ -39,7 +39,7 @@ export default function RootLayout({
       >
         <ToasterProvider />
         <AuthProvider>{children}</AuthProvider>
-        <SpeedInsights /> 
+        <SpeedInsights />
       </body>
     </html>
   );
