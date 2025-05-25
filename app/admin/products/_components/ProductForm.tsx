@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm, FieldErrors } from "react-hook-form";
 import * as z from "zod";
 import { Button } from "@/ui/button";
 import {
@@ -30,12 +30,12 @@ import MultiText from "@/ui/custom/MultiText";
 import { Plus, Trash2 } from "lucide-react";
 import slugify from "slugify";
 
-// Define the form schema with Zod
+// Updated form schema to match the model structure
 const formSchema = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().optional(),
   sku: z.string().min(1, "SKU is required"),
-  category: z.string().min(1, "Category is required"),
+  categories: z.array(z.string()).optional(), // Changed to array
   subcategories: z.array(z.string()).optional(),
   inputCurrency: z.enum(["CNY", "USD"]),
   price: z.object({
@@ -86,32 +86,43 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-interface CategoryField {
-  _id?: string;
-  id?: string;
+interface Subcategory {
+  _id: string;
   name: string;
-  subcategories: Array<{
-    _id: string;
-    name: string;
-  }>;
+  title: string;
+  description?: string;
+  shippingCharge: {
+    byAir: { min: number; max: number };
+    bySea: { min: number; max: number };
+  };
+  icon: string;
+  thumbnail: string;
+  products: string[];
+  category: string;
+  sortOrder: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  slug: string;
 }
 
 interface Category {
   _id: string;
   name: string;
-  subcategories: Array<{
-    _id: string;
-    name: string;
-  }>;
-}
-
-interface CategoryResponse {
-  _id: string;
-  name: string;
-  subcategories: Array<{
-    _id: string;
-    name: string;
-  }>;
+  title: string;
+  description?: string;
+  subcategories: Subcategory[];
+  products: string[];
+  shippingCharge: {
+    byAir: { min: number; max: number };
+    bySea: { min: number; max: number };
+  };
+  isActive: boolean;
+  sortOrder: number;
+  metadata: Record<string, unknown>;
+  createdAt: string;
+  updatedAt: string;
+  slug: string;
 }
 
 interface ProductFormType {
@@ -120,8 +131,7 @@ interface ProductFormType {
   description?: string;
   sku: string;
   slug?: string;
-  category?: CategoryField;
-  subcategory?: string;
+  categories?: string[];
   subcategories?: string[];
   inputCurrency: "CNY" | "USD";
   price: {
@@ -143,6 +153,17 @@ interface ProductFormType {
   colors?: MediaItem[];
   tags?: string[];
   sizes?: string[];
+  quantityPricing?: {
+    ranges: Array<{
+      minQuantity: number;
+      maxQuantity?: number;
+      price: {
+        cny?: number;
+        usd?: number;
+        bdt?: number;
+      };
+    }>;
+  };
 }
 
 interface MediaItem {
@@ -157,13 +178,15 @@ interface Props {
 export default function ProductForm({ initialData }: Props) {
   const router = useRouter();
   const [categories, setCategories] = useState<Category[]>([]);
-  const [subcategories, setSubcategories] = useState<Category["subcategories"]>(
-    [],
-  );
-  const [loading, setLoading] = useState(false);
+  const [allSubcategories, setAllSubcategories] = useState<Subcategory[]>([]);
+  const [availableSubcategories, setAvailableSubcategories] = useState<
+    Subcategory[]
+  >([]);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedSubcategories, setSelectedSubcategories] = useState<string[]>(
     [],
   );
+  const [loading, setLoading] = useState(false);
 
   // Initialize form with React Hook Form
   const form = useForm<FormValues>({
@@ -172,10 +195,7 @@ export default function ProductForm({ initialData }: Props) {
       title: initialData?.title || "",
       description: initialData?.description || "",
       sku: initialData?.sku || "",
-      category:
-        typeof initialData?.category === "object"
-          ? String(initialData.category._id || initialData.category.id || "")
-          : "",
+      categories: initialData?.categories || [],
       subcategories: initialData?.subcategories || [],
       inputCurrency: (initialData?.inputCurrency as "CNY" | "USD") || "CNY",
       price: {
@@ -197,66 +217,145 @@ export default function ProductForm({ initialData }: Props) {
       colors: initialData?.colors || [],
       tags: initialData?.tags || [],
       sizes: initialData?.sizes || [],
+      quantityPricing: {
+        ranges: initialData?.quantityPricing?.ranges || [],
+      },
     },
   });
 
-  // Fetch categories on component mount
+  // Fetch categories and subcategories on component mount
   useEffect(() => {
-    const fetchCategories = async () => {
+    const fetchData = async () => {
       try {
-        const res = await fetch("/api/categories");
-        const data: CategoryResponse[] = await res.json();
-        setCategories(data);
+        const [categoriesRes, subcategoriesRes] = await Promise.all([
+          fetch("/api/categories"),
+          fetch("/api/subcategories"),
+        ]);
+
+        if (!categoriesRes.ok || !subcategoriesRes.ok) {
+          throw new Error("Failed to fetch data");
+        }
+
+        const categoriesData: Category[] = await categoriesRes.json();
+        const subcategoriesData: Subcategory[] = await subcategoriesRes.json();
+
+        setCategories(categoriesData);
+        setAllSubcategories(subcategoriesData);
+
+        console.log("Fetched categories:", categoriesData);
+        console.log("Fetched subcategories:", subcategoriesData);
+
+        // Initialize selected values from initial data
+        if (initialData) {
+          if (initialData.categories && initialData.categories.length > 0) {
+            setSelectedCategories(initialData.categories);
+            // Filter subcategories by selected categories
+            const filteredSubcategories = subcategoriesData.filter((sub) =>
+              initialData.categories?.includes(sub.category),
+            );
+            setAvailableSubcategories(filteredSubcategories);
+          } else if (
+            initialData.subcategories &&
+            initialData.subcategories.length > 0
+          ) {
+            setSelectedSubcategories(initialData.subcategories);
+            // Show all subcategories when subcategories are selected
+            setAvailableSubcategories(subcategoriesData);
+          } else {
+            // No selection, show all subcategories
+            setAvailableSubcategories(subcategoriesData);
+          }
+        } else {
+          // New product, show all subcategories
+          setAvailableSubcategories(subcategoriesData);
+        }
       } catch (error) {
-        console.error("Error fetching categories:", error);
-        toast.error("Failed to load categories");
+        console.error("Error fetching data:", error);
+        toast.error("Failed to load categories and subcategories");
       }
     };
-    fetchCategories();
-  }, []);
+    fetchData();
+  }, [initialData]);
 
-  // Fetch subcategories when category changes
-  const handleCategoryChange = async (categoryId: string) => {
-    try {
-      // Find the selected category from the already fetched categories
-      const selectedCategory = categories.find((cat) => cat._id === categoryId);
+  // Handle category selection
+  const handleCategoryChange = (categoryId: string) => {
+    console.log("Category selected:", categoryId);
 
-      if (selectedCategory && selectedCategory.subcategories) {
-        // Map the subcategories to the format expected by MultiSelect
-        const formattedSubcategories = selectedCategory.subcategories.map(
-          (sub) => ({
-            _id: sub._id,
-            name: sub.name,
-          }),
-        );
+    const newCategories = selectedCategories.includes(categoryId)
+      ? selectedCategories.filter((id) => id !== categoryId)
+      : [...selectedCategories, categoryId];
 
-        setSubcategories(formattedSubcategories);
-        setSelectedSubcategories([]); // Reset selected subcategories when category changes
-      } else {
-        setSubcategories([]);
-        setSelectedSubcategories([]);
-      }
-    } catch (error) {
-      console.error("Error handling category change:", error);
-      toast.error("Failed to load subcategories");
+    setSelectedCategories(newCategories);
+    form.setValue("categories", newCategories);
+
+    // If categories are selected, filter subcategories by selected categories
+    if (newCategories.length > 0) {
+      const filteredSubcategories = allSubcategories.filter((sub) =>
+        newCategories.includes(sub.category),
+      );
+      setAvailableSubcategories(filteredSubcategories);
+      setSelectedSubcategories([]);
+      form.setValue("subcategories", []);
+    } else {
+      // If no categories selected, show all subcategories
+      setAvailableSubcategories(allSubcategories);
+    }
+  };
+
+  const handleCategoryRemove = (categoryId: string) => {
+    console.log("Removing category:", categoryId);
+    const newCategories = selectedCategories.filter((id) => id !== categoryId);
+    setSelectedCategories(newCategories);
+    form.setValue("categories", newCategories);
+
+    // Update available subcategories based on remaining categories
+    if (newCategories.length > 0) {
+      const filteredSubcategories = allSubcategories.filter((sub) =>
+        newCategories.includes(sub.category),
+      );
+      setAvailableSubcategories(filteredSubcategories);
+    } else {
+      setAvailableSubcategories(allSubcategories);
     }
   };
 
   // Handle subcategory selection
   const handleSubcategoryChange = (subcategoryId: string) => {
-    setSelectedSubcategories((prev) => [...prev, subcategoryId]);
-    form.setValue("subcategories", [...selectedSubcategories, subcategoryId]);
+    console.log("Subcategory selected:", subcategoryId);
+
+    const newSubcategories = selectedSubcategories.includes(subcategoryId)
+      ? selectedSubcategories.filter((id) => id !== subcategoryId)
+      : [...selectedSubcategories, subcategoryId];
+
+    setSelectedSubcategories(newSubcategories);
+    form.setValue("subcategories", newSubcategories);
+
+    // If subcategories are selected, clear categories
+    if (newSubcategories.length > 0) {
+      setSelectedCategories([]);
+      form.setValue("categories", []);
+    }
   };
 
   const handleSubcategoryRemove = (subcategoryId: string) => {
-    setSelectedSubcategories((prev) =>
-      prev.filter((id) => id !== subcategoryId),
+    console.log("Removing subcategory:", subcategoryId);
+    const newSubcategories = selectedSubcategories.filter(
+      (id) => id !== subcategoryId,
     );
-    form.setValue(
-      "subcategories",
-      selectedSubcategories.filter((id) => id !== subcategoryId),
-    );
+    setSelectedSubcategories(newSubcategories);
+    form.setValue("subcategories", newSubcategories);
   };
+
+  // Debug effect
+  useEffect(() => {
+    console.log("Current state:", {
+      selectedCategories,
+      selectedSubcategories,
+      availableSubcategories: availableSubcategories.length,
+      formCategories: form.getValues("categories"),
+      formSubcategories: form.getValues("subcategories"),
+    });
+  }, [selectedCategories, selectedSubcategories, availableSubcategories, form]);
 
   // Handle currency conversion
   const handleCurrencyChange = (values: FormValues) => {
@@ -396,6 +495,16 @@ export default function ProductForm({ initialData }: Props) {
           [currency]: value,
         },
       };
+
+      // Calculate other currencies
+      const { usdToBdt, cnyToBdt } = form.getValues("currencyRates");
+      if (currency === "cny" && value) {
+        updatedRanges[index].price.bdt = value * cnyToBdt;
+        updatedRanges[index].price.usd = value / 7;
+      } else if (currency === "usd" && value) {
+        updatedRanges[index].price.bdt = value * usdToBdt;
+        updatedRanges[index].price.cny = value * 7;
+      }
     } else {
       updatedRanges[index] = {
         ...updatedRanges[index],
@@ -404,13 +513,31 @@ export default function ProductForm({ initialData }: Props) {
     }
 
     form.setValue("quantityPricing.ranges", updatedRanges);
-    handleCurrencyChange(form.getValues());
   };
 
   // Form submission handler
   const onSubmit = async (values: FormValues) => {
     try {
       setLoading(true);
+
+      // Ensure we only send categories OR subcategories, not both
+      const submitData = {
+        ...values,
+        // If categories are selected, clear subcategories
+        subcategories:
+          values.categories && values.categories.length > 0
+            ? []
+            : values.subcategories,
+        // If subcategories are selected, clear categories
+        categories:
+          values.subcategories && values.subcategories.length > 0
+            ? []
+            : values.categories,
+        slug:
+          initialData?.slug ||
+          slugify(values.title, { lower: true, strict: true }),
+      };
+
       const endpoint = initialData?._id
         ? `/api/products/${initialData.slug}`
         : "/api/products";
@@ -421,12 +548,7 @@ export default function ProductForm({ initialData }: Props) {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          ...values,
-          slug:
-            initialData?.slug ||
-            slugify(values.title, { lower: true, strict: true }),
-        }),
+        body: JSON.stringify(submitData),
       });
 
       if (!response.ok) {
@@ -451,9 +573,21 @@ export default function ProductForm({ initialData }: Props) {
     }
   };
 
+  // Add form error handler
+  const onError = (errors: FieldErrors<FormValues>) => {
+    // Get the first error message
+    const firstError = Object.values(errors)[0];
+    if (firstError?.message) {
+      toast.error(firstError.message as string);
+    }
+  };
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+      <form
+        onSubmit={form.handleSubmit(onSubmit, onError)}
+        className="space-y-8"
+      >
         <FormField
           control={form.control}
           name="title"
@@ -497,48 +631,35 @@ export default function ProductForm({ initialData }: Props) {
         />
 
         <div className="grid grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="category"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Category</FormLabel>
-                <Select
-                  onValueChange={(value) => {
-                    field.onChange(value);
-                    handleCategoryChange(value);
-                  }}
-                  defaultValue={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a category" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {categories.map((category) => (
-                      <SelectItem key={category._id} value={category._id}>
-                        {category.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <FormItem>
+            <FormLabel>Categories</FormLabel>
+            <MultiSelect
+              placeholder="Select categories"
+              categories={categories.map((cat) => ({
+                _id: cat._id,
+                name: cat.name,
+              }))}
+              value={selectedCategories}
+              onChange={handleCategoryChange}
+              onRemove={handleCategoryRemove}
+            />
+          </FormItem>
 
           <FormItem>
             <FormLabel>Subcategories</FormLabel>
             <MultiSelect
               placeholder="Select subcategories"
-              categories={subcategories}
+              categories={availableSubcategories.map((sub) => ({
+                _id: sub._id,
+                name: sub.name,
+              }))}
               value={selectedSubcategories}
               onChange={handleSubcategoryChange}
               onRemove={handleSubcategoryRemove}
             />
           </FormItem>
         </div>
+
         <div className="grid grid-cols-2 gap-4">
           <FormField
             control={form.control}
@@ -549,6 +670,7 @@ export default function ProductForm({ initialData }: Props) {
                 <FormControl>
                   <Input
                     type="number"
+                    step="0.01"
                     {...field}
                     onChange={(e) => {
                       field.onChange(parseFloat(e.target.value));
@@ -570,6 +692,7 @@ export default function ProductForm({ initialData }: Props) {
                 <FormControl>
                   <Input
                     type="number"
+                    step="0.01"
                     {...field}
                     onChange={(e) => {
                       field.onChange(parseFloat(e.target.value));
@@ -582,6 +705,7 @@ export default function ProductForm({ initialData }: Props) {
             )}
           />
         </div>
+
         <div className="grid grid-cols-3 gap-4">
           <FormField
             control={form.control}
@@ -623,6 +747,7 @@ export default function ProductForm({ initialData }: Props) {
                 <FormControl>
                   <Input
                     type="number"
+                    step="0.01"
                     placeholder={`Enter price in ${form.getValues("inputCurrency")}`}
                     value={
                       field.value[
@@ -660,6 +785,7 @@ export default function ProductForm({ initialData }: Props) {
             <FormControl>
               <Input
                 type="number"
+                step="0.01"
                 placeholder="BDT Price"
                 value={form.watch("price.bdt") || ""}
                 disabled
@@ -681,6 +807,7 @@ export default function ProductForm({ initialData }: Props) {
                 <FormControl>
                   <Input
                     type="number"
+                    step="0.01"
                     placeholder={`Enter expense in ${form.getValues("inputCurrency")}`}
                     value={
                       field.value[
@@ -718,6 +845,7 @@ export default function ProductForm({ initialData }: Props) {
             <FormControl>
               <Input
                 type="number"
+                step="0.01"
                 placeholder="BDT Expense"
                 value={form.watch("expense.bdt") || ""}
                 disabled
@@ -736,8 +864,91 @@ export default function ProductForm({ initialData }: Props) {
               <FormControl>
                 <Input
                   type="number"
+                  min="1"
                   {...field}
-                  onChange={(e) => field.onChange(parseInt(e.target.value, 10))}
+                  onChange={(e) => {
+                    field.onChange(parseInt(e.target.value));
+                  }}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="media"
+          render={() => (
+            <FormItem>
+              <FormLabel>Media</FormLabel>
+              <FormControl>
+                <MediaUpload
+                  value={form.watch("media") || []}
+                  onChange={handleMediaChange}
+                  onRemove={handleMediaRemove}
+                  multiple={false}
+                  accept={["image"]}
+                  folderId="products"
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="colors"
+          render={() => (
+            <FormItem>
+              <FormLabel>Colors</FormLabel>
+              <FormControl>
+                <MediaUpload
+                  value={form.watch("colors") || []}
+                  onChange={handleColorChange}
+                  onRemove={handleColorRemove}
+                  multiple={true}
+                  accept={["image", "video"]}
+                  folderId="products/variants"
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="sizes"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Sizes</FormLabel>
+              <FormControl>
+                <MultiText
+                  placeholder="Add sizes (e.g., S, M, L)"
+                  value={field.value || []}
+                  onChange={handleSizeChange}
+                  onRemove={handleSizeRemove}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="tags"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Tags</FormLabel>
+              <FormControl>
+                <MultiText
+                  placeholder="Add tags (e.g., summer, casual)"
+                  value={field.value || []}
+                  onChange={handleTagChange}
+                  onRemove={handleTagRemove}
                 />
               </FormControl>
               <FormMessage />
@@ -746,163 +957,130 @@ export default function ProductForm({ initialData }: Props) {
         />
 
         <div className="space-y-4">
-          <FormLabel>Product Media</FormLabel>
-          <MediaUpload
-            value={form.watch("media") || []}
-            onChange={handleMediaChange}
-            onRemove={handleMediaRemove}
-            multiple={false}
-            accept={["image"]}
-            folderId="products"
-          />
-        </div>
-
-        <div className="space-y-4">
-          <FormLabel>Product Variant Images</FormLabel>
-          <MediaUpload
-            value={form.watch("colors") || []}
-            onChange={handleColorChange}
-            onRemove={handleColorRemove}
-            multiple={true}
-            accept={["image", "video"]}
-            folderId="products/variants"
-          />
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <FormItem>
-            <FormLabel>Sizes</FormLabel>
-            <MultiText
-              placeholder="Add sizes (e.g., S, M, L)"
-              value={form.watch("sizes") || []}
-              onChange={handleSizeChange}
-              onRemove={handleSizeRemove}
-            />
-          </FormItem>
-
-          <FormItem>
-            <FormLabel>Tags</FormLabel>
-            <MultiText
-              placeholder="Add tags (e.g., summer, casual)"
-              value={form.watch("tags") || []}
-              onChange={handleTagChange}
-              onRemove={handleTagRemove}
-            />
-          </FormItem>
-        </div>
-
-        <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <FormLabel>Quantity Pricing Ranges</FormLabel>
+            <FormLabel>Quantity Pricing (Optional)</FormLabel>
             <Button
               type="button"
               variant="outline"
               size="sm"
               onClick={handleAddRange}
             >
-              <Plus className="mr-2 h-4 w-4" />
+              <Plus className="h-4 w-4 mr-2" />
               Add Range
             </Button>
           </div>
 
           {form.watch("quantityPricing.ranges")?.map((range, index) => (
-            <div
-              key={index}
-              className="grid grid-cols-4 gap-4 rounded-lg border p-4"
-            >
-              <FormItem>
-                <FormLabel>Min Quantity</FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    min={1}
-                    value={range.minQuantity || ""}
-                    onChange={(e) =>
-                      handleRangeChange(
-                        index,
-                        "minQuantity",
-                        parseInt(e.target.value),
-                      )
-                    }
-                  />
-                </FormControl>
-              </FormItem>
+            <div key={index} className="border p-4 rounded-lg space-y-4">
+              <div className="flex items-center justify-between">
+                <h4 className="text-sm font-medium">Range {index + 1}</h4>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleRemoveRange(index)}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
 
-              <FormItem>
-                <FormLabel>Max Quantity</FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    min={range.minQuantity || 1}
-                    value={range.maxQuantity || ""}
-                    placeholder="No limit"
-                    onChange={(e) =>
-                      handleRangeChange(
-                        index,
-                        "maxQuantity",
-                        e.target.value ? parseInt(e.target.value) : undefined,
-                      )
-                    }
-                  />
-                </FormControl>
-              </FormItem>
+              <div className="grid grid-cols-4 gap-4">
+                <FormItem>
+                  <FormLabel>Min Quantity</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      min="1"
+                      value={range.minQuantity || ""}
+                      onChange={(e) =>
+                        handleRangeChange(
+                          index,
+                          "minQuantity",
+                          parseInt(e.target.value),
+                        )
+                      }
+                    />
+                  </FormControl>
+                </FormItem>
 
-              <FormItem>
-                <FormLabel>Price ({form.getValues("inputCurrency")})</FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    min={0}
-                    value={
-                      range.price[
-                        form.getValues("inputCurrency").toLowerCase() as
-                          | "cny"
-                          | "usd"
-                      ] || ""
-                    }
-                    onChange={(e) =>
-                      handleRangeChange(
-                        index,
-                        "price",
-                        parseFloat(e.target.value),
-                      )
-                    }
-                  />
-                </FormControl>
-              </FormItem>
+                <FormItem>
+                  <FormLabel>Max Quantity (Optional)</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      min="1"
+                      value={range.maxQuantity || ""}
+                      onChange={(e) =>
+                        handleRangeChange(
+                          index,
+                          "maxQuantity",
+                          e.target.value ? parseInt(e.target.value) : undefined,
+                        )
+                      }
+                    />
+                  </FormControl>
+                </FormItem>
 
-              <FormItem>
-                <FormLabel>BDT Price (Calculated)</FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    value={range.price.bdt || ""}
-                    disabled
-                    className="bg-muted"
-                  />
-                </FormControl>
-              </FormItem>
+                <FormItem>
+                  <FormLabel>
+                    Price ({form.getValues("inputCurrency")})
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      value={
+                        range.price[
+                          form.getValues("inputCurrency").toLowerCase() as
+                            | "cny"
+                            | "usd"
+                        ] || ""
+                      }
+                      onChange={(e) =>
+                        handleRangeChange(
+                          index,
+                          "price",
+                          parseFloat(e.target.value),
+                        )
+                      }
+                    />
+                  </FormControl>
+                </FormItem>
 
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="col-span-4 mt-2 hover:!bg-danger"
-                onClick={() => handleRemoveRange(index)}
-              >
-                <Trash2 className="size-4 " />
-              </Button>
+                <FormItem>
+                  <FormLabel>BDT Price (Calculated)</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      value={range.price.bdt || ""}
+                      disabled
+                      className="bg-muted"
+                    />
+                  </FormControl>
+                </FormItem>
+              </div>
             </div>
           ))}
         </div>
 
-        <Button type="submit" disabled={loading}>
-          {loading
-            ? "Saving..."
-            : initialData
-              ? "Update Product"
-              : "Create Product"}
-        </Button>
+        <div className="flex items-center justify-end space-x-4">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => router.push("/admin/products")}
+            disabled={loading}
+          >
+            Cancel
+          </Button>
+          <Button type="submit" disabled={loading}>
+            {loading
+              ? "Saving..."
+              : initialData?._id
+                ? "Update Product"
+                : "Create Product"}
+          </Button>
+        </div>
       </form>
     </Form>
   );

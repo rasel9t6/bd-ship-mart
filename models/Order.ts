@@ -198,6 +198,24 @@ const orderSchema = new Schema({
   updatedAt: { type: Date, default: Date.now },
 });
 
+// Add pre-save middleware to calculate totals
+orderSchema.pre("save", function (next) {
+  // Calculate subTotal from products
+  this.subTotal = this.products.reduce(
+    (acc, product) => ({
+      bdt: acc.bdt + product.totalPrice.bdt,
+      usd: acc.usd + product.totalPrice.usd,
+      cny: acc.cny + product.totalPrice.cny,
+    }),
+    { bdt: 0, usd: 0, cny: 0 },
+  );
+
+  // Set totalAmount equal to subTotal (can be modified if there are additional charges)
+  this.totalAmount = { ...this.subTotal };
+
+  next();
+});
+
 // Add index for common queries
 orderSchema.index({ status: 1, createdAt: -1 });
 orderSchema.index({

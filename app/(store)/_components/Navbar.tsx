@@ -31,7 +31,11 @@ import useCart from "@/hooks/useCart";
 // Navigation links data
 const NAV_LINKS = [
   { path: "/wishlist", icon: <FaHeart size={24} />, label: "Wishlist" },
-  { path: "/orders", icon: <HiShoppingBag size={24} />, label: "Orders" },
+  {
+    path: (userId: string) => `/profile/${userId}?tab=orders`,
+    icon: <HiShoppingBag size={24} />,
+    label: "Orders",
+  },
 ];
 
 const SearchBar = ({
@@ -84,12 +88,14 @@ const NavLinks = ({
   >
     {NAV_LINKS.map(({ path, icon, label }) => (
       <Link
-        key={path}
-        href={session ? path : "/auth/login"}
+        key={typeof path === "function" ? "orders" : path}
+        href={
+          typeof path === "function" ? path(session?.user?.userId || "") : path
+        }
         className={
           mobile
             ? `flex items-center gap-2 text-bondi-blue-600 font-medium rounded-md px-2 py-2 hover:text-bondi-blue-400 transition` // mobile style
-            : `flex items-center gap-2 px-2 py-1 rounded-md transition-all duration-200 text-white/80 hover:text-white hover:bg-white/10 ${pathname === path ? "text-white font-semibold underline underline-offset-4" : ""}` // desktop style
+            : `flex items-center gap-2 px-2 py-1 rounded-md transition-all duration-200 text-white/80 hover:text-white hover:bg-white/10 ${pathname === (typeof path === "function" ? path(session?.user?.userId || "") : path) ? "text-white font-semibold underline underline-offset-4" : ""}` // desktop style
         }
         onClick={onClick}
       >
@@ -161,13 +167,14 @@ export default function Navbar() {
               session={session}
               className="space-x-2"
             />
-            <Link
-              title="Cart"
-              href="/cart"
-              className="relative flex items-center gap-2 rounded-md px-3 py-2 text-white/90 hover:bg-white/10 hover:text-white transition font-semibold"
-            >
-              <HiShoppingCart className="size-6" />
-              <span>Cart</span>
+            <div className="relative">
+              <Link
+                title="Cart"
+                href="/cart"
+                className="flex items-center rounded-md px-2 py-2 font-medium text-white hover:bg-bondi-blue-400/20 transition"
+              >
+                <HiShoppingCart className="size-6" />
+              </Link>
               {mounted &&
                 cart.products.reduce(
                   (sum: number, p: { variants: { quantity: number }[] }) =>
@@ -179,7 +186,7 @@ export default function Navbar() {
                     ),
                   0,
                 ) > 0 && (
-                  <span className="absolute -right-2.5 -top-2.5 flex size-5 items-center justify-center rounded-full bg-blaze-orange-500 text-center text-xs font-bold">
+                  <span className="absolute -top-2 -right-2 flex items-center justify-center rounded-full bg-blaze-orange-500 text-white text-center text-xs font-bold w-5 h-5">
                     {cart.products.reduce(
                       (sum: number, p: { variants: { quantity: number }[] }) =>
                         sum +
@@ -192,14 +199,18 @@ export default function Navbar() {
                     )}
                   </span>
                 )}
-            </Link>
+            </div>
             {session ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon" className="p-0">
                     <Avatar>
                       <AvatarImage
-                        src={session.user?.image || undefined}
+                        src={
+                          session.user?.profilePicture ||
+                          session.user?.image ||
+                          undefined
+                        }
                         alt={session.user?.name || "User"}
                       />
                       <AvatarFallback>
@@ -211,19 +222,31 @@ export default function Navbar() {
                 <DropdownMenuContent align="end">
                   <DropdownMenuLabel>{session.user?.name}</DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
+                  <DropdownMenuItem
+                    asChild
+                    className="hover:bg-bondi-blue-50 hover:text-bondi-blue-700 transition-colors duration-200 rounded-md"
+                  >
                     <Link href={`/profile/${session.user?.userId}`}>
                       Profile
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/orders">Orders</Link>
+                  <DropdownMenuItem
+                    asChild
+                    className="hover:bg-bondi-blue-50 hover:text-bondi-blue-700 transition-colors duration-200 rounded-md"
+                  >
+                    <Link href={`/profile/${session.user?.userId}?tab=orders`}>
+                      Orders
+                    </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
+                  <DropdownMenuItem
+                    asChild
+                    className="hover:bg-bondi-blue-50 hover:text-bondi-blue-700 transition-colors duration-200 rounded-md"
+                  >
                     <Link href="/wishlist">Wishlist</Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
+                    className="hover:bg-bondi-blue-50 hover:text-bondi-blue-700 transition-colors duration-200 rounded-md"
                     onClick={() =>
                       signIn("google", { callbackUrl: "/auth/login" })
                     }
@@ -304,7 +327,7 @@ export default function Navbar() {
                         ),
                       0,
                     ) > 0 && (
-                      <span className="absolute -right-2.5 -top-2.5 flex size-5 items-center justify-center rounded-full bg-blaze-orange-500 text-center text-xs font-bold">
+                      <span className="ml-2 flex items-center justify-center rounded-full bg-blaze-orange-500 text-center text-xs font-bold w-5 h-5 text-white">
                         {cart.products.reduce(
                           (
                             sum: number,
@@ -322,51 +345,39 @@ export default function Navbar() {
                     )}
                 </Link>
                 {session ? (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="flex items-center gap-2 rounded-md px-2 py-2 font-medium text-bondi-blue-600 hover:text-bondi-blue-400 transition p-0"
-                      >
-                        <Avatar>
-                          <AvatarImage
-                            src={session.user?.image || undefined}
-                            alt={session.user?.name || "User"}
-                          />
-                          <AvatarFallback>
-                            {session.user?.name?.[0] || "U"}
-                          </AvatarFallback>
-                        </Avatar>
-                        <span>{session.user?.name}</span>
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuLabel>
+                  <div className="flex flex-col items-start gap-3 w-full mb-4">
+                    <Link
+                      href={`/profile/${session.user?.userId}`}
+                      className="flex items-center gap-3 w-full rounded-md px-2 py-2 font-medium text-bondi-blue-700 hover:bg-bondi-blue-50 transition-colors"
+                    >
+                      <Avatar>
+                        <AvatarImage
+                          src={
+                            session.user?.profilePicture ||
+                            session.user?.image ||
+                            undefined
+                          }
+                          alt={session.user?.name || "User"}
+                        />
+                        <AvatarFallback>
+                          {session.user?.name?.[0] || "U"}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="text-base font-semibold truncate">
                         {session.user?.name}
-                      </DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem asChild>
-                        <Link href={`/profile/${session.user?.userId}`}>
-                          Profile
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link href="/orders">Orders</Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link href="/wishlist">Wishlist</Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        onClick={() =>
-                          signIn("google", { callbackUrl: "/auth/login" })
-                        }
-                      >
-                        Sign Out
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                      </span>
+                    </Link>
+                    <Button
+                      variant="outline"
+                      className="flex items-center gap-2 w-full border-bondi-blue-200 text-bondi-blue-700 hover:bg-bondi-blue-50 hover:text-bondi-blue-700 transition font-medium px-4 py-2"
+                      onClick={() =>
+                        signIn("google", { callbackUrl: "/auth/login" })
+                      }
+                    >
+                      <CircleUserRound />
+                      <span>Sign Out</span>
+                    </Button>
+                  </div>
                 ) : (
                   <Button
                     asChild

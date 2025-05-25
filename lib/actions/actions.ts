@@ -142,7 +142,7 @@ export async function getProducts() {
       .populate({
         path: "categories",
         model: Category,
-        select: "name slug",
+        select: "name slug subcategories",
       })
       .populate({
         path: "subcategories",
@@ -163,7 +163,7 @@ export async function getProduct({ productSlug }: { productSlug: string }) {
       .populate({
         path: "categories",
         model: Category,
-        select: "name slug",
+        select: "name slug subcategories",
       })
       .populate({
         path: "subcategories",

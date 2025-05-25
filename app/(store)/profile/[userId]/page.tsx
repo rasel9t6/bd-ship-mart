@@ -2,6 +2,7 @@
 
 import { useSession } from "next-auth/react";
 import React, { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   Loader,
   Search,
@@ -12,6 +13,7 @@ import {
   CreditCard,
   MessageSquare,
   Truck,
+  Download,
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { OrderType, UserType } from "@/types/next-utils";
@@ -48,6 +50,10 @@ export default function ProfilePage() {
   const { uploadMedia } = useMediaStore();
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [paymentStatusFilter, setPaymentStatusFilter] = useState<string>("all");
+  const searchParams = useSearchParams();
+  const [activeTab, setActiveTab] = useState(
+    searchParams.get("tab") || "personal",
+  );
 
   // Form states
   const [formData, setFormData] = useState({
@@ -229,7 +235,11 @@ export default function ProfilePage() {
         My Profile
       </h1>
 
-      <Tabs defaultValue="personal" className="space-y-8">
+      <Tabs
+        value={activeTab}
+        onValueChange={setActiveTab}
+        className="space-y-8"
+      >
         <div className="flex justify-center">
           <TabsList className="grid w-full max-w-[400px] h-full grid-cols-2 bg-bondi-blue-50/30 p-2 rounded-lg shadow-sm gap-2">
             <TabsTrigger
@@ -729,6 +739,57 @@ export default function ProfilePage() {
                                         Total: {order?.totalAmount?.bdt || 0}{" "}
                                         BDT
                                       </p>
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="mt-2 w-full hover:bg-bondi-blue-50 hover:text-bondi-blue-700 transition-colors duration-200"
+                                        onClick={async () => {
+                                          try {
+                                            const response = await fetch(
+                                              `/api/orders/${order.orderId}/invoice`,
+                                            );
+                                            if (!response.ok) {
+                                              throw new Error(
+                                                "Failed to download invoice",
+                                              );
+                                            }
+
+                                            // Create a blob from the PDF data
+                                            const blob = await response.blob();
+
+                                            // Create a download link
+                                            const url =
+                                              window.URL.createObjectURL(blob);
+                                            const link =
+                                              document.createElement("a");
+                                            link.href = url;
+                                            link.download = `invoice-${order.orderId}.pdf`;
+
+                                            // Trigger download
+                                            document.body.appendChild(link);
+                                            link.click();
+
+                                            // Cleanup
+                                            document.body.removeChild(link);
+                                            window.URL.revokeObjectURL(url);
+
+                                            toast.success(
+                                              "Invoice downloaded successfully",
+                                            );
+                                          } catch (error) {
+                                            console.error(
+                                              "[DOWNLOAD_INVOICE_ERROR]",
+                                              error,
+                                            );
+                                            toast.error(
+                                              "Failed to download invoice",
+                                            );
+                                          }
+                                        }}
+                                      >
+                                        <Download className="mr-2 h-4 w-4" />
+                                        Download Invoice
+                                      </Button>
                                     </div>
                                   </div>
 

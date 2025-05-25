@@ -46,16 +46,21 @@ export async function POST(request: Request) {
       );
     }
 
-    // Ensure amount is set properly
-    if (!amount.bdt || typeof amount.bdt !== "number" || amount.bdt <= 0) {
+    // Ensure amount is a valid number
+    const finalAmount =
+      typeof amount === "number"
+        ? amount
+        : typeof amount === "object" && amount.bdt
+          ? amount.bdt
+          : null;
+
+    if (!finalAmount || typeof finalAmount !== "number" || finalAmount <= 0) {
       return NextResponse.json(
         { message: "Invalid payment amount" },
         { status: 400 },
       );
     }
 
-    // Amount is already calculated with bKash fee on the client side
-    const finalAmount = amount.bdt;
     // Create bKash payment
     const paymentResponse = await createBkashPayment({
       amount: finalAmount,

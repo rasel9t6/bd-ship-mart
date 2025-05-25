@@ -292,12 +292,11 @@ export default function CheckoutPage() {
     }
   });
 
-  // Price calculations
-  const subTotal = allVariants.reduce(
+  // Calculate prices
+  const productPrice = allVariants.reduce(
     (sum, v) => sum + (v.totalPrice?.bdt || 0),
     0,
   );
-  const productPrice = subTotal;
   const eidDiscount = couponApplied ? Math.round(productPrice * 0.05) : 0;
   const finalPrice = productPrice - eidDiscount;
 
@@ -376,7 +375,7 @@ export default function CheckoutPage() {
 
       // Redirect to bKash payment if selected
       if (data.paymentMethod === "bkash") {
-        router.push(`/payment/bkash?orderId=${order._id}`);
+        router.push(`/payment/bkash?orderId=${order.orderId}`);
       } else {
         router.push("/orders");
       }
@@ -825,7 +824,7 @@ export default function CheckoutPage() {
                 <div className="border-t pt-4 mt-4 space-y-2">
                   <div className="flex justify-between text-sm">
                     <span>Subtotal</span>
-                    <span>৳{subTotal}</span>
+                    <span>৳{productPrice}</span>
                   </div>
                   <div className="flex justify-between font-semibold text-base border-t pt-2 mt-2">
                     <span>Total</span>

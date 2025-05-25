@@ -5,16 +5,13 @@ import { Separator } from "@radix-ui/react-separator";
 
 import { Button } from "@/ui/button";
 import { columns } from "./_components/ProductColumns";
+import { getProducts } from "@/lib/actions/actions";
 
 // Prevent static generation
 export const dynamic = "force-dynamic";
 
 export default async function ProductPage() {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/products`, {
-    cache: "no-store",
-  });
-
-  const { products } = await res.json();
+  const products = await getProducts();
   console.log(products);
   return (
     <div className="px-10 py-5">

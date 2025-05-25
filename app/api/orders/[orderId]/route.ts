@@ -8,41 +8,33 @@ import { connectToDB } from "@/lib/dbConnect";
 
 type Params = Promise<{ orderId: string }>;
 export async function GET(
-  _request: NextRequest,
-  { params }: { params: Params },
+  request: Request,
+  { params }: { params: Promise<{ orderId: string }> },
 ) {
+  const { orderId } = await params;
   try {
     const session = await getServerSession(authOptions);
-
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!session?.user) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
     await connectToDB();
 
-    const { orderId } = await params;
-
-    // Try to find by orderId string first
-    let order = await Order.findOne({ orderId })
-      .populate("customerInfo", "name email phone address")
-      .populate("products.product");
-
-    // If not found, try to find by MongoDB _id
-    if (!order && orderId.match(/^[0-9a-fA-F]{24}$/)) {
-      order = await Order.findById(orderId)
-        .populate("customerInfo", "name email phone address")
-        .populate("products.product");
+    const order = await Order.findOne({ orderId });
+    if (!order) {
+      return NextResponse.json({ message: "Order not found" }, { status: 404 });
     }
 
-    if (!order) {
-      return NextResponse.json({ error: "Order not found" }, { status: 404 });
+    // Check if the order belongs to the current user
+    if (order.customerInfo.toString() !== session.user.id) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
     return NextResponse.json(order);
   } catch (error) {
     console.error("Error fetching order:", error);
     return NextResponse.json(
-      { error: "Failed to fetch order" },
+      { message: "Failed to fetch order details" },
       { status: 500 },
     );
   }
