@@ -5,6 +5,27 @@ import { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
 import { useState } from "react";
 
+interface Category {
+  _id: string;
+  name: string;
+  title: string;
+  slug: string;
+  subcategories: Subcategory[];
+}
+
+interface Subcategory {
+  _id: string;
+  name: string;
+  title: string;
+  slug: string;
+  category: string;
+}
+
+interface ExtendedProductType extends ProductType {
+  categories: Category[];
+  subcategories: Subcategory[];
+}
+
 const CurrencySelector = ({
   value,
   onChange,
@@ -81,7 +102,7 @@ const ExpenseDisplay = ({ product }: { product: ProductType }) => {
   );
 };
 
-export const columns: ColumnDef<ProductType>[] = [
+export const columns: ColumnDef<ExtendedProductType>[] = [
   {
     accessorKey: "title",
     header: "Title",
@@ -98,25 +119,22 @@ export const columns: ColumnDef<ProductType>[] = [
     accessorKey: "category",
     header: "Category",
     cell: ({ row }) => {
-      // Use categories and subcategories arrays from ProductType
-      const categories = Array.isArray(row.original.categories)
-        ? row.original.categories
-        : [];
-      const subcategories = Array.isArray(row.original.subcategories)
-        ? row.original.subcategories
-        : [];
-      const category = categories.length > 0 ? categories[0].name : "N/A";
-      const subcategoryNames =
-        subcategories.length > 0
-          ? subcategories.map((sub: { name: string }) => sub.name).join(", ")
-          : "N/A";
+      console.log("Row data:", row.original);
+
+      // Get the first category and subcategory from the arrays
+      const category = row.original.categories?.[0];
+      const subcategory = row.original.subcategories?.[0];
+
+      const categoryName = category?.name || "N/A";
+      const subcategoryName = subcategory?.name || "N/A";
+
       return (
         <div>
           <p>
-            <strong>Category:</strong> {category}
+            <strong>Category:</strong> {categoryName}
           </p>
           <p>
-            <strong>Subcategories:</strong> {subcategoryNames}
+            <strong>Subcategory:</strong> {subcategoryName}
           </p>
         </div>
       );

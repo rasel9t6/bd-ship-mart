@@ -219,16 +219,16 @@ interface ProductType extends Document {
     usd: number;
   };
   currency: "BDT" | "USD";
-  categories?: {
+  categories: Array<{
     _id: string;
     name: string;
     slug: string;
-  }[];
-  subcategories?: {
+  }>;
+  subcategories: Array<{
     _id: string;
     name: string;
     slug: string;
-  }[];
+  }>;
   slug: string;
   priceInBDT: number;
   priceInUSD: number;

@@ -8,6 +8,9 @@ import User from "@/models/User";
 import Subcategory from "@/models/Subcategory";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOption";
+import { FilterQuery } from "mongoose";
+import { ProductType } from "@/types/next-utils";
+import { Document } from "mongoose";
 const apiUrl = process.env.NEXT_PUBLIC_APP_URL || "";
 
 if (!apiUrl) {
@@ -211,11 +214,63 @@ export async function getRelatedProducts({
   productSlug: string;
 }) {
   try {
-    const res = await fetch(`${apiUrl}/products/${productSlug}/related`);
-    const relatedProducts = await res.json();
+    await connectToDB();
+    // Find the current product
+    const product = await Product.findOne({ slug: productSlug }).populate({
+      path: "categories",
+      model: Category,
+      select: "name slug subcategories",
+    });
+
+    if (!product) {
+      return [];
+    }
+
+    // Create a query to find related products
+    const query: FilterQuery<ProductType> = {
+      _id: { $ne: product._id },
+    };
+
+    // If product has categories, find products with the same categories
+    if (product.categories && product.categories.length > 0) {
+      query.categories = {
+        $in: product.categories.map((cat: Document) => cat._id),
+      };
+    }
+    // If there's no category, try to match by tags
+    else if (product.tags && product.tags.length > 0) {
+      query.tags = { $in: product.tags };
+    }
+    // As a last resort, match by price range
+    else if (product.price && product.price.bdt) {
+      const price = product.price.bdt;
+      const minPrice = price * 0.7; // 30% lower
+      const maxPrice = price * 1.3; // 30% higher
+      query["price.bdt"] = {
+        $gte: minPrice,
+        $lte: maxPrice,
+      };
+    }
+
+    // Get related products, limit to 8
+    const relatedProducts = await Product.find(query)
+      .populate({
+        path: "categories",
+        model: Category,
+        select: "name slug subcategories",
+      })
+      .populate({
+        path: "subcategories",
+        model: Subcategory,
+        select: "name slug",
+      })
+      .limit(8)
+      .lean();
+
     return JSON.parse(JSON.stringify(relatedProducts));
   } catch (error) {
-    console.error(`${error}`);
+    console.error("Error fetching related products:", error);
+    return [];
   }
 }
 

@@ -141,23 +141,23 @@ const ProductSchema = new Schema<IProduct>(
       trim: true,
       maxLength: [2000, "Description cannot exceed 2000 characters"],
     },
-    media: [MediaItemSchema], // Updated to use MediaItemSchema
+    media: [MediaItemSchema],
     categories: [
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Category",
         required: [true, "At least one category is required"],
-        index: true,
       },
     ],
-    subcategories: {
-      type: [mongoose.Schema.Types.ObjectId],
-      ref: "Subcategory",
-      default: [],
-    },
+    subcategories: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Subcategory",
+      },
+    ],
     tags: [String],
     sizes: [String],
-    colors: [MediaItemSchema], // Updated to use MediaItemSchema
+    colors: [MediaItemSchema],
     minimumOrderQuantity: {
       type: Number,
       required: true,
