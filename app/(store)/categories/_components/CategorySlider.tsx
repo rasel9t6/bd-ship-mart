@@ -53,7 +53,7 @@ const CategorySlider: React.FC<CategorySliderProps> = ({
 
       setItemsPerView(calculatedItems);
     }
-  }, [itemWidth, itemGap, sortedItems.length]);
+  }, [itemWidth, itemGap]);
 
   useEffect(() => {
     updateItemsPerView();
