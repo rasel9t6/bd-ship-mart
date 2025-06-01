@@ -44,8 +44,7 @@ export default function HeartFavorite({
         updateSignedInUser(data);
       }
       toast.success(isWishlist ? "Removed from wishlist" : "Added to wishlist");
-    } catch (err) {
-      console.error("Error updating wishlist:", err);
+    } catch {
       toast.error("Failed to update wishlist");
     }
   };
@@ -54,7 +53,7 @@ export default function HeartFavorite({
     <div>
       <button
         onClick={handleWishlist}
-        className="p-1.5 rounded-full bg-white shadow-sm hover:bg-gray-100"
+        className="p-1.5 rounded-full bg-white shadow-sm hover:bg-bondi-blue/20"
       >
         <FaHeart
           className={`h-4 w-4 ${

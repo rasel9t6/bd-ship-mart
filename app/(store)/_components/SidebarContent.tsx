@@ -35,7 +35,7 @@ export default function SidebarContent({
         return (
           <div
             key={category._id}
-            className="flex flex-col mb-1"
+            className="flex flex-col"
             onMouseEnter={() => handleMouseEnter(category._id)}
             onMouseLeave={handleMouseLeave}
           >

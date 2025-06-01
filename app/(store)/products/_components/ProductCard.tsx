@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import HeartFavorite from "./HeartFavorite";
 import { ProductType, UserType } from "@/types/next-utils";
-import { useSession } from "next-auth/react";
+import { Badge } from "@/ui/badge";
 
 interface ProductCardProps {
   product: ProductType;
@@ -17,8 +17,6 @@ export default function ProductCard({
   updateSignedInUser,
   isInWishlist = false,
 }: ProductCardProps) {
-  const { data: session } = useSession();
-
   const handleWishlistClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -42,16 +40,19 @@ export default function ProductCard({
       </div>
 
       {/* 📌 Product Info */}
-      <div className="flex flex-col gap-1">
-        <p className="line-clamp-2 text-sm font-medium text-gray-800 group-hover:text-bondi-blue">
+      <div className="flex flex-col">
+        <p className="line-clamp-2 text-sm font-semibold text-gray-800 group-hover:text-bondi-blue mb-1">
           {product.title}
         </p>
-        <p className="text-xs text-gray-500">
+        <Badge
+          variant="secondary"
+          className="w-fit text-xs bg-bondi-blue/10 text-bondi-blue mb-1"
+        >
           {product.categories?.[0]?.name ||
             (product.subcategories && product.subcategories.length > 0
               ? product.subcategories[0].name
               : "Uncategorized")}
-        </p>
+        </Badge>
       </div>
 
       {/* 💰 Price & Wishlist */}
@@ -59,15 +60,13 @@ export default function ProductCard({
         <p className="text-sm font-bold text-blaze-orange">
           ৳{product.price?.bdt}
         </p>
-        {session?.user && (
-          <div onClick={handleWishlistClick}>
-            <HeartFavorite
-              product={product}
-              updateSignedInUser={updateSignedInUser}
-              initialIsWishlist={isInWishlist}
-            />
-          </div>
-        )}
+        <div onClick={handleWishlistClick}>
+          <HeartFavorite
+            product={product}
+            updateSignedInUser={updateSignedInUser}
+            initialIsWishlist={isInWishlist}
+          />
+        </div>
       </div>
     </Link>
   );

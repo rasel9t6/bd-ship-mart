@@ -44,6 +44,7 @@ export default function DataTable<TData, TValue>({
 }: DataTableProps<TData, TValue>) {
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [pageSize, setPageSize] = useState(10);
+  const [pageIndex, setPageIndex] = useState(0);
 
   const table = useReactTable({
     data,
@@ -56,8 +57,18 @@ export default function DataTable<TData, TValue>({
       columnFilters,
       pagination: {
         pageSize,
-        pageIndex: 0,
+        pageIndex,
       },
+    },
+    onPaginationChange: (updater) => {
+      if (typeof updater === "function") {
+        setPageIndex((old) => {
+          const newState = updater({ pageIndex: old, pageSize });
+          return newState.pageIndex;
+        });
+      } else {
+        setPageIndex(updater.pageIndex);
+      }
     },
   });
 
