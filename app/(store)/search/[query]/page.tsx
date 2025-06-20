@@ -1,15 +1,11 @@
-import { Suspense } from "react";
-import { notFound } from "next/navigation";
-import { getPopularSearches, getTrendingSearches } from "@/lib/actions/actions";
-import SearchResults from "./_components/SearchResults";
-import SearchSidebar from "./_components/SearchSidebar";
-import {
-  generateSearchMetadata,
-  generateSearchBreadcrumbs,
-  generateBreadcrumbStructuredData,
-} from "@/lib/seo";
-import Breadcrumb from "@/ui/custom/Breadcrumb";
-import StructuredData from "@/ui/custom/StructuredData";
+import { Suspense } from 'react';
+import { notFound } from 'next/navigation';
+import { getPopularSearches, getTrendingSearches } from '@/lib/actions/actions';
+import SearchResults from './_components/SearchResults';
+import SearchSidebar from './_components/SearchSidebar';
+import { generateSearchMetadata, generateSearchBreadcrumbs } from '@/lib/seo';
+import Breadcrumb from '@/ui/custom/Breadcrumb';
+import BreadcrumbJsonLd from '@/components/seo/BreadcrumbJsonLd';
 
 interface SearchPageProps {
   params: Promise<{ query: string }>;
@@ -27,8 +23,8 @@ export async function generateMetadata({
 
   if (!decodedQuery.trim()) {
     return {
-      title: "Search",
-      description: "Search our collection of shipping and logistics products.",
+      title: 'Search',
+      description: 'Search our collection of shipping and logistics products.',
     };
   }
 
@@ -58,18 +54,18 @@ export default async function SearchPage({
   return (
     <>
       {/* Structured Data for Breadcrumbs */}
-      <StructuredData data={generateBreadcrumbStructuredData(breadcrumbs)} />
+      <BreadcrumbJsonLd items={breadcrumbs} />
 
-      <div className="min-h-screen bg-gray-50">
-        <div className="container mx-auto px-4 py-6">
+      <div className='min-h-screen bg-gray-50'>
+        <div className='container mx-auto px-4 py-6'>
           {/* Breadcrumbs */}
-          <div className="mb-4">
+          <div className='mb-4'>
             <Breadcrumb items={breadcrumbs} />
           </div>
 
-          <div className="flex flex-col lg:flex-row gap-6 mt-6">
+          <div className='flex flex-col lg:flex-row gap-6 mt-6'>
             {/* Sidebar */}
-            <div className="lg:w-1/4">
+            <div className='lg:w-1/4'>
               <SearchSidebar
                 query={decodedQuery}
                 searchParams={resolvedSearchParams}
@@ -79,7 +75,7 @@ export default async function SearchPage({
             </div>
 
             {/* Main Content */}
-            <div className="lg:w-3/4">
+            <div className='lg:w-3/4'>
               <Suspense fallback={<div>Loading search results...</div>}>
                 <SearchResults
                   query={decodedQuery}
@@ -94,4 +90,4 @@ export default async function SearchPage({
   );
 }
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
