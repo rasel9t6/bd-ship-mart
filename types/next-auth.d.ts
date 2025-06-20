@@ -11,6 +11,7 @@ declare module "next-auth" {
       userId: string;
       status: string;
       customerType: string;
+      wishlist?: string[];
     } & DefaultSession["user"];
   }
 
@@ -22,6 +23,7 @@ declare module "next-auth" {
     userId: string;
     status: string;
     customerType: string;
+    wishlist?: string[];
   }
 }
 
@@ -33,5 +35,6 @@ declare module "next-auth/jwt" {
     userId: string;
     status: string;
     customerType: string;
+    wishlist?: string[];
   }
 }

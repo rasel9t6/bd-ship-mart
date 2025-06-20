@@ -50,17 +50,15 @@ export default function HeartFavorite({
   };
 
   return (
-    <div>
-      <button
-        onClick={handleWishlist}
-        className="p-1.5 rounded-full bg-white shadow-sm hover:bg-bondi-blue/20"
-      >
-        <FaHeart
-          className={`h-4 w-4 ${
-            isWishlist ? "text-red-500 fill-red-500" : "text-gray-500"
-          }`}
-        />
-      </button>
-    </div>
+    <button
+      onClick={handleWishlist}
+      className="h-9 w-9 rounded-full bg-white/90 text-gray-700 shadow-sm hover:bg-bondi-blue hover:text-white flex items-center justify-center"
+    >
+      <FaHeart
+        className={`h-5 w-5 transition-colors ${
+          isWishlist ? "text-red-500 fill-red-500" : ""
+        }`}
+      />
+    </button>
   );
 }

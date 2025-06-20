@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { ChevronRight, Home } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { BreadcrumbItem } from '@/lib/seo';
+import Link from "next/link";
+import { ChevronRight, Home } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { BreadcrumbItem } from "@/lib/seo";
 
 interface BreadcrumbProps {
   items: BreadcrumbItem[];
@@ -15,29 +15,23 @@ export default function Breadcrumb({ items, className }: BreadcrumbProps) {
 
   return (
     <nav
-      aria-label='Breadcrumb'
+      aria-label="Breadcrumb"
       className={cn(
-        'flex items-center space-x-1 text-sm text-muted-foreground',
-        className
+        "flex items-center space-x-1 text-sm text-muted-foreground",
+        className,
       )}
     >
-      <ol className='flex items-center space-x-1'>
+      <ol className="flex items-center space-x-1">
         {items.map((item, index) => (
-          <li
-            key={item.href}
-            className='flex items-center'
-          >
+          <li key={item.href} className="flex items-center">
             {index > 0 && (
-              <ChevronRight className='mx-1 h-4 w-4 text-muted-foreground/50' />
+              <ChevronRight className="mx-1 h-4 w-4 text-muted-foreground/50" />
             )}
 
             {item.current ? (
-              <span
-                className='font-medium text-foreground'
-                aria-current='page'
-              >
-                {item.name === 'Home' ? (
-                  <Home className='h-4 w-4' />
+              <span className="font-medium text-foreground" aria-current="page">
+                {item.name === "Home" ? (
+                  <Home className="h-4 w-4" />
                 ) : (
                   item.name
                 )}
@@ -45,10 +39,10 @@ export default function Breadcrumb({ items, className }: BreadcrumbProps) {
             ) : (
               <Link
                 href={item.href}
-                className='hover:text-foreground transition-colors duration-200 flex items-center gap-1'
+                className="hover:text-foreground transition-colors duration-200 flex items-center gap-1"
               >
-                {item.name === 'Home' ? (
-                  <Home className='h-4 w-4' />
+                {item.name === "Home" ? (
+                  <Home className="h-4 w-4" />
                 ) : (
                   item.name
                 )}

@@ -103,15 +103,15 @@ Query Parameters:
 
 ```javascript
 // Product indexes for fast queries
-db.products.createIndex({ 'categories.slug': 1 });
-db.products.createIndex({ 'subcategories.slug': 1 });
+db.products.createIndex({ "categories.slug": 1 });
+db.products.createIndex({ "subcategories.slug": 1 });
 db.products.createIndex({ price: 1 });
 db.products.createIndex({ featured: 1 });
 db.products.createIndex({ createdAt: -1 });
 db.products.createIndex({
-  title: 'text',
-  description: 'text',
-  tags: 'text',
+  title: "text",
+  description: "text",
+  tags: "text",
 });
 
 // Category indexes
@@ -203,12 +203,12 @@ const cachedProducts = await redis.get(cacheKey);
 
 ```typescript
 export const metadata: Metadata = {
-  title: 'Products - K2B EXPRESS',
-  description: 'Browse our complete collection...',
-  keywords: ['products', 'shipping products'],
+  title: "Products - K2B EXPRESS",
+  description: "Browse our complete collection...",
+  keywords: ["products", "shipping products"],
   openGraph: {
-    title: 'Products - K2B EXPRESS',
-    description: 'Browse our complete collection...',
+    title: "Products - K2B EXPRESS",
+    description: "Browse our complete collection...",
   },
 };
 ```
@@ -217,13 +217,13 @@ export const metadata: Metadata = {
 
 ```typescript
 const structuredData = {
-  '@context': 'https://schema.org',
-  '@type': 'ItemList',
+  "@context": "https://schema.org",
+  "@type": "ItemList",
   itemListElement: products.map((product, index) => ({
-    '@type': 'ListItem',
+    "@type": "ListItem",
     position: index + 1,
     item: {
-      '@type': 'Product',
+      "@type": "Product",
       name: product.title,
       price: product.price.bdt,
       url: `/products/${product.slug}`,
@@ -251,7 +251,7 @@ await logSearchAnalytics({
 ```typescript
 // Monitor page load times
 const pageLoadTime = performance.now() - navigationStart;
-analytics.track('page_load_time', { page: 'products', time: pageLoadTime });
+analytics.track("page_load_time", { page: "products", time: pageLoadTime });
 ```
 
 ## Future Enhancements
@@ -314,11 +314,11 @@ describe('Products Page', () => {
 module.exports = {
   ci: {
     collect: {
-      url: ['http://localhost:3000/products'],
+      url: ["http://localhost:3000/products"],
     },
     assert: {
       assertions: {
-        'categories:performance': ['error', { minScore: 0.9 }],
+        "categories:performance": ["error", { minScore: 0.9 }],
       },
     },
   },

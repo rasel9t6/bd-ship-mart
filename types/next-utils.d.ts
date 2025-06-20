@@ -210,6 +210,7 @@ interface CustomerType extends Document {
 }
 
 interface ProductType extends Document {
+  _id: string | Types.ObjectId;
   title: string;
   sku: string;
   description?: string;

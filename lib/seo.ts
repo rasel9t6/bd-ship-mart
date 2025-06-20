@@ -1,25 +1,25 @@
-import { Metadata } from 'next';
-import { ProductType, CategoryType } from '@/types/next-utils';
+import { Metadata } from "next";
+import { ProductType, CategoryType } from "@/types/next-utils";
 
 // Base site configuration
 export const siteConfig = {
-  name: 'K2B EXPRESS',
+  name: "K2B EXPRESS",
   description:
-    'Premium e-commerce platform for shipping and logistics products in Bangladesh',
-  url: 'https://k2bexpress.com',
-  ogImage: '/og-image.jpg',
-  twitterHandle: '@k2bexpress',
+    "Premium e-commerce platform for shipping and logistics products in Bangladesh",
+  url: "https://k2bexpress.com",
+  ogImage: "/og-image.jpg",
+  twitterHandle: "@k2bexpress",
   keywords: [
-    'shipping',
-    'logistics',
-    'e-commerce',
-    'bangladesh',
-    'import',
-    'export',
+    "shipping",
+    "logistics",
+    "e-commerce",
+    "bangladesh",
+    "import",
+    "export",
   ],
-  author: 'K2B EXPRESS',
-  creator: 'K2B EXPRESS',
-  publisher: 'K2B EXPRESS',
+  author: "K2B EXPRESS",
+  creator: "K2B EXPRESS",
+  publisher: "K2B EXPRESS",
 };
 
 // Generate base metadata
@@ -36,11 +36,11 @@ export function generateBaseMetadata(): Metadata {
     publisher: siteConfig.publisher,
     metadataBase: new URL(siteConfig.url),
     alternates: {
-      canonical: '/',
+      canonical: "/",
     },
     openGraph: {
-      type: 'website',
-      locale: 'en_US',
+      type: "website",
+      locale: "en_US",
       url: siteConfig.url,
       title: siteConfig.name,
       description: siteConfig.description,
@@ -55,7 +55,7 @@ export function generateBaseMetadata(): Metadata {
       ],
     },
     twitter: {
-      card: 'summary_large_image',
+      card: "summary_large_image",
       title: siteConfig.name,
       description: siteConfig.description,
       images: [siteConfig.ogImage],
@@ -67,15 +67,15 @@ export function generateBaseMetadata(): Metadata {
       googleBot: {
         index: true,
         follow: true,
-        'max-video-preview': -1,
-        'max-image-preview': 'large',
-        'max-snippet': -1,
+        "max-video-preview": -1,
+        "max-image-preview": "large",
+        "max-snippet": -1,
       },
     },
     verification: {
-      google: 'your-google-verification-code',
-      yandex: 'your-yandex-verification-code',
-      yahoo: 'your-yahoo-verification-code',
+      google: "your-google-verification-code",
+      yandex: "your-yandex-verification-code",
+      yahoo: "your-yahoo-verification-code",
     },
   };
 }
@@ -94,15 +94,15 @@ export function generateProductMetadata(product: ProductType): Metadata {
       product.title,
       ...(product.tags || []),
       ...(product.categories?.map((cat) => cat.name) || []),
-      'buy online',
-      'shipping',
-      'bangladesh',
+      "buy online",
+      "shipping",
+      "bangladesh",
     ],
     alternates: {
       canonical: productUrl,
     },
     openGraph: {
-      type: 'website',
+      type: "website",
       url: productUrl,
       title: product.title,
       description:
@@ -118,17 +118,17 @@ export function generateProductMetadata(product: ProductType): Metadata {
       siteName: siteConfig.name,
     },
     twitter: {
-      card: 'summary_large_image',
+      card: "summary_large_image",
       title: product.title,
       description:
         product.description || `Buy ${product.title} at the best price.`,
       images: [productImage],
     },
     other: {
-      'product:price:amount': product.price?.bdt?.toString() || '0',
-      'product:price:currency': 'BDT',
-      'product:availability': 'in stock',
-      'product:condition': 'new',
+      "product:price:amount": product.price?.bdt?.toString() || "0",
+      "product:price:currency": "BDT",
+      "product:availability": "in stock",
+      "product:condition": "new",
     },
   };
 }
@@ -146,16 +146,16 @@ export function generateCategoryMetadata(category: CategoryType): Metadata {
     keywords: [
       category.title,
       category.name,
-      'collection',
-      'products',
-      'shipping',
-      'bangladesh',
+      "collection",
+      "products",
+      "shipping",
+      "bangladesh",
     ],
     alternates: {
       canonical: categoryUrl,
     },
     openGraph: {
-      type: 'website',
+      type: "website",
       url: categoryUrl,
       title: `${category.title} Collection`,
       description:
@@ -171,7 +171,7 @@ export function generateCategoryMetadata(category: CategoryType): Metadata {
       siteName: siteConfig.name,
     },
     twitter: {
-      card: 'summary_large_image',
+      card: "summary_large_image",
       title: `${category.title} Collection`,
       description:
         category.description || `Explore our ${category.title} collection.`,
@@ -183,14 +183,14 @@ export function generateCategoryMetadata(category: CategoryType): Metadata {
 // Generate search metadata
 export function generateSearchMetadata(
   query: string,
-  resultCount: number
+  resultCount: number,
 ): Metadata {
   const searchUrl = `${siteConfig.url}/search/${encodeURIComponent(query)}`;
 
   return {
     title: `Search Results for "${query}"`,
     description: `Found ${resultCount} results for "${query}". Browse our collection of shipping and logistics products.`,
-    keywords: [query, 'search', 'products', 'shipping', 'bangladesh'],
+    keywords: [query, "search", "products", "shipping", "bangladesh"],
     alternates: {
       canonical: searchUrl,
     },
@@ -199,7 +199,7 @@ export function generateSearchMetadata(
       follow: true,
     },
     openGraph: {
-      type: 'website',
+      type: "website",
       url: searchUrl,
       title: `Search Results for "${query}"`,
       description: `Found ${resultCount} results for "${query}".`,
@@ -217,11 +217,11 @@ export interface BreadcrumbItem {
 
 // Generate breadcrumbs for products
 export function generateProductBreadcrumbs(
-  product: ProductType
+  product: ProductType,
 ): BreadcrumbItem[] {
   const breadcrumbs: BreadcrumbItem[] = [
-    { name: 'Home', href: '/' },
-    { name: 'Products', href: '/products' },
+    { name: "Home", href: "/" },
+    { name: "Products", href: "/products" },
   ];
 
   // Add category breadcrumbs if available
@@ -245,20 +245,20 @@ export function generateProductBreadcrumbs(
 
 // Generate breadcrumbs for categories
 export function generateCategoryBreadcrumbs(
-  categoryPath: string[]
+  categoryPath: string[],
 ): BreadcrumbItem[] {
   const breadcrumbs: BreadcrumbItem[] = [
-    { name: 'Home', href: '/' },
-    { name: 'Categories', href: '/categories' },
+    { name: "Home", href: "/" },
+    { name: "Categories", href: "/categories" },
   ];
 
   // Build category path
-  let currentPath = '';
+  let currentPath = "";
   categoryPath.forEach((segment, index) => {
     currentPath += `/${segment}`;
     breadcrumbs.push({
       name:
-        segment.charAt(0).toUpperCase() + segment.slice(1).replace(/-/g, ' '),
+        segment.charAt(0).toUpperCase() + segment.slice(1).replace(/-/g, " "),
       href: `/categories${currentPath}`,
       current: index === categoryPath.length - 1,
     });
@@ -270,8 +270,8 @@ export function generateCategoryBreadcrumbs(
 // Generate breadcrumbs for search
 export function generateSearchBreadcrumbs(query: string): BreadcrumbItem[] {
   const breadcrumbs: BreadcrumbItem[] = [
-    { name: 'Home', href: '/' },
-    { name: 'Search', href: '/search' },
+    { name: "Home", href: "/" },
+    { name: "Search", href: "/search" },
     {
       name: `"${query}"`,
       href: `/search/${encodeURIComponent(query)}`,
@@ -285,31 +285,31 @@ export function generateSearchBreadcrumbs(query: string): BreadcrumbItem[] {
 // Generate structured data for products
 export function generateProductStructuredData(product: ProductType) {
   const structuredData = {
-    '@context': 'https://schema.org',
-    '@type': 'Product',
+    "@context": "https://schema.org",
+    "@type": "Product",
     name: product.title,
     description: product.description,
     sku: product.sku,
     brand: {
-      '@type': 'Brand',
+      "@type": "Brand",
       name: siteConfig.name,
     },
     category: product.categories?.[0]?.name,
     image: product.media?.map((item) => item.url) || [],
     offers: {
-      '@type': 'Offer',
+      "@type": "Offer",
       price: product.price?.bdt || 0,
-      priceCurrency: 'BDT',
-      availability: 'https://schema.org/InStock',
+      priceCurrency: "BDT",
+      availability: "https://schema.org/InStock",
       seller: {
-        '@type': 'Organization',
+        "@type": "Organization",
         name: siteConfig.name,
       },
     },
     aggregateRating: {
-      '@type': 'AggregateRating',
-      ratingValue: '4.5',
-      reviewCount: '100',
+      "@type": "AggregateRating",
+      ratingValue: "4.5",
+      reviewCount: "100",
     },
   };
 
@@ -319,22 +319,22 @@ export function generateProductStructuredData(product: ProductType) {
 // Generate structured data for categories
 export function generateCategoryStructuredData(category: CategoryType) {
   const structuredData = {
-    '@context': 'https://schema.org',
-    '@type': 'CollectionPage',
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
     name: category.title,
     description: category.description,
     url: `${siteConfig.url}/categories/${category.slug}`,
     image: category.thumbnail,
     mainEntity: {
-      '@type': 'ItemList',
+      "@type": "ItemList",
       itemListElement:
         category.products?.map((product, index) => ({
-          '@type': 'ListItem',
+          "@type": "ListItem",
           position: index + 1,
           item: {
-            '@type': 'Product',
-            name: typeof product === 'string' ? product : 'Product',
-            url: `${siteConfig.url}/products/${typeof product === 'string' ? product : 'product'}`,
+            "@type": "Product",
+            name: typeof product === "string" ? product : "Product",
+            url: `${siteConfig.url}/products/${typeof product === "string" ? product : "product"}`,
           },
         })) || [],
     },
@@ -345,13 +345,13 @@ export function generateCategoryStructuredData(category: CategoryType) {
 
 // Generate breadcrumb structured data
 export function generateBreadcrumbStructuredData(
-  breadcrumbs: BreadcrumbItem[]
+  breadcrumbs: BreadcrumbItem[],
 ) {
   const structuredData = {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
     itemListElement: breadcrumbs.map((item, index) => ({
-      '@type': 'ListItem',
+      "@type": "ListItem",
       position: index + 1,
       name: item.name,
       item: `${siteConfig.url}${item.href}`,
@@ -364,27 +364,27 @@ export function generateBreadcrumbStructuredData(
 // Generate organization structured data
 export function generateOrganizationStructuredData() {
   return {
-    '@context': 'https://schema.org',
-    '@type': 'Organization',
+    "@context": "https://schema.org",
+    "@type": "Organization",
     name: siteConfig.name,
     url: siteConfig.url,
     logo: `${siteConfig.url}/k2b-logo-2.png`,
     description: siteConfig.description,
     address: {
-      '@type': 'PostalAddress',
-      addressCountry: 'BD',
-      addressLocality: 'Dhaka',
-      addressRegion: 'Dhaka',
+      "@type": "PostalAddress",
+      addressCountry: "BD",
+      addressLocality: "Dhaka",
+      addressRegion: "Dhaka",
     },
     contactPoint: {
-      '@type': 'ContactPoint',
-      telephone: '+880-XXX-XXX-XXXX',
-      contactType: 'customer service',
+      "@type": "ContactPoint",
+      telephone: "+880-XXX-XXX-XXXX",
+      contactType: "customer service",
     },
     sameAs: [
-      'https://facebook.com/k2bexpress',
-      'https://twitter.com/k2bexpress',
-      'https://linkedin.com/company/k2bexpress',
+      "https://facebook.com/k2bexpress",
+      "https://twitter.com/k2bexpress",
+      "https://linkedin.com/company/k2bexpress",
     ],
   };
 }
@@ -392,18 +392,18 @@ export function generateOrganizationStructuredData() {
 // Generate website structured data
 export function generateWebsiteStructuredData() {
   return {
-    '@context': 'https://schema.org',
-    '@type': 'WebSite',
+    "@context": "https://schema.org",
+    "@type": "WebSite",
     name: siteConfig.name,
     url: siteConfig.url,
     description: siteConfig.description,
     potentialAction: {
-      '@type': 'SearchAction',
+      "@type": "SearchAction",
       target: {
-        '@type': 'EntryPoint',
+        "@type": "EntryPoint",
         urlTemplate: `${siteConfig.url}/search/{search_term_string}`,
       },
-      'query-input': 'required name=search_term_string',
+      "query-input": "required name=search_term_string",
     },
   };
 }

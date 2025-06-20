@@ -321,10 +321,10 @@ export const useProductForm = ({
     if (collections.length > 0) {
       // Validate category against available collections
       const isValidCategory = collections.some(
-        (collection) => collection._id.toString() === formData.category.name,
+        (collection) => collection.slug === formData.category.name,
       );
       if (!isValidCategory && formData.category.name) {
-        console.warn("Selected category is not in available collections");
+        console.error("Selected category is not in available collections");
       }
     }
   }, [collections, formData.category.name]);

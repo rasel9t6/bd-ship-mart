@@ -236,6 +236,8 @@ const config: Config = {
         ],
       },
       fontFamily: {
+        sans: ["var(--font-inter)", "sans-serif"],
+        heading: ["var(--font-montserrat)", "sans-serif"],
         Noto_Sans_Bengali: ["var(--font-notosansbangla)", "sans-serif"],
       },
       backgroundImage: {

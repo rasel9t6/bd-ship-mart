@@ -1,15 +1,15 @@
-'use client';
+"use client";
 
-import { useSession, signIn } from 'next-auth/react';
-import { Menu, CircleUserRound } from 'lucide-react';
-import Image from 'next/image';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { useState, useEffect } from 'react';
-import { FaHeart } from 'react-icons/fa6';
-import { HiShoppingBag, HiShoppingCart } from 'react-icons/hi2';
-import { Session } from 'next-auth';
-import { Button } from '@/ui/button';
+import { useSession, signIn } from "next-auth/react";
+import { Menu, CircleUserRound } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useState, useEffect } from "react";
+import { FaHeart } from "react-icons/fa6";
+import { HiShoppingBag, HiShoppingCart } from "react-icons/hi2";
+import { Session } from "next-auth";
+import { Button } from "@/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,25 +17,25 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/ui/dropdown-menu';
-import { Avatar, AvatarFallback, AvatarImage } from '@/ui/avatar';
+} from "@/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/ui/avatar";
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from '@/ui/sheet';
-import useCart from '@/hooks/useCart';
-import SearchBar from './SearchBar';
+} from "@/ui/sheet";
+import useCart from "@/hooks/useCart";
+import SearchBar from "./SearchBar";
 
 // Navigation links data
 const NAV_LINKS = [
-  { path: '/wishlist', icon: <FaHeart size={24} />, label: 'Wishlist' },
+  { path: "/wishlist", icon: <FaHeart size={24} />, label: "Wishlist" },
   {
     path: (userId: string) => `/profile/${userId}?tab=orders`,
     icon: <HiShoppingBag size={24} />,
-    label: 'Orders',
+    label: "Orders",
   },
 ];
 
@@ -43,7 +43,7 @@ const NavLinks = ({
   pathname,
   session,
   onClick,
-  className = '',
+  className = "",
   mobile = false,
 }: {
   pathname: string;
@@ -53,23 +53,23 @@ const NavLinks = ({
   mobile?: boolean;
 }) => (
   <nav
-    className={`flex flex-col gap-4 ${!mobile ? 'lg:flex-row lg:items-center lg:gap-2' : ''} ${className}`.trim()}
+    className={`flex flex-col gap-4 ${!mobile ? "lg:flex-row lg:items-center lg:gap-2" : ""} ${className}`.trim()}
   >
     {NAV_LINKS.map(({ path, icon, label }) => (
       <Link
-        key={typeof path === 'function' ? 'orders' : path}
+        key={typeof path === "function" ? "orders" : path}
         href={
-          typeof path === 'function' ? path(session?.user?.userId || '') : path
+          typeof path === "function" ? path(session?.user?.userId || "") : path
         }
         className={
           mobile
             ? `flex items-center gap-2 text-bondi-blue-600 font-medium rounded-md px-2 py-2 hover:text-bondi-blue-400 transition` // mobile style
-            : `flex items-center gap-2 px-2 py-1 rounded-md transition-all duration-200 text-white/80 hover:text-white hover:bg-white/10 ${pathname === (typeof path === 'function' ? path(session?.user?.userId || '') : path) ? 'text-white font-semibold underline underline-offset-4' : ''}` // desktop style
+            : `flex items-center gap-2 px-2 py-1 rounded-md transition-all duration-200 text-white/80 hover:text-white hover:bg-white/10 ${pathname === (typeof path === "function" ? path(session?.user?.userId || "") : path) ? "text-white font-semibold underline underline-offset-4" : ""}` // desktop style
         }
         onClick={onClick}
       >
         {icon}
-        <span className='lg:hidden'>{label}</span>
+        <span className="lg:hidden">{label}</span>
       </Link>
     ))}
   </nav>
@@ -86,53 +86,50 @@ export default function Navbar() {
   }, []);
 
   return (
-    <header className='fixed top-0 z-50 w-full bg-bondi-blue-500 shadow-md'>
-      <div className='grid grid-cols-3 items-center px-3 py-2 sm:px-6 sm:py-3 lg:px-8'>
+    <header className="fixed top-0 z-50 w-full bg-bondi-blue-500 shadow-md">
+      <div className="grid grid-cols-3 items-center px-3 py-2 sm:px-6 sm:py-3 lg:px-8">
         {/* Logo (left aligned) */}
-        <div className='flex items-center justify-self-start'>
-          <Link
-            href='/'
-            className='flex items-center gap-2 min-w-[60px]'
-          >
+        <div className="flex items-center justify-self-start">
+          <Link href="/" className="flex items-center gap-2 min-w-[60px]">
             <Image
-              src='/k2b-logo-2.png'
+              src="/k2b-logo-2.png"
               width={48}
               height={48}
-              alt='Logo'
-              className='w-10 h-10 sm:w-[60px] sm:h-[60px] lg:w-[75px] lg:h-[75px] object-contain'
+              alt="Logo"
+              className="w-10 h-10 sm:w-[60px] sm:h-[60px] lg:w-[75px] lg:h-[75px] object-contain"
             />
-            <span className='hidden sm:inline text-white font-semibold text-xs sm:text-base'>
+            <span className="hidden sm:inline text-white font-semibold text-xs sm:text-base">
               K2B EXPRESS
             </span>
           </Link>
         </div>
 
         {/* Search bar: always centered in grid */}
-        <div className='flex items-center justify-center'>
-          <div className='w-full max-w-full lg:hidden'>
-            <SearchBar placeholder='Search products...' />
+        <div className="flex items-center justify-center">
+          <div className="w-full max-w-full lg:hidden">
+            <SearchBar placeholder="Search products..." />
           </div>
-          <div className='hidden lg:block w-full max-w-xl mx-auto'>
-            <SearchBar placeholder='Search products...' />
+          <div className="hidden lg:block w-full max-w-xl mx-auto">
+            <SearchBar placeholder="Search products..." />
           </div>
         </div>
 
         {/* Hamburger menu or nav (right aligned) */}
-        <div className='flex items-center justify-self-end'>
+        <div className="flex items-center justify-self-end">
           {/* Desktop nav & icons */}
-          <div className='hidden lg:flex items-center gap-4'>
+          <div className="hidden lg:flex items-center gap-4">
             <NavLinks
               pathname={pathname}
               session={session}
-              className='space-x-2'
+              className="space-x-2"
             />
-            <div className='relative'>
+            <div className="relative">
               <Link
-                title='Cart'
-                href='/cart'
-                className='flex items-center rounded-md px-2 py-2 font-medium text-white hover:bg-bondi-blue-400/20 transition'
+                title="Cart"
+                href="/cart"
+                className="flex items-center rounded-md px-2 py-2 font-medium text-white hover:bg-bondi-blue-400/20 transition"
               >
-                <HiShoppingCart className='size-6' />
+                <HiShoppingCart className="size-6" />
               </Link>
               {mounted &&
                 cart.products.reduce(
@@ -141,20 +138,20 @@ export default function Navbar() {
                     p.variants.reduce(
                       (vSum: number, v: { quantity: number }) =>
                         vSum + v.quantity,
-                      0
+                      0,
                     ),
-                  0
+                  0,
                 ) > 0 && (
-                  <span className='absolute -top-2 -right-2 flex items-center justify-center rounded-full bg-blaze-orange-500 text-white text-center text-xs font-bold w-5 h-5'>
+                  <span className="absolute -top-2 -right-2 flex items-center justify-center rounded-full bg-blaze-orange-500 text-white text-center text-xs font-bold w-5 h-5">
                     {cart.products.reduce(
                       (sum: number, p: { variants: { quantity: number }[] }) =>
                         sum +
                         p.variants.reduce(
                           (vSum: number, v: { quantity: number }) =>
                             vSum + v.quantity,
-                          0
+                          0,
                         ),
-                      0
+                      0,
                     )}
                   </span>
                 )}
@@ -162,11 +159,7 @@ export default function Navbar() {
             {session ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button
-                    variant='ghost'
-                    size='icon'
-                    className='p-0'
-                  >
+                  <Button variant="ghost" size="icon" className="p-0">
                     <Avatar>
                       <AvatarImage
                         src={
@@ -174,20 +167,20 @@ export default function Navbar() {
                           session.user?.image ||
                           undefined
                         }
-                        alt={session.user?.name || 'User'}
+                        alt={session.user?.name || "User"}
                       />
                       <AvatarFallback>
-                        {session.user?.name?.[0] || 'U'}
+                        {session.user?.name?.[0] || "U"}
                       </AvatarFallback>
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align='end'>
+                <DropdownMenuContent align="end">
                   <DropdownMenuLabel>{session.user?.name}</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
                     asChild
-                    className='hover:bg-bondi-blue-50 hover:text-bondi-blue-700 transition-colors duration-200 rounded-md'
+                    className="hover:bg-bondi-blue-50 hover:text-bondi-blue-700 transition-colors duration-200 rounded-md"
                   >
                     <Link href={`/profile/${session.user?.userId}`}>
                       Profile
@@ -195,7 +188,7 @@ export default function Navbar() {
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     asChild
-                    className='hover:bg-bondi-blue-50 hover:text-bondi-blue-700 transition-colors duration-200 rounded-md'
+                    className="hover:bg-bondi-blue-50 hover:text-bondi-blue-700 transition-colors duration-200 rounded-md"
                   >
                     <Link href={`/profile/${session.user?.userId}?tab=orders`}>
                       Orders
@@ -203,15 +196,15 @@ export default function Navbar() {
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     asChild
-                    className='hover:bg-bondi-blue-50 hover:text-bondi-blue-700 transition-colors duration-200 rounded-md'
+                    className="hover:bg-bondi-blue-50 hover:text-bondi-blue-700 transition-colors duration-200 rounded-md"
                   >
-                    <Link href='/wishlist'>Wishlist</Link>
+                    <Link href="/wishlist">Wishlist</Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
-                    className='hover:bg-bondi-blue-50 hover:text-bondi-blue-700 transition-colors duration-200 rounded-md'
+                    className="hover:bg-bondi-blue-50 hover:text-bondi-blue-700 transition-colors duration-200 rounded-md"
                     onClick={() =>
-                      signIn('google', { callbackUrl: '/auth/login' })
+                      signIn("google", { callbackUrl: "/auth/login" })
                     }
                   >
                     Sign Out
@@ -221,10 +214,10 @@ export default function Navbar() {
             ) : (
               <Button
                 asChild
-                variant='outline'
-                className='flex items-center gap-2 border-white text-white hover:bg-white hover:text-bondi-blue-600 transition font-medium px-4 py-2 '
+                variant="outline"
+                className="flex items-center gap-2 border-white text-white hover:bg-white hover:text-bondi-blue-600 transition font-medium px-4 py-2 "
               >
-                <Link href='/auth/login'>
+                <Link href="/auth/login">
                   <CircleUserRound />
                   <span>Sign In</span>
                 </Link>
@@ -235,51 +228,45 @@ export default function Navbar() {
           <Sheet>
             <SheetTrigger asChild>
               <Button
-                variant='ghost'
-                size='icon'
-                className='lg:hidden ml-2 text-white hover:text-bondi-blue-400'
-                aria-label='Open menu'
+                variant="ghost"
+                size="icon"
+                className="lg:hidden ml-2 text-white hover:text-bondi-blue-400"
+                aria-label="Open menu"
               >
-                <Menu className='size-7' />
+                <Menu className="size-7" />
               </Button>
             </SheetTrigger>
-            <SheetContent
-              side='right'
-              className='p-0 w-72'
-            >
-              <SheetHeader className='p-4 border-b'>
+            <SheetContent side="right" className="p-0 w-72">
+              <SheetHeader className="p-4 border-b">
                 <SheetTitle>
-                  <Link
-                    href='/'
-                    className='flex items-center gap-2'
-                  >
+                  <Link href="/" className="flex items-center gap-2">
                     <Image
-                      src='/k2b-logo-2.png'
+                      src="/k2b-logo-2.png"
                       width={40}
                       height={40}
-                      alt='Logo'
-                      className='w-8 h-8 object-contain'
+                      alt="Logo"
+                      className="w-8 h-8 object-contain"
                     />
-                    <span className='font-semibold text-bondi-blue-600'>
+                    <span className="font-semibold text-bondi-blue-600">
                       K2B EXPRESS
                     </span>
                   </Link>
                 </SheetTitle>
               </SheetHeader>
-              <div className='p-4 flex flex-col gap-2'>
-                <SearchBar placeholder='Search products...' />
+              <div className="p-4 flex flex-col gap-2">
+                <SearchBar placeholder="Search products..." />
                 <NavLinks
                   pathname={pathname}
                   session={session}
                   mobile={true}
-                  className='gap-2'
+                  className="gap-2"
                 />
                 <Link
-                  title='Cart'
-                  href='/cart'
-                  className='flex items-center gap-2 rounded-md px-2 py-2 font-medium text-bondi-blue-600 hover:text-bondi-blue-400 transition'
+                  title="Cart"
+                  href="/cart"
+                  className="flex items-center gap-2 rounded-md px-2 py-2 font-medium text-bondi-blue-600 hover:text-bondi-blue-400 transition"
                 >
-                  <HiShoppingCart className='size-6' />
+                  <HiShoppingCart className="size-6" />
                   <span>Cart</span>
                   {mounted &&
                     cart.products.reduce(
@@ -288,32 +275,32 @@ export default function Navbar() {
                         p.variants.reduce(
                           (vSum: number, v: { quantity: number }) =>
                             vSum + v.quantity,
-                          0
+                          0,
                         ),
-                      0
+                      0,
                     ) > 0 && (
-                      <span className='ml-2 flex items-center justify-center rounded-full bg-blaze-orange-500 text-center text-xs font-bold w-5 h-5 text-white'>
+                      <span className="ml-2 flex items-center justify-center rounded-full bg-blaze-orange-500 text-center text-xs font-bold w-5 h-5 text-white">
                         {cart.products.reduce(
                           (
                             sum: number,
-                            p: { variants: { quantity: number }[] }
+                            p: { variants: { quantity: number }[] },
                           ) =>
                             sum +
                             p.variants.reduce(
                               (vSum: number, v: { quantity: number }) =>
                                 vSum + v.quantity,
-                              0
+                              0,
                             ),
-                          0
+                          0,
                         )}
                       </span>
                     )}
                 </Link>
                 {session ? (
-                  <div className='flex flex-col items-start gap-3 w-full mb-4'>
+                  <div className="flex flex-col items-start gap-3 w-full mb-4">
                     <Link
                       href={`/profile/${session.user?.userId}`}
-                      className='flex items-center gap-3 w-full rounded-md px-2 py-2 font-medium text-bondi-blue-700 hover:bg-bondi-blue-50 transition-colors'
+                      className="flex items-center gap-3 w-full rounded-md px-2 py-2 font-medium text-bondi-blue-700 hover:bg-bondi-blue-50 transition-colors"
                     >
                       <Avatar>
                         <AvatarImage
@@ -322,21 +309,21 @@ export default function Navbar() {
                             session.user?.image ||
                             undefined
                           }
-                          alt={session.user?.name || 'User'}
+                          alt={session.user?.name || "User"}
                         />
                         <AvatarFallback>
-                          {session.user?.name?.[0] || 'U'}
+                          {session.user?.name?.[0] || "U"}
                         </AvatarFallback>
                       </Avatar>
-                      <span className='text-base font-semibold truncate'>
+                      <span className="text-base font-semibold truncate">
                         {session.user?.name}
                       </span>
                     </Link>
                     <Button
-                      variant='outline'
-                      className='flex items-center gap-2 w-full border-bondi-blue-200 text-bondi-blue-700 hover:bg-bondi-blue-50 hover:text-bondi-blue-700 transition font-medium px-4 py-2'
+                      variant="outline"
+                      className="flex items-center gap-2 w-full border-bondi-blue-200 text-bondi-blue-700 hover:bg-bondi-blue-50 hover:text-bondi-blue-700 transition font-medium px-4 py-2"
                       onClick={() =>
-                        signIn('google', { callbackUrl: '/auth/login' })
+                        signIn("google", { callbackUrl: "/auth/login" })
                       }
                     >
                       <CircleUserRound />
@@ -346,10 +333,10 @@ export default function Navbar() {
                 ) : (
                   <Button
                     asChild
-                    variant='ghost'
-                    className='flex items-center gap-2 rounded-md px-2 py-2 font-medium hover:text-accent transition bg-accent text-white hover:font-semibold'
+                    variant="ghost"
+                    className="flex items-center gap-2 rounded-md px-2 py-2 font-medium hover:text-accent transition bg-accent text-white hover:font-semibold"
                   >
-                    <Link href='/auth/login'>
+                    <Link href="/auth/login">
                       <CircleUserRound />
                       <span>Sign In</span>
                     </Link>

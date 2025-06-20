@@ -1,13 +1,13 @@
-import { connectToDB } from '@/lib/dbConnect';
-import Category from '@/models/Category';
-import Product from '@/models/Product';
-import Subcategory from '@/models/Subcategory';
-import { ProductType } from '@/types/next-utils';
-import slugify from 'slugify';
+import { connectToDB } from "@/lib/dbConnect";
+import Category from "@/models/Category";
+import Product from "@/models/Product";
+import Subcategory from "@/models/Subcategory";
+import { ProductType } from "@/types/next-utils";
+import slugify from "slugify";
 
-import mongoose, { FilterQuery } from 'mongoose';
-import { revalidatePath } from 'next/cache';
-import { NextRequest, NextResponse } from 'next/server';
+import mongoose, { FilterQuery } from "mongoose";
+import { revalidatePath } from "next/cache";
+import { NextRequest, NextResponse } from "next/server";
 
 // POST handler
 export const POST = async (req: NextRequest) => {
@@ -25,8 +25,8 @@ export const POST = async (req: NextRequest) => {
     const existingProduct = await Product.findOne({ slug: body.slug });
     if (existingProduct) {
       return NextResponse.json(
-        { error: 'A product with this title already exists' },
-        { status: 400 }
+        { error: "A product with this title already exists" },
+        { status: 400 },
       );
     }
 
@@ -43,23 +43,23 @@ export const POST = async (req: NextRequest) => {
             category.products.push(product._id);
             await category.save();
           }
-        }
+        },
       );
       await Promise.all(updateCategoryPromises);
     }
 
-    revalidatePath('/products');
+    revalidatePath("/products");
     revalidatePath(`/products/${product.slug}`);
-    revalidatePath('/admin/products');
+    revalidatePath("/admin/products");
     return NextResponse.json(product, { status: 201 });
   } catch (error) {
-    console.error('Error creating product:', error);
+    console.error("Error creating product:", error);
     return NextResponse.json(
       {
         error:
-          error instanceof Error ? error.message : 'Failed to create product',
+          error instanceof Error ? error.message : "Failed to create product",
       },
-      { status: 400 }
+      { status: 400 },
     );
   }
 };
@@ -71,16 +71,16 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
 
     // Pagination parameters
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '10');
+    const page = parseInt(searchParams.get("page") || "1");
+    const limit = parseInt(searchParams.get("limit") || "10");
     const skip = (page - 1) * limit;
 
     // Filtering parameters
-    const category = searchParams.get('category');
-    const minPrice = searchParams.get('minPrice');
-    const maxPrice = searchParams.get('maxPrice');
-    const tags = searchParams.get('tags')?.split(',');
-    const searchTerm = searchParams.get('search');
+    const category = searchParams.get("category");
+    const minPrice = searchParams.get("minPrice");
+    const maxPrice = searchParams.get("maxPrice");
+    const tags = searchParams.get("tags")?.split(",");
+    const searchTerm = searchParams.get("search");
 
     // Build query
     const query: FilterQuery<ProductType> = {};
@@ -94,25 +94,25 @@ export async function GET(req: NextRequest) {
     }
 
     if (minPrice || maxPrice) {
-      query['price.cny'] = {};
-      if (minPrice) query['price.cny'].$gte = parseFloat(minPrice);
-      if (maxPrice) query['price.cny'].$lte = parseFloat(maxPrice);
+      query["price.cny"] = {};
+      if (minPrice) query["price.cny"].$gte = parseFloat(minPrice);
+      if (maxPrice) query["price.cny"].$lte = parseFloat(maxPrice);
     }
 
     if (searchTerm) {
       query.$or = [
-        { title: { $regex: searchTerm, $options: 'i' } },
-        { description: { $regex: searchTerm, $options: 'i' } },
+        { title: { $regex: searchTerm, $options: "i" } },
+        { description: { $regex: searchTerm, $options: "i" } },
       ];
     }
 
     // Fetch products and populate category and its subcategories
     const products = await Product.find(query)
       .populate({
-        path: 'categories',
+        path: "categories",
         model: Category,
         populate: {
-          path: 'subcategories',
+          path: "subcategories",
           model: Subcategory,
         },
       })
@@ -133,13 +133,13 @@ export async function GET(req: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('[PRODUCTS_GET]', error);
+    console.error("[PRODUCTS_GET]", error);
     return NextResponse.json(
-      { error: 'Failed to fetch products' },
-      { status: 500 }
+      { error: "Failed to fetch products" },
+      { status: 500 },
     );
   }
 }
 
 // Mark route as dynamic
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";

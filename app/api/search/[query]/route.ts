@@ -1,10 +1,10 @@
-import { connectToDB } from '@/lib/dbConnect';
-import Product from '@/models/Product';
-import { NextRequest, NextResponse } from 'next/server';
+import { connectToDB } from "@/lib/dbConnect";
+import Product from "@/models/Product";
+import { NextRequest, NextResponse } from "next/server";
 
 export const GET = async (
   req: NextRequest,
-  { params }: { params: Promise<{ query: string }> }
+  { params }: { params: Promise<{ query: string }> },
 ) => {
   try {
     await connectToDB();
@@ -12,22 +12,22 @@ export const GET = async (
 
     const searchedProducts = await Product.find({
       $or: [
-        { title: { $regex: query, $options: 'i' } },
-        { tags: { $in: [new RegExp(query, 'i')] } },
+        { title: { $regex: query, $options: "i" } },
+        { tags: { $in: [new RegExp(query, "i")] } },
       ],
-    }).populate('categories', 'name');
+    }).populate("categories", "name");
 
     return NextResponse.json(searchedProducts, { status: 200 });
   } catch (err) {
-    console.error('Search API error:', err);
+    console.error("Search API error:", err);
     return NextResponse.json(
       {
-        error: 'Failed to perform search',
-        details: err instanceof Error ? err.message : 'Unknown error',
+        error: "Failed to perform search",
+        details: err instanceof Error ? err.message : "Unknown error",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 };
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";

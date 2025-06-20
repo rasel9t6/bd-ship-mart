@@ -1,7 +1,7 @@
-import nodemailer from 'nodemailer';
+import nodemailer from "nodemailer";
 
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  service: "gmail",
   auth: {
     user: process.env.EMAIL_SERVER_USER,
     pass: process.env.EMAIL_SERVER_PASSWORD,
@@ -10,14 +10,14 @@ const transporter = nodemailer.createTransport({
 
 export async function sendVerificationEmail(
   email: string,
-  verificationToken: string
+  verificationToken: string,
 ) {
   const verificationLink = `${process.env.NEXTAUTH_URL}/auth/verify-email?token=${verificationToken}`;
 
   await transporter.sendMail({
     from: process.env.EMAIL_FROM,
     to: email,
-    subject: 'Verify Your K2B EXPRESS Email',
+    subject: "Verify Your K2B EXPRESS Email",
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h2 style="color: #1a56db;">Email Verification</h2>
@@ -45,7 +45,7 @@ export const sendPasswordResetEmail = async (email: string, token: string) => {
   const mailOptions = {
     from: process.env.EMAIL_FROM,
     to: email,
-    subject: 'Reset Your K2B EXPRESS Password',
+    subject: "Reset Your K2B EXPRESS Password",
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h2 style="color: #333;">Password Reset Request</h2>
@@ -66,7 +66,7 @@ export const sendPasswordResetEmail = async (email: string, token: string) => {
     await transporter.sendMail(mailOptions);
     return { success: true };
   } catch (error) {
-    console.error('Error sending password reset email:', error);
-    return { success: false, error: 'Failed to send email' };
+    console.error("Error sending password reset email:", error);
+    return { success: false, error: "Failed to send email" };
   }
 };

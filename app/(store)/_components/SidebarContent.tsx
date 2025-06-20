@@ -34,9 +34,9 @@ export default function SidebarContent({
 
         return (
           <div
-            key={category._id}
+            key={category.slug}
             className="flex flex-col"
-            onMouseEnter={() => handleMouseEnter(category._id)}
+            onMouseEnter={() => handleMouseEnter(category.slug)}
             onMouseLeave={handleMouseLeave}
           >
             <Link href={`/categories/${category.slug}`} className="w-full">

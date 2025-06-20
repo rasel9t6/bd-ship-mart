@@ -22,9 +22,12 @@ export default async function ProductList() {
       <h2 className="text-heading1-bold bg-gradient-to-r from-bondi-blue to-bondi-blue/80 bg-clip-text text-transparent">
         Featured Products
       </h2>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4 w-full max-w-7xl">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 w-full max-w-7xl">
         {products.map((product: ProductType) => (
-          <div key={product._id} className="w-full max-w-[200px] mx-auto">
+          <div
+            key={product._id.toString()}
+            className="w-full max-w-[250px] mx-auto"
+          >
             <ProductCard product={product} />
           </div>
         ))}
