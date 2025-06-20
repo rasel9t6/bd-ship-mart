@@ -3,7 +3,6 @@ import { notFound } from 'next/navigation';
 import { getPopularSearches, getTrendingSearches } from '@/lib/actions/actions';
 import SearchResults from './_components/SearchResults';
 import SearchSidebar from './_components/SearchSidebar';
-import SearchHeader from './_components/SearchHeader';
 import {
   generateSearchMetadata,
   generateSearchBreadcrumbs,
@@ -67,12 +66,6 @@ export default async function SearchPage({
           <div className='mb-4'>
             <Breadcrumb items={breadcrumbs} />
           </div>
-
-          {/* Search Header */}
-          <SearchHeader
-            query={decodedQuery}
-            resultCount={0}
-          />
 
           <div className='flex flex-col lg:flex-row gap-6 mt-6'>
             {/* Sidebar */}

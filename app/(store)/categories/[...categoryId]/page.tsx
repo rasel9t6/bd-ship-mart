@@ -30,8 +30,7 @@ export async function generateMetadata({ params }: { params: Params }) {
     };
   }
 
-  const breadcrumbs = generateCategoryBreadcrumbs(categoryId);
-  return generateCategoryMetadata(category, breadcrumbs);
+  return generateCategoryMetadata(category);
 }
 
 export default async function CategoryDetailsPage({
@@ -40,16 +39,10 @@ export default async function CategoryDetailsPage({
   params: Params;
 }) {
   const { categoryId } = await params;
-  console.log('Raw categoryId from params:', categoryId);
 
   // Pass the categoryId array directly to getCategory
   // Our updated getCategory can handle both string paths and arrays
   const categoryDetails = await getCategory(categoryId);
-
-  console.log(
-    'Category details result:',
-    categoryDetails ? 'Found' : 'Not found'
-  );
 
   if (!categoryDetails) {
     return (

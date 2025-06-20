@@ -1,6 +1,7 @@
 import { Metadata } from 'next';
 import { getCategories } from '@/lib/actions/actions';
 import { generateBaseMetadata } from '@/lib/seo';
+import { CategoryType } from '@/types/next-utils';
 import CategoryCard from './_components/CategoryCard';
 import CategoryFilters from './_components/CategoryFilters';
 import CategorySort from './_components/CategorySort';
@@ -83,7 +84,7 @@ export default async function CategoriesPage({
         {categories.length > 0 ? (
           <>
             <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'>
-              {categories.map((category) => (
+              {categories.map((category: CategoryType) => (
                 <CategoryCard
                   key={category._id}
                   category={category}

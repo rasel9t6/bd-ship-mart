@@ -10,8 +10,8 @@ interface SubcategoryCardProps {
     _id: string;
     name: string;
     title: string;
-    description: string;
-    thumbnail: string;
+    description?: string;
+    thumbnail?: string;
     slug: string;
     category: {
       _id: string;

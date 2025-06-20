@@ -169,10 +169,8 @@ export async function getCategory(categoryPath: string | string[]) {
 
     if (Array.isArray(categoryPath)) {
       segments = categoryPath;
-      console.log('Fetching category with array segments:', segments);
     } else {
       segments = categoryPath.split('/').filter(Boolean);
-      console.log('Fetching category with string path segments:', segments);
     }
 
     if (segments.length === 0) {
@@ -182,7 +180,6 @@ export async function getCategory(categoryPath: string | string[]) {
 
     // Create the API path from the segments
     const apiPath = `${apiUrl}/api/categories/${segments.join('/')}`;
-    console.log('Fetching from API path:', apiPath);
 
     const response = await fetch(apiPath, {
       method: 'GET',
@@ -306,17 +303,6 @@ export async function getProducts(
         sortQuery = { createdAt: -1 };
     }
 
-    // Get total count for debugging
-    const totalCount = await Product.countDocuments(query);
-    console.log(`Products query:`, {
-      query,
-      sortQuery,
-      skip,
-      limit,
-      totalCount,
-      page,
-    });
-
     const products = await Product.find(query)
       .populate({
         path: 'categories',
@@ -332,8 +318,6 @@ export async function getProducts(
       .skip(skip)
       .limit(limit)
       .lean();
-
-    console.log(`Found ${products.length} products for page ${page}`);
 
     return JSON.parse(JSON.stringify(products || []));
   } catch (error) {

@@ -185,7 +185,7 @@ export default function SearchResults({
                   name: category.name,
                   title: category.title,
                   slug: category.slug,
-                  description: category.description,
+                  description: category.description || '',
                   icon: category.icon,
                   thumbnail: category.thumbnail,
                   subcategoryDetails: category.subcategories?.map((sub) => ({
@@ -193,7 +193,9 @@ export default function SearchResults({
                     name: sub.name,
                     slug: sub.slug,
                   })),
-                  products: category.products,
+                  products: category.products?.map((product) => ({
+                    _id: product._id?.toString() || '',
+                  })),
                 }}
               />
             ))}
@@ -217,17 +219,16 @@ export default function SearchResults({
                   name: subcategory.name,
                   title: subcategory.title,
                   slug: subcategory.slug,
-                  description: subcategory.description,
-                  icon: subcategory.icon,
-                  thumbnail: subcategory.thumbnail,
-                  categoryDetails: [
-                    {
-                      _id: subcategory.category?.toString() || '',
-                      name: 'Category', // This would need to be populated from the API
-                      slug: 'category',
-                    },
-                  ],
-                  products: subcategory.products,
+                  description: subcategory.description || '',
+                  thumbnail: subcategory.thumbnail || '',
+                  category: {
+                    _id: subcategory.category?.toString() || '',
+                    name: 'Category', // This would need to be populated from the API
+                    slug: 'category',
+                  },
+                  products: subcategory.products?.map((product) => ({
+                    _id: product._id?.toString() || '',
+                  })),
                 }}
               />
             ))}

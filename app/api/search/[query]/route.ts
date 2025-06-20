@@ -6,12 +6,9 @@ export const GET = async (
   req: NextRequest,
   { params }: { params: Promise<{ query: string }> }
 ) => {
-  console.log('Search API route called');
-
   try {
     await connectToDB();
     const { query } = await params;
-    console.log('Searching for query:', query);
 
     const searchedProducts = await Product.find({
       $or: [
@@ -20,9 +17,6 @@ export const GET = async (
       ],
     }).populate('categories', 'name');
 
-    console.log(
-      `Found ${searchedProducts.length} products for query: ${query}`
-    );
     return NextResponse.json(searchedProducts, { status: 200 });
   } catch (err) {
     console.error('Search API error:', err);

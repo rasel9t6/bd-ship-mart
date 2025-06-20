@@ -115,7 +115,6 @@ export default async function ProductsPage({
             <ProductGrid
               products={products}
               currentPage={page}
-              searchParams={params}
             />
           </div>
         </div>

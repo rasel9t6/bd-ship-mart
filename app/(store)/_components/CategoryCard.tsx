@@ -10,10 +10,12 @@ interface CategoryCardProps {
     _id: string;
     name: string;
     title: string;
-    description: string;
+    description?: string;
     thumbnail: string;
     slug: string;
+    icon?: string;
     products?: Array<{ _id: string }>;
+    subcategoryDetails?: Array<{ _id: string; name: string }>;
   };
   className?: string;
 }

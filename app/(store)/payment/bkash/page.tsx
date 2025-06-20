@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
-import { Card, CardContent } from "@/ui/card";
-import { Button } from "@/ui/button";
-import { Input } from "@/ui/input";
-import { Label } from "@/ui/label";
-import { toast } from "react-hot-toast";
-import { Info } from "lucide-react";
-import { Alert, AlertDescription } from "@/ui/alert";
+import { useEffect, useState } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { Card, CardContent } from '@/ui/card';
+import { Button } from '@/ui/button';
+import { Input } from '@/ui/input';
+import { Label } from '@/ui/label';
+import { toast } from 'react-hot-toast';
+import { Info } from 'lucide-react';
+import { Alert, AlertDescription } from '@/ui/alert';
 
 interface OrderDetails {
   orderId: string;
@@ -30,17 +30,17 @@ interface OrderDetails {
 export default function BkashPaymentPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const orderId = searchParams.get("orderId");
+  const orderId = searchParams.get('orderId');
   const [isLoading, setIsLoading] = useState(false);
   const [isFetching, setIsFetching] = useState(true);
-  const [bkashNumber, setBkashNumber] = useState("");
+  const [bkashNumber, setBkashNumber] = useState('');
   const [orderDetails, setOrderDetails] = useState<OrderDetails | null>(null);
 
   useEffect(() => {
     const fetchOrderDetails = async () => {
       if (!orderId) {
-        toast.error("Order ID is missing");
-        router.push("/orders");
+        toast.error('Order ID is missing');
+        router.push('/orders');
         return;
       }
 
@@ -50,19 +50,19 @@ export default function BkashPaymentPage() {
 
         if (!response.ok) {
           const error = await response.json();
-          throw new Error(error.message || "Failed to fetch order details");
+          throw new Error(error.message || 'Failed to fetch order details');
         }
 
         const data = await response.json();
         setOrderDetails(data);
       } catch (error) {
-        console.error("Error fetching order details:", error);
+        console.error('Error fetching order details:', error);
         toast.error(
           error instanceof Error
             ? error.message
-            : "Failed to load order details",
+            : 'Failed to load order details'
         );
-        router.push("/orders");
+        router.push('/orders');
       } finally {
         setIsFetching(false);
       }
@@ -73,12 +73,12 @@ export default function BkashPaymentPage() {
 
   const handleBkashPayment = async () => {
     if (!bkashNumber.match(/^01[3-9]\d{8}$/)) {
-      toast.error("Please enter a valid bKash number");
+      toast.error('Please enter a valid bKash number');
       return;
     }
 
     if (!orderId || !orderDetails) {
-      toast.error("Invalid order information");
+      toast.error('Invalid order information');
       return;
     }
 
@@ -86,11 +86,11 @@ export default function BkashPaymentPage() {
       orderDetails.totalAmount?.bdt ||
       orderDetails.products.reduce(
         (sum, product) => sum + product.totalPrice.bdt,
-        0,
+        0
       );
 
     if (!amount) {
-      toast.error("Invalid order amount");
+      toast.error('Invalid order amount');
       return;
     }
 
@@ -100,16 +100,16 @@ export default function BkashPaymentPage() {
       const payload = {
         amount: amount,
         orderId,
-        currency: "BDT",
+        currency: 'BDT',
         bkashNumber,
       };
 
-      console.log("Sending bKash payment request:", payload);
+      console.log('Sending bKash payment request:', payload);
 
-      const response = await fetch("/api/payment/bkash/create", {
-        method: "POST",
+      const response = await fetch('/api/payment/bkash/create', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify(payload),
       });
@@ -117,27 +117,27 @@ export default function BkashPaymentPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        console.error("bKash payment error:", data);
-        throw new Error(data.message || "Failed to initiate bKash payment");
+        console.error('bKash payment error:', data);
+        throw new Error(data.message || 'Failed to initiate bKash payment');
       }
 
       if (!data.paymentUrl) {
-        console.error("No payment URL in response:", data);
-        throw new Error("Invalid response from payment server");
+        console.error('No payment URL in response:', data);
+        throw new Error('Invalid response from payment server');
       }
 
       // Store the payment URL in sessionStorage for the callback
-      sessionStorage.setItem("bkashPaymentUrl", data.paymentUrl);
-      sessionStorage.setItem("orderId", orderId);
+      sessionStorage.setItem('bkashPaymentUrl', data.paymentUrl);
+      sessionStorage.setItem('orderId', orderId);
 
       // Redirect to bKash payment page
       window.location.href = data.paymentUrl;
     } catch (error) {
-      console.error("bKash payment error:", error);
+      console.error('bKash payment error:', error);
       toast.error(
         error instanceof Error
           ? error.message
-          : "Failed to process bKash payment. Please try again.",
+          : 'Failed to process bKash payment. Please try again.'
       );
     } finally {
       setIsLoading(false);
@@ -146,10 +146,10 @@ export default function BkashPaymentPage() {
 
   if (isFetching) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading order details...</p>
+      <div className='min-h-screen flex items-center justify-center'>
+        <div className='text-center'>
+          <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto'></div>
+          <p className='mt-4 text-gray-600'>Loading order details...</p>
         </div>
       </div>
     );
@@ -157,10 +157,13 @@ export default function BkashPaymentPage() {
 
   if (!orderDetails) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-red-500">Failed to load order details</p>
-          <Button onClick={() => router.push("/orders")} className="mt-4">
+      <div className='min-h-screen flex items-center justify-center'>
+        <div className='text-center'>
+          <p className='text-red-500'>Failed to load order details</p>
+          <Button
+            onClick={() => router.push('/orders')}
+            className='mt-4'
+          >
             Back to Orders
           </Button>
         </div>
@@ -172,23 +175,23 @@ export default function BkashPaymentPage() {
     orderDetails.totalAmount?.bdt ||
     orderDetails.products.reduce(
       (sum, product) => sum + product.totalPrice.bdt,
-      0,
+      0
     );
-  console.log("orderDetails", orderDetails);
+
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md mx-auto">
+    <div className='min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8'>
+      <div className='max-w-md mx-auto'>
         <Card>
-          <CardContent className="p-6 space-y-6">
-            <div className="text-center">
-              <h2 className="text-2xl font-bold">bKash Payment</h2>
-              <p className="text-gray-600 mt-2">
+          <CardContent className='p-6 space-y-6'>
+            <div className='text-center'>
+              <h2 className='text-2xl font-bold'>bKash Payment</h2>
+              <p className='text-gray-600 mt-2'>
                 Complete your payment securely
               </p>
             </div>
 
             <Alert>
-              <Info className="h-4 w-4" />
+              <Info className='h-4 w-4' />
               <AlertDescription>
                 By proceeding with bKash payment, you agree to save your bKash
                 account for future transactions with us. Your account details
@@ -196,46 +199,46 @@ export default function BkashPaymentPage() {
               </AlertDescription>
             </Alert>
 
-            <div className="space-y-2">
-              <Label htmlFor="bkashNumber">bKash Number</Label>
+            <div className='space-y-2'>
+              <Label htmlFor='bkashNumber'>bKash Number</Label>
               <Input
-                id="bkashNumber"
-                type="tel"
-                placeholder="01XXXXXXXXX"
+                id='bkashNumber'
+                type='tel'
+                placeholder='01XXXXXXXXX'
                 value={bkashNumber}
                 onChange={(e) => setBkashNumber(e.target.value)}
                 maxLength={11}
-                pattern="^01[3-9]\d{8}$"
+                pattern='^01[3-9]\d{8}$'
                 required
               />
-              <p className="text-xs text-gray-500">
+              <p className='text-xs text-gray-500'>
                 Enter the bKash number you want to pay from
               </p>
             </div>
 
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <div className="flex justify-between items-center">
-                <span className="text-sm font-medium">Total Amount</span>
-                <span className="font-bold text-lg">
+            <div className='bg-gray-50 p-4 rounded-lg'>
+              <div className='flex justify-between items-center'>
+                <span className='text-sm font-medium'>Total Amount</span>
+                <span className='font-bold text-lg'>
                   ৳{amount.toLocaleString()}
                 </span>
               </div>
             </div>
 
             <Button
-              type="button"
+              type='button'
               onClick={handleBkashPayment}
               disabled={isLoading}
-              className="w-full"
+              className='w-full'
             >
-              {isLoading ? "Processing..." : "Pay with bKash"}
+              {isLoading ? 'Processing...' : 'Pay with bKash'}
             </Button>
 
-            <div className="text-xs text-gray-500 space-y-2">
-              <p className="text-center">
+            <div className='text-xs text-gray-500 space-y-2'>
+              <p className='text-center'>
                 You will be redirected to bKash payment page
               </p>
-              <p className="text-center">
+              <p className='text-center'>
                 For any issues, please contact bKash Customer Care at 16247
               </p>
             </div>

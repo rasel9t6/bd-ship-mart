@@ -1,5 +1,6 @@
 import { MetadataRoute } from 'next';
 import { getProducts, getCategories } from '@/lib/actions/actions';
+import { ProductType, CategoryType } from '@/types/next-utils';
 import { siteConfig } from '@/lib/seo';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -42,7 +43,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   try {
     // Get all products
     const products = await getProducts({ limit: 1000, page: 1 });
-    const productPages = products.map((product) => ({
+    const productPages = products.map((product: ProductType) => ({
       url: `${baseUrl}/products/${product.slug}`,
       lastModified: new Date(product.updatedAt || product.createdAt),
       changeFrequency: 'weekly' as const,
@@ -51,7 +52,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     // Get all categories
     const categories = await getCategories();
-    const categoryPages = categories.map((category) => ({
+    const categoryPages = categories.map((category: CategoryType) => ({
       url: `${baseUrl}/categories/${category.slug}`,
       lastModified: new Date(category.updatedAt || category.createdAt),
       changeFrequency: 'weekly' as const,
