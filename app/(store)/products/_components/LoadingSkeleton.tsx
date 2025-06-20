@@ -1,56 +1,62 @@
-export default function LoadingSkeleton() {
+'use client';
+
+import { cn } from '@/lib/utils';
+
+interface LoadingSkeletonProps {
+  count?: number;
+  className?: string;
+}
+
+export default function LoadingSkeleton({
+  count = 8,
+  className,
+}: LoadingSkeletonProps) {
   return (
-    <div className="min-h-screen bg-gray-100">
-      {/* Navbar */}
-      <div className="flex items-center justify-between bg-teal-500 p-4">
-        <div className="h-8 w-32 animate-pulse rounded bg-gray-300"></div>
-        <div className="h-8 w-48 animate-pulse rounded bg-gray-300"></div>
-        <div className="flex space-x-4">
-          <div className="size-8 animate-pulse rounded-full bg-gray-300"></div>
-          <div className="size-8 animate-pulse rounded-full bg-gray-300"></div>
-        </div>
-      </div>
-
-      <div className="flex">
-        {/* Sidebar */}
-
-        {/* Main Content */}
-        <div className="flex-1 p-6">
-          {/* Banner Skeleton */}
-          <div className="mb-6 h-56 w-full animate-pulse rounded-lg bg-gray-300"></div>
-
-          {/* Collections Skeleton */}
-          <h2 className="mb-4 h-8 w-40 animate-pulse rounded bg-gray-300"></h2>
-          <div className="grid grid-cols-4 gap-4">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <div
-                key={i}
-                className="h-24 animate-pulse rounded-lg bg-gray-300"
-              ></div>
-            ))}
+    <div
+      className={cn(
+        'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6',
+        className
+      )}
+    >
+      {Array.from({ length: count }).map((_, index) => (
+        <div
+          key={index}
+          className='bg-white rounded-lg border border-gray-200 overflow-hidden animate-pulse'
+        >
+          {/* Image Skeleton */}
+          <div className='aspect-[4/3] bg-gray-200 relative'>
+            <div className='absolute inset-0 bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 animate-shimmer' />
           </div>
 
-          {/* Product Cards Skeleton */}
-          <div className="mt-6 grid grid-cols-3 gap-6">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="rounded-lg bg-white p-4 shadow">
-                <div className="h-40 w-full animate-pulse rounded-lg bg-gray-300"></div>
-                <div className="mt-4 h-6 w-32 animate-pulse rounded bg-gray-300"></div>
-                <div className="mt-2 h-6 w-24 animate-pulse rounded bg-gray-300"></div>
-                <div className="mt-2 h-6 w-16 animate-pulse rounded bg-gray-300"></div>
+          {/* Content Skeleton */}
+          <div className='p-4 space-y-3'>
+            {/* Title */}
+            <div className='h-4 bg-gray-200 rounded w-3/4'>
+              <div className='h-full bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 animate-shimmer' />
+            </div>
+
+            {/* Description */}
+            <div className='space-y-2'>
+              <div className='h-3 bg-gray-200 rounded w-full'>
+                <div className='h-full bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 animate-shimmer' />
               </div>
-            ))}
-          </div>
-          <div className="w-64 space-y-4 bg-white p-4 shadow-lg">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <div
-                key={i}
-                className="h-6 w-full animate-pulse rounded bg-gray-300"
-              ></div>
-            ))}
+              <div className='h-3 bg-gray-200 rounded w-2/3'>
+                <div className='h-full bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 animate-shimmer' />
+              </div>
+            </div>
+
+            {/* Price */}
+            <div className='h-5 bg-gray-200 rounded w-1/3'>
+              <div className='h-full bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 animate-shimmer' />
+            </div>
+
+            {/* Button */}
+            <div className='h-8 bg-gray-200 rounded'>
+              <div className='h-full bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 animate-shimmer' />
+            </div>
           </div>
         </div>
-      </div>
+      ))}
     </div>
   );
 }

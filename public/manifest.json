@@ -1,0 +1,64 @@
+{
+  "name": "K2B EXPRESS",
+  "short_name": "K2B EXPRESS",
+  "description": "Premium e-commerce platform for shipping and logistics products in Bangladesh",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "en",
+  "categories": ["shopping", "business", "productivity"],
+  "icons": [
+    {
+      "src": "/k2b-logo-2.png",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon.ico",
+      "sizes": "16x16 32x32 48x48",
+      "type": "image/x-icon"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Products",
+      "short_name": "Products",
+      "description": "Browse all products",
+      "url": "/products",
+      "icons": [
+        {
+          "src": "/k2b-logo-2.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Categories",
+      "short_name": "Categories",
+      "description": "Browse categories",
+      "url": "/categories",
+      "icons": [
+        {
+          "src": "/k2b-logo-2.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Cart",
+      "short_name": "Cart",
+      "description": "View shopping cart",
+      "url": "/cart",
+      "icons": [
+        {
+          "src": "/k2b-logo-2.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ]
+}

@@ -1,5 +1,5 @@
-import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
-import { Document as MongooseDocument } from "mongoose";
+import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer';
+import { Document as MongooseDocument } from 'mongoose';
 
 interface OrderDocument extends MongooseDocument {
   orderId: string;
@@ -44,7 +44,7 @@ const styles = StyleSheet.create({
   },
   header: {
     marginBottom: 20,
-    textAlign: "center",
+    textAlign: 'center',
   },
   title: {
     fontSize: 24,
@@ -52,7 +52,7 @@ const styles = StyleSheet.create({
   },
   companyInfo: {
     marginBottom: 20,
-    textAlign: "center",
+    textAlign: 'center',
   },
   section: {
     margin: 10,
@@ -61,45 +61,45 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 14,
     marginBottom: 5,
-    textDecoration: "underline",
+    textDecoration: 'underline',
   },
   row: {
-    flexDirection: "row",
+    flexDirection: 'row',
     borderBottomWidth: 1,
-    borderBottomColor: "#eee",
-    borderBottomStyle: "solid",
-    alignItems: "center",
+    borderBottomColor: '#eee',
+    borderBottomStyle: 'solid',
+    alignItems: 'center',
     height: 24,
     fontSize: 10,
   },
   headerRow: {
-    flexDirection: "row",
+    flexDirection: 'row',
     borderBottomWidth: 1,
-    borderBottomColor: "#000",
-    borderBottomStyle: "solid",
-    alignItems: "center",
+    borderBottomColor: '#000',
+    borderBottomStyle: 'solid',
+    alignItems: 'center',
     height: 24,
     fontSize: 10,
-    fontWeight: "bold",
+    fontWeight: 'bold',
   },
   col1: {
-    width: "20%",
+    width: '20%',
   },
   col2: {
-    width: "30%",
+    width: '30%',
   },
   col3: {
-    width: "15%",
+    width: '15%',
   },
   col4: {
-    width: "17.5%",
+    width: '17.5%',
   },
   col5: {
-    width: "17.5%",
+    width: '17.5%',
   },
   totals: {
     marginTop: 20,
-    textAlign: "right",
+    textAlign: 'right',
   },
 });
 
@@ -109,13 +109,16 @@ interface InvoiceDocumentProps {
 
 const InvoiceDocument = ({ order }: InvoiceDocumentProps) => (
   <Document>
-    <Page size="A4" style={styles.page}>
+    <Page
+      size='A4'
+      style={styles.page}
+    >
       <View style={styles.header}>
         <Text style={styles.title}>Invoice</Text>
       </View>
 
       <View style={styles.companyInfo}>
-        <Text>BDShipMart</Text>
+        <Text>K2B EXPRESS</Text>
         <Text>123 Business Street</Text>
         <Text>Dhaka, Bangladesh</Text>
       </View>
@@ -127,8 +130,8 @@ const InvoiceDocument = ({ order }: InvoiceDocumentProps) => (
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Bill To:</Text>
-        <Text>{order.customerInfo.name || "N/A"}</Text>
-        <Text>{order.customerInfo.email || "N/A"}</Text>
+        <Text>{order.customerInfo.name || 'N/A'}</Text>
+        <Text>{order.customerInfo.email || 'N/A'}</Text>
         {order.shippingAddress && (
           <>
             <Text>{order.shippingAddress.street}</Text>
@@ -136,7 +139,7 @@ const InvoiceDocument = ({ order }: InvoiceDocumentProps) => (
               {order.shippingAddress.city}, {order.shippingAddress.state}
             </Text>
             <Text>
-              {order.shippingAddress.postalCode},{" "}
+              {order.shippingAddress.postalCode},{' '}
               {order.shippingAddress.country}
             </Text>
           </>
@@ -163,18 +166,21 @@ const InvoiceDocument = ({ order }: InvoiceDocumentProps) => (
               unitPrice: { bdt: number };
               totalPrice: { bdt: number };
             },
-            index: number,
+            index: number
           ) => (
-            <View key={index} style={styles.row}>
+            <View
+              key={index}
+              style={styles.row}
+            >
               <Text style={styles.col1}>{product.product.toString()}</Text>
               <Text style={styles.col2}>
-                {product.color.join(", ")} / {product.size.join(", ")}
+                {product.color.join(', ')} / {product.size.join(', ')}
               </Text>
               <Text style={styles.col3}>{product.quantity}</Text>
               <Text style={styles.col4}>{product.unitPrice.bdt} BDT</Text>
               <Text style={styles.col5}>{product.totalPrice.bdt} BDT</Text>
             </View>
-          ),
+          )
         )}
       </View>
 
@@ -196,8 +202,8 @@ const InvoiceDocument = ({ order }: InvoiceDocumentProps) => (
         <Text>Shipping Method: {order.shippingMethod}</Text>
         <Text>Delivery Type: {order.deliveryType}</Text>
         <Text>
-          Estimated Delivery:{" "}
-          {order.estimatedDeliveryDate?.toLocaleDateString() || "N/A"}
+          Estimated Delivery:{' '}
+          {order.estimatedDeliveryDate?.toLocaleDateString() || 'N/A'}
         </Text>
       </View>
     </Page>

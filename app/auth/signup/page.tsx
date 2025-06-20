@@ -1,17 +1,17 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import { signIn } from "next-auth/react";
-import Image from "next/image";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { motion, AnimatePresence } from "motion/react";
-import { Eye, EyeOff } from "lucide-react";
-import { toast } from "react-hot-toast";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { Button } from "@/ui/button";
+import React, { useState } from 'react';
+import { signIn } from 'next-auth/react';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { motion, AnimatePresence } from 'motion/react';
+import { Eye, EyeOff } from 'lucide-react';
+import { toast } from 'react-hot-toast';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { Button } from '@/ui/button';
 import {
   Form,
   FormField,
@@ -20,34 +20,34 @@ import {
   FormControl,
   FormMessage,
   FormDescription,
-} from "@/ui/form";
-import { Input } from "@/ui/input";
-import { FaGoogle } from "react-icons/fa6";
+} from '@/ui/form';
+import { Input } from '@/ui/input';
+import { FaGoogle } from 'react-icons/fa6';
 
 // Zod Schema for form validation
 const formSchema = z
   .object({
     name: z.string().min(2, {
-      message: "Name must be at least 2 characters.",
+      message: 'Name must be at least 2 characters.',
     }),
     email: z.string().email({
-      message: "Invalid email address.",
+      message: 'Invalid email address.',
     }),
     password: z
       .string()
-      .min(8, { message: "Password must be at least 8 characters" })
+      .min(8, { message: 'Password must be at least 8 characters' })
       .regex(
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
         {
           message:
-            "Password must include uppercase, lowercase, number, and special character",
-        },
+            'Password must include uppercase, lowercase, number, and special character',
+        }
       ),
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords do not match",
-    path: ["confirmPassword"],
+    message: 'Passwords do not match',
+    path: ['confirmPassword'],
   });
 
 export default function SignUp() {
@@ -60,10 +60,10 @@ export default function SignUp() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: "",
-      email: "",
-      password: "",
-      confirmPassword: "",
+      name: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
     },
   });
 
@@ -71,16 +71,16 @@ export default function SignUp() {
     setServerError(null);
 
     // Show loading toast
-    const loadingToast = toast.loading("Processing your request...", {
-      style: { backgroundColor: "#f59e0b", color: "white" },
+    const loadingToast = toast.loading('Processing your request...', {
+      style: { backgroundColor: '#f59e0b', color: 'white' },
     });
 
     try {
       // Register user using fetch
-      const response = await fetch("/api/auth/register", {
-        method: "POST",
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           name: values.name.trim(),
@@ -91,21 +91,21 @@ export default function SignUp() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || "Registration failed");
+        throw new Error(errorData.error || 'Registration failed');
       }
 
       // Registration successful
-      toast.success("Registration successful! Please verify your email.");
+      toast.success('Registration successful! Please verify your email.');
       toast.remove(loadingToast);
 
       // Redirect to verification page with email pre-filled
       router.push(
-        `/auth/verify?email=${encodeURIComponent(values.email.trim().toLowerCase())}`,
+        `/auth/verify?email=${encodeURIComponent(values.email.trim().toLowerCase())}`
       );
     } catch (error: unknown) {
       // Handle errors
       const errorMessage =
-        error instanceof Error ? error.message : "An unknown error occurred";
+        error instanceof Error ? error.message : 'An unknown error occurred';
 
       setServerError(errorMessage);
       toast.error(errorMessage);
@@ -140,28 +140,32 @@ export default function SignUp() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="flex min-h-screen w-full flex-col items-center justify-center bg-gradient-to-b from-blue-50 to-white p-4"
+      className='flex min-h-screen w-full flex-col items-center justify-center bg-gradient-to-b from-blue-50 to-white p-4'
     >
       <motion.div
         variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-        className="w-full max-w-md rounded-xl bg-white p-8 shadow-lg"
+        initial='hidden'
+        animate='visible'
+        className='w-full max-w-md rounded-xl bg-white p-8 shadow-lg'
       >
         <motion.div
           variants={itemVariants}
-          className="mb-6 flex flex-col items-center"
+          className='mb-6 flex flex-col items-center'
         >
-          <Image
-            src="/bd-ship-mart-logo.svg"
-            alt="Bd shipmart logo"
-            height={80}
-            width={80}
-          />
-          <h1 className="mb-2 text-3xl font-bold text-gray-900">
-            Join BD Shipmart
+          <div className='flex justify-center'>
+            <Image
+              src='/k2b-logo-2.png'
+              alt='K2B EXPRESS logo'
+              width={150}
+              height={40}
+              className='mx-auto'
+            />
+          </div>
+
+          <h1 className='mb-6 text-center text-2xl font-bold text-gray-900'>
+            Join K2B EXPRESS
           </h1>
-          <p className="text-center text-gray-500">
+          <p className='text-center text-gray-500'>
             Create your account to get started
           </p>
         </motion.div>
@@ -170,9 +174,9 @@ export default function SignUp() {
           {serverError && (
             <motion.div
               initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
+              animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              className="mb-4 rounded-md bg-red-50 p-3 text-sm text-red-600"
+              className='mb-4 rounded-md bg-red-50 p-3 text-sm text-red-600'
             >
               {serverError}
             </motion.div>
@@ -180,19 +184,22 @@ export default function SignUp() {
         </AnimatePresence>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className='space-y-4'
+          >
             <motion.div variants={itemVariants}>
               <FormField
                 control={form.control}
-                name="name"
+                name='name'
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Full Name</FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="John Doe"
+                        placeholder='John Doe'
                         {...field}
-                        autoComplete="name"
+                        autoComplete='name'
                       />
                     </FormControl>
                     <FormMessage />
@@ -204,15 +211,15 @@ export default function SignUp() {
             <motion.div variants={itemVariants}>
               <FormField
                 control={form.control}
-                name="email"
+                name='email'
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Email Address</FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="your@email.com"
+                        placeholder='your@email.com'
                         {...field}
-                        autoComplete="email"
+                        autoComplete='email'
                       />
                     </FormControl>
                     <FormMessage />
@@ -221,32 +228,35 @@ export default function SignUp() {
               />
             </motion.div>
 
-            <motion.div variants={itemVariants} className="relative">
+            <motion.div
+              variants={itemVariants}
+              className='relative'
+            >
               <FormField
                 control={form.control}
-                name="password"
+                name='password'
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Password</FormLabel>
                     <FormControl>
-                      <div className="relative">
+                      <div className='relative'>
                         <Input
-                          type={showPassword ? "text" : "password"}
-                          placeholder="••••••••"
+                          type={showPassword ? 'text' : 'password'}
+                          placeholder='••••••••'
                           {...field}
-                          autoComplete="new-password"
+                          autoComplete='new-password'
                         />
                         <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
+                          type='button'
+                          variant='ghost'
+                          size='icon'
                           onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-0 top-1/2 -translate-y-1/2 transform"
+                          className='absolute right-0 top-1/2 -translate-y-1/2 transform'
                         >
                           {showPassword ? (
-                            <EyeOff className="h-4 w-4" />
+                            <EyeOff className='h-4 w-4' />
                           ) : (
-                            <Eye className="h-4 w-4" />
+                            <Eye className='h-4 w-4' />
                           )}
                         </Button>
                       </div>
@@ -261,34 +271,37 @@ export default function SignUp() {
               />
             </motion.div>
 
-            <motion.div variants={itemVariants} className="relative">
+            <motion.div
+              variants={itemVariants}
+              className='relative'
+            >
               <FormField
                 control={form.control}
-                name="confirmPassword"
+                name='confirmPassword'
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Confirm Password</FormLabel>
                     <FormControl>
-                      <div className="relative">
+                      <div className='relative'>
                         <Input
-                          type={showConfirmPassword ? "text" : "password"}
-                          placeholder="••••••••"
+                          type={showConfirmPassword ? 'text' : 'password'}
+                          placeholder='••••••••'
                           {...field}
-                          autoComplete="new-password"
+                          autoComplete='new-password'
                         />
                         <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
+                          type='button'
+                          variant='ghost'
+                          size='icon'
                           onClick={() =>
                             setShowConfirmPassword(!showConfirmPassword)
                           }
-                          className="absolute right-0 top-1/2 -translate-y-1/2 transform"
+                          className='absolute right-0 top-1/2 -translate-y-1/2 transform'
                         >
                           {showConfirmPassword ? (
-                            <EyeOff className="h-4 w-4" />
+                            <EyeOff className='h-4 w-4' />
                           ) : (
-                            <Eye className="h-4 w-4" />
+                            <Eye className='h-4 w-4' />
                           )}
                         </Button>
                       </div>
@@ -300,41 +313,47 @@ export default function SignUp() {
             </motion.div>
 
             <motion.div variants={itemVariants}>
-              <Button type="submit" className="w-full">
+              <Button
+                type='submit'
+                className='w-full'
+              >
                 Create Account
               </Button>
             </motion.div>
           </form>
         </Form>
 
-        <motion.div variants={itemVariants} className="relative my-6">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-300"></div>
+        <motion.div
+          variants={itemVariants}
+          className='relative my-6'
+        >
+          <div className='absolute inset-0 flex items-center'>
+            <div className='w-full border-t border-gray-300'></div>
           </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="bg-white px-2 text-gray-500">Or sign up with</span>
+          <div className='relative flex justify-center text-sm'>
+            <span className='bg-white px-2 text-gray-500'>Or sign up with</span>
           </div>
         </motion.div>
 
         <motion.div variants={itemVariants}>
           <Button
-            variant="outline"
-            className="w-full"
-            onClick={() => signIn("google", { callbackUrl: "/" })}
+            variant='outline'
+            className='w-full'
+            onClick={() => signIn('google', { callbackUrl: '/' })}
           >
-            <FaGoogle className="mr-2 h-4 w-4" />
+            <FaGoogle className='mr-2 h-4 w-4' />
             Sign up with Google
           </Button>
         </motion.div>
 
         <motion.p
           variants={itemVariants}
-          className="mt-6 text-center text-sm text-gray-500"
+          className='mt-6 text-center text-sm text-gray-500'
         >
-          Already have an account?{" "}
+          Already have an account?{' '}
           <Link
-            href="/auth/login"
-            className="font-medium text-blue-600 hover:text-blue-500"
+            href='/auth/login'
+            className='font-medium text-blue-600 hover:text-blue-500'
           >
             Login here
           </Link>
