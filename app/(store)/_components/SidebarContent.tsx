@@ -1,11 +1,11 @@
-"use client";
-import { usePathname } from "next/navigation";
-import Link from "next/link";
-import Image from "next/image";
-import { ChevronRight } from "lucide-react";
-import { useState } from "react";
-import { motion, AnimatePresence } from "motion/react";
-import { CategoryType } from "@/types/next-utils";
+'use client';
+import { usePathname } from 'next/navigation';
+import Link from 'next/link';
+import Image from 'next/image';
+import { ChevronRight } from 'lucide-react';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { CategoryType } from '@/types/next-utils';
 
 export default function SidebarContent({
   categories,
@@ -15,44 +15,48 @@ export default function SidebarContent({
   const pathname = usePathname();
   const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
 
-  const handleMouseEnter = (id: string) => {
-    setHoveredCategory(id);
+  const handleMouseEnter = (slug: string) => {
+    setHoveredCategory(slug);
   };
 
   const handleMouseLeave = () => {
     setHoveredCategory(null);
   };
+
   return (
     <motion.nav
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="flex size-full flex-col gap-2 p-3 bg-white mt-24 lg:mt-28"
+      className='flex size-full flex-col gap-2 p-3 bg-white mt-24 lg:mt-28'
     >
       {categories.map((category) => {
-        const isExpanded = hoveredCategory === category._id;
+        const isExpanded = hoveredCategory === category.slug; // Fixed: use category.slug instead of category._id
         const isActive = pathname.includes(`/categories/${category.slug}`);
 
         return (
           <div
             key={category.slug}
-            className="flex flex-col"
+            className='flex flex-col'
             onMouseEnter={() => handleMouseEnter(category.slug)}
             onMouseLeave={handleMouseLeave}
           >
-            <Link href={`/categories/${category.slug}`} className="w-full">
+            <Link
+              href={`/categories/${category.slug}`}
+              className='w-full'
+            >
               <motion.button
                 whileTap={{ scale: 0.98 }}
                 className={`flex w-full items-center gap-2 rounded-lg p-2 text-sm font-medium transition-colors duration-200 border-l-4
-                  ${isActive ? "bg-bondi-blue/10 text-bondi-blue-700 border-bondi-blue shadow-sm" : "text-gray-700 border-transparent hover:bg-bondi-blue/5 hover:text-bondi-blue-600"}
+                  ${isActive ? 'bg-bondi-blue/10 text-bondi-blue-700 border-bondi-blue shadow-sm' : 'text-gray-700 border-transparent hover:bg-bondi-blue/5 hover:text-bondi-blue-600'}
                 `}
-                aria-current={isActive ? "page" : undefined}
+                aria-current={isActive ? 'page' : undefined}
               >
-                <span className="flex flex-1 items-center gap-2">
+                <span className='flex flex-1 items-center gap-2'>
                   {category.icon && (
                     <motion.div
                       whileHover={{ scale: 1.1 }}
                       transition={{
-                        type: "spring",
+                        type: 'spring',
                         stiffness: 400,
                         damping: 10,
                       }}
@@ -62,7 +66,7 @@ export default function SidebarContent({
                         alt={category.name}
                         width={20}
                         height={20}
-                        className=""
+                        className=''
                       />
                     </motion.div>
                   )}
@@ -72,7 +76,7 @@ export default function SidebarContent({
                   animate={{ rotate: isExpanded ? 180 : 0 }}
                   transition={{ duration: 0.2 }}
                 >
-                  <ChevronRight className="size-4 text-gray-400" />
+                  <ChevronRight className='size-4 text-gray-400' />
                 </motion.div>
               </motion.button>
             </Link>
@@ -83,11 +87,11 @@ export default function SidebarContent({
                   initial={{ opacity: 0, height: 0 }}
                   animate={{
                     opacity: 1,
-                    height: "auto",
+                    height: 'auto',
                     transition: {
                       height: {
                         duration: 0.2,
-                        ease: "easeOut",
+                        ease: 'easeOut',
                       },
                       opacity: {
                         duration: 0.15,
@@ -107,7 +111,7 @@ export default function SidebarContent({
                       },
                     },
                   }}
-                  className="ml-4 mt-1 flex flex-col gap-1 overflow-hidden border-l border-gray-200 pl-2"
+                  className='ml-4 mt-1 flex flex-col gap-1 overflow-hidden border-l border-gray-200 pl-2'
                 >
                   {category.subcategories.map((subcategory, index: number) => {
                     const isSubcategoryActive =
@@ -121,7 +125,7 @@ export default function SidebarContent({
                           opacity: 1,
                           x: 0,
                           transition: {
-                            delay: index * 0.03, // Faster stagger for hover
+                            delay: index * 0.03,
                           },
                         }}
                         key={index}
@@ -131,19 +135,19 @@ export default function SidebarContent({
                           className={`group flex items-center gap-2 rounded-lg p-2 text-[15px] transition-all duration-200 border-l-4
                             ${
                               isSubcategoryActive
-                                ? "bg-bondi-blue/10 font-semibold text-bondi-blue-700 border-bondi-blue shadow-sm"
-                                : "text-gray-600 border-transparent hover:bg-bondi-blue/5 hover:text-bondi-blue-600"
+                                ? 'bg-bondi-blue/10 font-semibold text-bondi-blue-700 border-bondi-blue shadow-sm'
+                                : 'text-gray-600 border-transparent hover:bg-bondi-blue/5 hover:text-bondi-blue-600'
                             }
                           `}
                           aria-current={
-                            isSubcategoryActive ? "page" : undefined
+                            isSubcategoryActive ? 'page' : undefined
                           }
                         >
                           {subcategory.icon && (
                             <motion.div
                               whileHover={{ scale: 1.1 }}
                               transition={{
-                                type: "spring",
+                                type: 'spring',
                                 stiffness: 400,
                                 damping: 10,
                               }}
@@ -153,7 +157,7 @@ export default function SidebarContent({
                                 alt={subcategory.name}
                                 width={16}
                                 height={16}
-                                className="opacity-75 group-hover:opacity-100"
+                                className='opacity-75 group-hover:opacity-100'
                               />
                             </motion.div>
                           )}

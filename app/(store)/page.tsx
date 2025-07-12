@@ -53,7 +53,7 @@ export default function Home() {
                 </div>
               </div>
               {/* Secondary sliders section */}
-              <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 lg:w-1/3 lg:flex lg:flex-col lg:gap-6 lg:h-full">
+              <div className="w-full grid grid-cols-2 gap-4 sm:gap-6 lg:w-1/3 lg:flex lg:flex-col lg:gap-6 lg:h-full">
                 <div className="relative w-full aspect-[16/9] lg:aspect-auto lg:h-1/2 rounded-lg overflow-hidden shadow-md transition-all duration-300 hover:shadow-lg">
                   <ImageSlider hideControls={true} />
                 </div>
