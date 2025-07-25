@@ -13,10 +13,10 @@ export default function FooterPage() {
         {/* Logo */}
         <div className='flex justify-center'>
           <Image
-            src='/logo.svg'
+            src='/logo.png'
             alt='K2B EXPRESS'
-            width={150}
-            height={40}
+            width={250}
+            height={100}
             className='mx-auto'
           />
         </div>

@@ -95,13 +95,12 @@ export default function Navbar() {
             className='flex items-center gap-2 min-w-[60px]'
           >
             <Image
-              src='/logo.svg'
-              width={100}
-              height={100}
+              src='/logo.png'
+              width={200}
+              height={200}
               alt='Logo'
               className=''
             />
-           
           </Link>
         </div>
 
