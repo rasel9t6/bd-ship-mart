@@ -26,7 +26,7 @@ import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import MediaUpload, { MediaType } from '@/ui/custom/MediaUpload';
 import MultiText from '@/ui/custom/MultiText';
-import { Plus, Trash2, ChevronsUpDown } from 'lucide-react';
+import { Plus, Trash2, ChevronsUpDown, Star } from 'lucide-react';
 import slugify from 'slugify';
 import { Popover, PopoverContent, PopoverTrigger } from '@/ui/popover';
 import { cn } from '@/lib/utils';
@@ -37,6 +37,7 @@ import {
   CommandInput,
   CommandItem,
 } from '@/ui/command';
+import { Checkbox } from '@/ui/checkbox';
 
 // Updated form schema to match the model structure
 const formSchema = z.object({
@@ -46,6 +47,10 @@ const formSchema = z.object({
   categories: z.array(z.string()).min(1, 'At least one category is required'),
   subcategories: z.array(z.string()).optional(),
   inputCurrency: z.enum(['CNY', 'USD']),
+  // NEW: Featured fields
+  featured: z.boolean().default(false),
+  featuredPriority: z.number().min(0).max(100).default(0),
+  viewCount: z.number().min(0).default(0),
   price: z.object({
     cny: z.number().min(0).optional(),
     usd: z.number().min(0).optional(),
@@ -142,6 +147,9 @@ interface ProductFormType {
   categories: string[];
   subcategories: string[];
   inputCurrency: 'CNY' | 'USD';
+  featured: boolean;
+  featuredPriority: number;
+  viewCount: number;
   price: {
     cny?: number;
     usd?: number;
@@ -201,6 +209,10 @@ export default function ProductForm({ initialData }: Props) {
       categories: [],
       subcategories: [],
       inputCurrency: 'CNY',
+      // NEW: Featured default values
+      featured: initialData?.featured || false,
+      featuredPriority: initialData?.featuredPriority || 0,
+      viewCount: initialData?.viewCount || 0,
       price: {
         cny: 0,
         usd: 0,
@@ -455,6 +467,9 @@ export default function ProductForm({ initialData }: Props) {
         ...values,
         categories: values.categories || [],
         subcategories: values.subcategories || [],
+        featured: values.featured,
+        featuredPriority: values.featured ? values.featuredPriority : 0,
+        viewCount: values.viewCount,
         slug:
           initialData?.slug ||
           slugify(values.title, { lower: true, strict: true }),
@@ -475,7 +490,7 @@ export default function ProductForm({ initialData }: Props) {
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.message || 'Something went wrong');
+        throw new Error(error.message || 'Failed to save product');
       }
 
       toast.success(
@@ -486,7 +501,7 @@ export default function ProductForm({ initialData }: Props) {
       router.push('/admin/products');
       router.refresh();
     } catch (error) {
-      console.error('Error submitting form:', error);
+      console.error('Error saving product:', error);
       toast.error(
         error instanceof Error ? error.message : 'Something went wrong'
       );
@@ -737,6 +752,99 @@ export default function ProductForm({ initialData }: Props) {
               )}
             />
           )}
+        </div>
+
+        {/* NEW: Featured Product Settings Section */}
+        <div className='space-y-4 p-4 border rounded-lg bg-gray-50/50'>
+          <h3 className='text-lg font-semibold text-gray-900 flex items-center gap-2'>
+            <Star className='h-5 w-5 text-yellow-500' />
+            Featured Product Settings
+          </h3>
+
+          <div className='grid grid-cols-2 gap-4'>
+            <FormField
+              control={form.control}
+              name='featured'
+              render={({ field }) => (
+                <FormItem className='flex flex-row items-start space-x-3 space-y-0'>
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={(checked) => {
+                        field.onChange(checked);
+                        // Reset priority if unfeaturing
+                        if (!checked) {
+                          form.setValue('featuredPriority', 0);
+                        }
+                      }}
+                    />
+                  </FormControl>
+                  <div className='space-y-1 leading-none'>
+                    <FormLabel>Mark as Featured Product</FormLabel>
+                    <p className='text-sm text-muted-foreground'>
+                      Featured products appear on the homepage
+                    </p>
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {form.watch('featured') && (
+              <FormField
+                control={form.control}
+                name='featuredPriority'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Featured Priority</FormLabel>
+                    <FormControl>
+                      <Input
+                        type='number'
+                        min='0'
+                        max='100'
+                        placeholder='0-100'
+                        {...field}
+                        onChange={(e) => {
+                          field.onChange(parseInt(e.target.value) || 0);
+                        }}
+                      />
+                    </FormControl>
+                    <p className='text-xs text-muted-foreground'>
+                      Higher numbers appear first (0-100)
+                    </p>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+          </div>
+
+          <FormField
+            control={form.control}
+            name='viewCount'
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>View Count (Analytics)</FormLabel>
+                <FormControl>
+                  <Input
+                    type='number'
+                    min='0'
+                    placeholder='0'
+                    {...field}
+                    onChange={(e) => {
+                      field.onChange(parseInt(e.target.value) || 0);
+                    }}
+                    disabled
+                    className='bg-muted'
+                  />
+                </FormControl>
+                <p className='text-xs text-muted-foreground'>
+                  This field is automatically managed by the system
+                </p>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </div>
 
         <div className='grid grid-cols-2 gap-4'>

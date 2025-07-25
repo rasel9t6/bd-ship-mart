@@ -71,10 +71,7 @@ export default function CartPage() {
     router.push("/checkout");
   };
 
-  console.log(
-    "Cart items>>",
-    products.map((item) => item.product),
-  );
+
   if (!hasItems) {
     return (
       <div className="container mx-auto py-16 px-4 pt-32">

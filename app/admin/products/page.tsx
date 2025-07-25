@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic";
 
 export default async function ProductPage() {
   const products = await getProducts();
-  console.log(products);
+
   return (
     <div className="px-10 py-5">
       <div className="flex items-center justify-between">

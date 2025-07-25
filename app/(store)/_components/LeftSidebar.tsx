@@ -40,7 +40,7 @@ export default function LeftSidebar() {
       </aside>
     );
   }
-  console.log(categories);
+
   return (
     <aside className='sticky top-0 h-screen w-64 border-r border-bondi-blue-50/70 bg-white pr-6 max-md:hidden overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]'>
       <SidebarContent categories={categories} />

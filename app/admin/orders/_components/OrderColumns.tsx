@@ -144,7 +144,6 @@ export const columns: ColumnDef<OrderType>[] = [
     header: "Total Amount",
     cell: ({ row }) => {
       const amount = row.original.products.map((p) => p.totalPrice);
-      console.log(row.original.products.map((p) => p.totalPrice));
       return `${amount.map((p) => p.cny)} ¥ / ${amount.map((p) => p.usd)} $ / ${amount.map((p) => p.bdt)} ৳`;
     },
   },

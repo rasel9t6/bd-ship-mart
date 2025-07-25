@@ -104,8 +104,7 @@ export default function BkashPaymentPage() {
         bkashNumber,
       };
 
-      console.log("Sending bKash payment request:", payload);
-
+  
       const response = await fetch("/api/payment/bkash/create", {
         method: "POST",
         headers: {

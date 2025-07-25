@@ -119,8 +119,7 @@ export const columns: ColumnDef<ExtendedProductType>[] = [
     accessorKey: "category",
     header: "Category",
     cell: ({ row }) => {
-      console.log("Row data:", row.original);
-
+ 
       // Get the first category and subcategory from the arrays
       const category = row.original.categories?.[0];
       const subcategory = row.original.subcategories?.[0];

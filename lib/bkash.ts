@@ -35,23 +35,7 @@ async function getBkashToken(): Promise<string> {
     password: process.env.BKASH_PASSWORD!,
   };
 
-  // Debug log to check environment variables
-  console.log("bKash config check:", {
-    hasAppKey: !!config.appKey,
-    hasAppSecret: !!config.appSecret,
-    hasUsername: !!config.username,
-    hasPassword: !!config.password,
-    // Add additional logging to check actual values (first few chars)
-    appKeyPrefix: config.appKey
-      ? config.appKey.substring(0, 5) + "..."
-      : "missing",
-    usernamePrefix: config.username
-      ? config.username.substring(0, 5) + "..."
-      : "missing",
-    passwordLength: config.password
-      ? `${config.password.length} chars`
-      : "missing",
-  });
+
 
   // Validate required credentials
   const missingCredentials = Object.entries(config)
@@ -66,10 +50,7 @@ async function getBkashToken(): Promise<string> {
   }
 
   try {
-    console.log(
-      "Requesting bKash token with URL:",
-      `${BKASH_BASE_URL}/token/grant`,
-    );
+
 
     // Ensure tokenized payment auth structure is correct
     const tokenRequestBody = {
@@ -79,9 +60,7 @@ async function getBkashToken(): Promise<string> {
       password: config.password,
     };
 
-    // Log the structure (not the actual values)
-    console.log("Token request structure:", Object.keys(tokenRequestBody));
-
+ 
     const response = await fetch(`${BKASH_BASE_URL}/token/grant`, {
       method: "POST",
       headers: {
@@ -96,7 +75,6 @@ async function getBkashToken(): Promise<string> {
 
     // Log the raw response for debugging
     const rawResponse = await response.text();
-    console.log("Raw bKash API response:", rawResponse);
 
     let data;
     try {
@@ -106,11 +84,7 @@ async function getBkashToken(): Promise<string> {
       throw new Error("Invalid response format from bKash API");
     }
 
-    console.log("bKash token response:", {
-      status: response.status,
-      ok: response.ok,
-      hasToken: !!data.id_token,
-    });
+
 
     if (!response.ok) {
       console.error("bKash token error:", data);
@@ -144,7 +118,6 @@ export async function createBkashPayment(paymentData: {
 }) {
   try {
     const token = await getBkashToken();
-    console.log("Creating bKash payment with token:", token);
 
     const response = await fetch(`${BKASH_BASE_URL}/create`, {
       method: "POST",
@@ -172,7 +145,6 @@ export async function createBkashPayment(paymentData: {
     }
 
     const data = await response.json();
-    console.log("bKash payment response:", data);
 
     if (!data.paymentID || !data.bkashURL) {
       throw new Error("Invalid payment response from bKash");

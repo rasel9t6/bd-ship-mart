@@ -14,8 +14,7 @@ export async function GET(request: Request) {
 
     // First check the payment status
     const statusCheck = await queryBkashPayment(paymentID);
-    console.log("bKash payment status check:", statusCheck);
-
+ 
     if (!statusCheck.statusCode || statusCheck.statusCode !== "0000") {
       throw new Error(
         statusCheck.statusMessage || "Failed to verify payment status",
@@ -25,8 +24,7 @@ export async function GET(request: Request) {
     // Only execute payment if it's in a valid state
     if (statusCheck.status === "INITIATED") {
       const verifyData = await executeBkashPayment(paymentID);
-      console.log("bKash payment execution response:", verifyData);
-
+    
       if (!verifyData.statusCode || verifyData.statusCode !== "0000") {
         throw new Error(
           verifyData.statusMessage || "Failed to execute payment",
@@ -45,12 +43,7 @@ export async function GET(request: Request) {
 
     // Update order status based on payment status
     const finalStatus = callbackStatus === "success" ? "paid" : "failed";
-    console.log("bKash payment final status:", {
-      paymentID,
-      callbackStatus,
-      finalStatus,
-      orderId: order.orderId,
-    });
+  
 
     await Order.findByIdAndUpdate(
       order._id,

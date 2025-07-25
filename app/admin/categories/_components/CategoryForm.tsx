@@ -220,13 +220,6 @@ const CategoryForm = ({ initialData }: CategoryFormProps) => {
     }
   }, [initialData, fields.length, form, formattedSubcategories]);
 
-  // Debug logging
-  useEffect(() => {
-    if (initialData) {
-      console.log("Initial subcategories:", formattedSubcategories);
-      console.log("Current fields:", fields);
-    }
-  }, [initialData, fields, formattedSubcategories]);
 
   const handleFormSubmit = async (values: FormValues) => {
     try {

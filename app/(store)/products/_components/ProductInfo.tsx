@@ -33,7 +33,7 @@ export default function ProductInfo({
   const router = useRouter();
   const minOrderQty = productInfo.minimumOrderQuantity || 1;
   const { data: session } = useSession();
-  console.log(productInfo);
+
   // Initialize order items with color variants and ZERO quantity
   const [orderItems, setOrderItems] = useState<OrderItem[]>(
     (productInfo.colors || []).map((color) => ({

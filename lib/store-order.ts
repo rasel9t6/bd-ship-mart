@@ -9,10 +9,7 @@ export async function updateStoreUserOrder(
   orderId: string,
   orderData: OrderType,
 ) {
-  console.log(
-    `Updating order ${orderId} for user ${userId} in store system`,
-    orderData,
-  );
+
   try {
     const response = await fetch(
       `${STORE_API_URL}/users/${userId}/orders/${orderId}`,
@@ -35,10 +32,7 @@ export async function updateStoreUserOrder(
       );
     }
 
-    console.log(`Updated order ${orderId} in store system for user ${userId}`);
-    toast.success(
-      `Updated order ${orderId} in store system for user ${userId}`,
-    );
+ 
     return true;
   } catch (apiError) {
     console.error(
