@@ -1,16 +1,16 @@
-import mongoose, { Schema } from "mongoose";
+import mongoose, { Schema } from 'mongoose';
 
 function generateSequentialNumber() {
   return Math.floor(Math.random() * 10000)
     .toString()
-    .padStart(4, "0");
+    .padStart(4, '0');
 }
 
 function generateOrderId() {
   const date = new Date();
   const year = date.getFullYear().toString().slice(-2); // Last 2 digits of year
-  const month = (date.getMonth() + 1).toString().padStart(2, "0");
-  const day = date.getDate().toString().padStart(2, "0");
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const day = date.getDate().toString().padStart(2, '0');
   const sequential = generateSequentialNumber();
   // Format: BSM-ORD-DD-MM-YY-XXXX
   return `BSM-ORD-${day}-${month}-${year}-${sequential}`;
@@ -21,21 +21,21 @@ const CurrencySchema = new Schema(
   {
     cny: {
       type: Number,
-      min: [0, "Value cannot be negative"],
+      min: [0, 'Value cannot be negative'],
       default: 0,
     },
     usd: {
       type: Number,
-      min: [0, "Value cannot be negative"],
+      min: [0, 'Value cannot be negative'],
       default: 0,
     },
     bdt: {
       type: Number,
-      min: [0, "Value cannot be negative"],
+      min: [0, 'Value cannot be negative'],
       default: 0,
     },
   },
-  { _id: false },
+  { _id: false }
 );
 
 interface IOrderProduct {
@@ -59,7 +59,7 @@ const OrderProductSchema = new Schema<IOrderProduct>(
   {
     product: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Product",
+      ref: 'Product',
       required: true,
     },
     color: { type: [String], required: true },
@@ -67,12 +67,12 @@ const OrderProductSchema = new Schema<IOrderProduct>(
     quantity: {
       type: Number,
       required: true,
-      min: [1, "Quantity must be at least 1"],
+      min: [1, 'Quantity must be at least 1'],
     },
     unitPrice: CurrencySchema,
     totalPrice: CurrencySchema,
   },
-  { _id: false },
+  { _id: false }
 );
 
 // Main Order Schema
@@ -85,7 +85,7 @@ const orderSchema = new Schema({
   },
   customerInfo: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
+    ref: 'User',
     required: true,
     index: true,
   },
@@ -110,27 +110,27 @@ const orderSchema = new Schema({
   estimatedDeliveryDate: Date,
   paymentMethod: {
     type: String,
-    enum: ["cash", "card", "bkash"],
+    enum: ['cash', 'card', 'bkash'],
     required: true,
   },
   paymentCurrency: {
     type: String,
-    enum: ["CNY", "USD", "BDT"],
-    default: "BDT",
+    enum: ['CNY', 'USD', 'BDT'],
+    default: 'BDT',
   },
   paymentDetails: {
     status: {
       type: String,
       enum: [
-        "pending",
-        "paid",
-        "failed",
-        "refunded",
-        "partially_refunded",
-        "partially_paid",
-        "cancelled",
+        'pending',
+        'paid',
+        'failed',
+        'refunded',
+        'partially_refunded',
+        'partially_paid',
+        'cancelled',
       ],
-      default: "pending",
+      default: 'pending',
     },
     transactions: [
       {
@@ -147,7 +147,7 @@ const orderSchema = new Schema({
           trxID: String,
           status: {
             type: String,
-            enum: ["INITIATED", "COMPLETED", "FAILED", "CANCELLED"],
+            enum: ['INITIATED', 'COMPLETED', 'FAILED', 'CANCELLED'],
           },
           statusCode: String,
           statusMessage: String,
@@ -161,17 +161,17 @@ const orderSchema = new Schema({
   status: {
     type: String,
     enum: [
-      "pending",
-      "confirmed",
-      "processing",
-      "shipped",
-      "in-transit",
-      "out-for-delivery",
-      "delivered",
-      "canceled",
-      "returned",
+      'pending',
+      'confirmed',
+      'processing',
+      'shipped',
+      'in-transit',
+      'out-for-delivery',
+      'delivered',
+      'canceled',
+      'returned',
     ],
-    default: "pending",
+    default: 'pending',
   },
   trackingHistory: [
     {
@@ -199,7 +199,7 @@ const orderSchema = new Schema({
 });
 
 // Add pre-save middleware to calculate totals
-orderSchema.pre("save", function (next) {
+orderSchema.pre('save', function (next) {
   // Calculate subTotal from products
   this.subTotal = this.products.reduce(
     (acc, product) => ({
@@ -207,7 +207,7 @@ orderSchema.pre("save", function (next) {
       usd: acc.usd + product.totalPrice.usd,
       cny: acc.cny + product.totalPrice.cny,
     }),
-    { bdt: 0, usd: 0, cny: 0 },
+    { bdt: 0, usd: 0, cny: 0 }
   );
 
   // Set totalAmount equal to subTotal (can be modified if there are additional charges)
@@ -216,14 +216,42 @@ orderSchema.pre("save", function (next) {
   next();
 });
 
+// Add instance methods for calculated totals
+orderSchema.methods.calculateSubTotal = function () {
+  if (this.subTotal) return this.subTotal;
+
+  return this.products.reduce(
+    (acc, product) => ({
+      bdt: acc.bdt + (product.totalPrice?.bdt || 0),
+      usd: acc.usd + (product.totalPrice?.usd || 0),
+      cny: acc.cny + (product.totalPrice?.cny || 0),
+    }),
+    { bdt: 0, usd: 0, cny: 0 }
+  );
+};
+
+orderSchema.methods.calculateTotalAmount = function () {
+  if (this.totalAmount) return this.totalAmount;
+
+  const subTotal = this.calculateSubTotal();
+  const shippingRate = this.shippingRate || { bdt: 0, usd: 0, cny: 0 };
+  const totalDiscount = this.totalDiscount || { bdt: 0, usd: 0, cny: 0 };
+
+  return {
+    bdt: subTotal.bdt + shippingRate.bdt - totalDiscount.bdt,
+    usd: subTotal.usd + shippingRate.usd - totalDiscount.usd,
+    cny: subTotal.cny + shippingRate.cny - totalDiscount.cny,
+  };
+};
+
 // Add index for common queries
 orderSchema.index({ status: 1, createdAt: -1 });
 orderSchema.index({
-  "customerInfo.name": "text",
-  "customerInfo.email": "text",
+  'customerInfo.name': 'text',
+  'customerInfo.email': 'text',
 });
-orderSchema.index({ "products.sku": 1 });
-orderSchema.index({ "totalAmount.bdt": 1 });
+orderSchema.index({ 'products.sku': 1 });
+orderSchema.index({ 'totalAmount.bdt': 1 });
 
-const Order = mongoose.models.Order || mongoose.model("Order", orderSchema);
+const Order = mongoose.models.Order || mongoose.model('Order', orderSchema);
 export default Order;

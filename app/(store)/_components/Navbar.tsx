@@ -1,7 +1,7 @@
 'use client';
 
 import { useSession, signIn } from 'next-auth/react';
-import { Menu, CircleUserRound } from 'lucide-react';
+import { Menu, CircleUserRound, Settings } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -37,6 +37,7 @@ const NAV_LINKS = [
     icon: <HiShoppingBag size={24} />,
     label: 'Orders',
   },
+  { path: '/admin', icon: <Settings size={24} />, label: 'Admin' },
 ];
 
 const NavLinks = ({
@@ -257,7 +258,7 @@ export default function Navbar() {
                       alt='Logo'
                       className='w-8 h-8 object-contain'
                     />
-                    <span className='font-semibold text-bondi-blue-600'>
+                    <span className='font-semibold tracking-tighter text-bondi-blue-600'>
                       K2B EXPRESS
                     </span>
                   </Link>

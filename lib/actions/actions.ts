@@ -1,20 +1,20 @@
-"use server";
+'use server';
 
-import Order from "@/models/Order";
-import { connectToDB } from "../dbConnect";
-import Category from "@/models/Category";
-import Product from "@/models/Product";
-import User from "@/models/User";
-import Subcategory from "@/models/Subcategory";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/authOption";
-import { FilterQuery } from "mongoose";
-import { CategoryType, ProductType, SubcategoryType } from "@/types/next-utils";
-import { Document } from "mongoose";
-const apiUrl = process.env.NEXT_PUBLIC_APP_URL || "";
+import Order from '@/models/Order';
+import { connectToDB } from '../dbConnect';
+import Category from '@/models/Category';
+import Product from '@/models/Product';
+import User from '@/models/User';
+import Subcategory from '@/models/Subcategory';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/authOption';
+import { FilterQuery } from 'mongoose';
+import { CategoryType, ProductType, SubcategoryType } from '@/types/next-utils';
+import { Document } from 'mongoose';
+const apiUrl = process.env.NEXT_PUBLIC_APP_URL || '';
 
 if (!apiUrl) {
-  throw new Error("NEXT_PUBLIC_APP_URL is not found");
+  throw new Error('NEXT_PUBLIC_APP_URL is not found');
 }
 export const getTotalSales = async () => {
   try {
@@ -23,11 +23,11 @@ export const getTotalSales = async () => {
     const totalOrders = orders.length;
     const totalRevenue = orders.reduce(
       (acc, order) => acc + (order.totalAmount?.bdt || 0),
-      0,
+      0
     );
     return { totalOrders, totalRevenue };
   } catch (error) {
-    console.error("Error fetching total sales:", error);
+    console.error('Error fetching total sales:', error);
     return { totalOrders: 0, totalRevenue: 0 };
   }
 };
@@ -44,22 +44,22 @@ export const getSalesPerMonth = async () => {
           (acc[monthIndex] || 0) + (order.totalAmount?.bdt || 0);
         return acc;
       },
-      {} as Record<number, number>,
+      {} as Record<number, number>
     );
 
     const graphData = Array.from({ length: 12 }, (_, i) => {
-      const month = new Intl.DateTimeFormat("en-US", { month: "short" }).format(
-        new Date(0, i),
+      const month = new Intl.DateTimeFormat('en-US', { month: 'short' }).format(
+        new Date(0, i)
       );
       return { name: month, sales: salesPerMonth[i] || 0 };
     });
 
     return graphData;
   } catch (error) {
-    console.error("Error fetching sales per month:", error);
+    console.error('Error fetching sales per month:', error);
     return Array.from({ length: 12 }, (_, i) => ({
-      name: new Intl.DateTimeFormat("en-US", { month: "short" }).format(
-        new Date(0, i),
+      name: new Intl.DateTimeFormat('en-US', { month: 'short' }).format(
+        new Date(0, i)
       ),
       sales: 0,
     }));
@@ -68,10 +68,10 @@ export const getSalesPerMonth = async () => {
 export const getTotalCustomers = async () => {
   try {
     await connectToDB();
-    const users = await User.countDocuments({ role: "user" });
+    const users = await User.countDocuments({ role: 'user' });
     return users;
   } catch (error) {
-    console.error("Error fetching total customers:", error);
+    console.error('Error fetching total customers:', error);
     return 0;
   }
 };
@@ -87,7 +87,7 @@ export async function getCategories(
     sort?: string;
     search?: string;
     featured?: boolean;
-  } = {},
+  } = {}
 ) {
   try {
     await connectToDB();
@@ -95,8 +95,8 @@ export async function getCategories(
     const {
       page = 1,
       limit = 12,
-      sort = "name",
-      search = "",
+      sort = 'name',
+      search = '',
       featured = false,
     } = options;
     const skip = (page - 1) * limit;
@@ -106,9 +106,9 @@ export async function getCategories(
 
     if (search) {
       query.$or = [
-        { name: { $regex: search, $options: "i" } },
-        { title: { $regex: search, $options: "i" } },
-        { description: { $regex: search, $options: "i" } },
+        { name: { $regex: search, $options: 'i' } },
+        { title: { $regex: search, $options: 'i' } },
+        { description: { $regex: search, $options: 'i' } },
       ];
     }
 
@@ -119,22 +119,22 @@ export async function getCategories(
     // Build sort
     let sortQuery: Record<string, 1 | -1> = {};
     switch (sort) {
-      case "name":
+      case 'name':
         sortQuery = { name: 1 };
         break;
-      case "name-desc":
+      case 'name-desc':
         sortQuery = { name: -1 };
         break;
-      case "newest":
+      case 'newest':
         sortQuery = { createdAt: -1 };
         break;
-      case "oldest":
+      case 'oldest':
         sortQuery = { createdAt: 1 };
         break;
-      case "products":
-        sortQuery = { "products.length": -1 };
+      case 'products':
+        sortQuery = { 'products.length': -1 };
         break;
-      case "featured":
+      case 'featured':
         sortQuery = { featured: -1, name: 1 };
         break;
       default:
@@ -143,13 +143,13 @@ export async function getCategories(
 
     const categories = await Category.find(query)
       .populate({
-        path: "subcategories",
+        path: 'subcategories',
         model: Subcategory,
       })
       .populate({
-        path: "products",
+        path: 'products',
         model: Product,
-        select: "_id",
+        select: '_id',
       })
       .sort(sortQuery)
       .skip(skip)
@@ -158,7 +158,7 @@ export async function getCategories(
 
     return JSON.parse(JSON.stringify(categories || []));
   } catch (error) {
-    console.error("Error fetching categories:", error);
+    console.error('Error fetching categories:', error);
     return [];
   }
 }
@@ -170,21 +170,21 @@ export async function getCategory(categoryPath: string | string[]) {
     if (Array.isArray(categoryPath)) {
       segments = categoryPath;
     } else {
-      segments = categoryPath.split("/").filter(Boolean);
+      segments = categoryPath.split('/').filter(Boolean);
     }
 
     if (segments.length === 0) {
-      console.error("Invalid category path: empty path");
+      console.error('Invalid category path: empty path');
       return null;
     }
 
     // Create the API path from the segments
-    const apiPath = `${apiUrl}/api/categories/${segments.join("/")}`;
+    const apiPath = `${apiUrl}/api/categories/${segments.join('/')}`;
 
     const response = await fetch(apiPath, {
-      method: "GET",
+      method: 'GET',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       next: { revalidate: 300 }, // Cache for 5 minutes
     });
@@ -192,7 +192,7 @@ export async function getCategory(categoryPath: string | string[]) {
     if (!response.ok) {
       console.error(
         `API error (${response.status}): ${response.statusText}`,
-        await response.text(),
+        await response.text()
       );
       return null;
     }
@@ -200,7 +200,7 @@ export async function getCategory(categoryPath: string | string[]) {
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error("Error in getCategory:", error);
+    console.error('Error in getCategory:', error);
     return null;
   }
 }
@@ -215,7 +215,7 @@ export async function getProducts(
     subcategory?: string;
     minPrice?: number;
     maxPrice?: number;
-  } = {},
+  } = {}
 ) {
   try {
     await connectToDB();
@@ -223,10 +223,10 @@ export async function getProducts(
     const {
       page = 1,
       limit = 24,
-      sort = "newest",
-      search = "",
-      category = "",
-      subcategory = "",
+      sort = 'newest',
+      search = '',
+      category = '',
+      subcategory = '',
       minPrice,
       maxPrice,
     } = options;
@@ -238,9 +238,9 @@ export async function getProducts(
 
     if (search) {
       query.$or = [
-        { title: { $regex: search, $options: "i" } },
-        { description: { $regex: search, $options: "i" } },
-        { tags: { $in: [new RegExp(search, "i")] } },
+        { title: { $regex: search, $options: 'i' } },
+        { description: { $regex: search, $options: 'i' } },
+        { tags: { $in: [new RegExp(search, 'i')] } },
       ];
     }
 
@@ -272,31 +272,31 @@ export async function getProducts(
     // Build sort
     let sortQuery: Record<string, 1 | -1> = {};
     switch (sort) {
-      case "newest":
+      case 'newest':
         sortQuery = { createdAt: -1 };
         break;
-      case "oldest":
+      case 'oldest':
         sortQuery = { createdAt: 1 };
         break;
-      case "name":
+      case 'name':
         sortQuery = { title: 1 };
         break;
-      case "name-desc":
+      case 'name-desc':
         sortQuery = { title: -1 };
         break;
-      case "price-low":
-        sortQuery = { "price.bdt": 1 };
+      case 'price-low':
+        sortQuery = { 'price.bdt': 1 };
         break;
-      case "price-high":
-        sortQuery = { "price.bdt": -1 };
+      case 'price-high':
+        sortQuery = { 'price.bdt': -1 };
         break;
-      case "popular":
+      case 'popular':
         sortQuery = { createdAt: -1 };
         break;
-      case "rating":
+      case 'rating':
         sortQuery = { createdAt: -1 };
         break;
-      case "featured":
+      case 'featured':
         sortQuery = { createdAt: -1 };
         break;
       default:
@@ -305,14 +305,14 @@ export async function getProducts(
 
     const products = await Product.find(query)
       .populate({
-        path: "categories",
+        path: 'categories',
         model: Category,
-        select: "name slug subcategories",
+        select: 'name slug subcategories',
       })
       .populate({
-        path: "subcategories",
+        path: 'subcategories',
         model: Subcategory,
-        select: "name slug",
+        select: 'name slug',
       })
       .sort(sortQuery)
       .skip(skip)
@@ -321,7 +321,7 @@ export async function getProducts(
 
     return JSON.parse(JSON.stringify(products || []));
   } catch (error) {
-    console.error("Error fetching products:", error);
+    console.error('Error fetching products:', error);
     return [];
   }
 }
@@ -331,14 +331,14 @@ export async function getProduct({ productSlug }: { productSlug: string }) {
     await connectToDB();
     const product = await Product.findOne({ slug: productSlug })
       .populate({
-        path: "categories",
+        path: 'categories',
         model: Category,
-        select: "name slug subcategories",
+        select: 'name slug subcategories _id',
       })
       .populate({
-        path: "subcategories",
+        path: 'subcategories',
         model: Subcategory,
-        select: "name slug",
+        select: 'name slug _id',
       });
 
     if (!product) {
@@ -355,10 +355,12 @@ export async function getProduct({ productSlug }: { productSlug: string }) {
 export async function getOrders() {
   try {
     await connectToDB();
-    const orders = await Order.find().populate({
-      path: "products",
-      model: Product,
-    });
+    const orders = await Order.find()
+      .sort({ createdAt: -1 }) // Sort by newest first
+      .populate({
+        path: 'products',
+        model: Product,
+      });
     return JSON.parse(JSON.stringify(orders));
   } catch (error) {
     console.error(`${error}`);
@@ -384,9 +386,9 @@ export async function getRelatedProducts({
     await connectToDB();
     // Find the current product
     const product = await Product.findOne({ slug: productSlug }).populate({
-      path: "categories",
+      path: 'categories',
       model: Category,
-      select: "name slug subcategories",
+      select: 'name slug subcategories',
     });
 
     if (!product) {
@@ -413,7 +415,7 @@ export async function getRelatedProducts({
       const price = product.price.bdt;
       const minPrice = price * 0.7; // 30% lower
       const maxPrice = price * 1.3; // 30% higher
-      query["price.bdt"] = {
+      query['price.bdt'] = {
         $gte: minPrice,
         $lte: maxPrice,
       };
@@ -422,28 +424,28 @@ export async function getRelatedProducts({
     // Get related products, limit to 8
     const relatedProducts = await Product.find(query)
       .populate({
-        path: "categories",
+        path: 'categories',
         model: Category,
-        select: "name slug subcategories",
+        select: 'name slug subcategories',
       })
       .populate({
-        path: "subcategories",
+        path: 'subcategories',
         model: Subcategory,
-        select: "name slug",
+        select: 'name slug',
       })
       .limit(8)
       .lean();
 
     return JSON.parse(JSON.stringify(relatedProducts));
   } catch (error) {
-    console.error("Error fetching related products:", error);
+    console.error('Error fetching related products:', error);
     return [];
   }
 }
 
 export async function getUserOrders(userId: string | undefined) {
   try {
-    const res = await User.findById(userId).populate("orders");
+    const res = await User.findById(userId).populate('orders');
     const user = JSON.parse(JSON.stringify(res));
     return user.orders;
   } catch (error) {
@@ -455,25 +457,25 @@ export async function getUserData() {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
-      throw new Error("Unauthorized");
+      throw new Error('Unauthorized');
     }
 
     await connectToDB();
     const user = await User.findById(session.user.id)
       .populate({
-        path: "orders",
+        path: 'orders',
         model: Order,
         options: { sort: { createdAt: -1 } },
       })
-      .select("-password");
+      .select('-password');
 
     if (!user) {
-      throw new Error("User not found");
+      throw new Error('User not found');
     }
 
     return JSON.parse(JSON.stringify(user));
   } catch (error) {
-    console.error("[GET_USER_DATA_ERROR]", error);
+    console.error('[GET_USER_DATA_ERROR]', error);
     throw error;
   }
 }
@@ -486,10 +488,10 @@ export interface SearchFilters {
   priceRange?: { min: number; max: number };
   tags?: string[];
   inStock?: boolean;
-  sortBy?: "relevance" | "price_low" | "price_high" | "newest" | "popular";
+  sortBy?: 'relevance' | 'price_low' | 'price_high' | 'newest' | 'popular';
   limit?: number;
   page?: number;
-  searchType?: "all" | "products" | "categories" | "subcategories";
+  searchType?: 'all' | 'products' | 'categories' | 'subcategories';
 }
 
 export interface SearchResult {
@@ -511,14 +513,14 @@ export interface SearchResult {
 export async function advancedSearch(
   query: string,
   filters: SearchFilters = {},
-  userId?: string,
+  userId?: string
 ): Promise<SearchResult> {
   const startTime = Date.now();
 
   try {
     await connectToDB();
 
-    const searchType = filters.searchType || "all";
+    const searchType = filters.searchType || 'all';
     const page = filters.page || 1;
     const limit = filters.limit || 20;
 
@@ -529,21 +531,21 @@ export async function advancedSearch(
     let total = 0;
 
     // Search Products
-    if (searchType === "all" || searchType === "products") {
+    if (searchType === 'all' || searchType === 'products') {
       const productResults = await searchProducts(query, filters, page, limit);
       products = productResults.products;
       total += productResults.total;
     }
 
     // Search Categories
-    if (searchType === "all" || searchType === "categories") {
+    if (searchType === 'all' || searchType === 'categories') {
       const categoryResults = await searchCategories(query, page, limit);
       categories = categoryResults.categories;
       total += categoryResults.total;
     }
 
     // Search Subcategories
-    if (searchType === "all" || searchType === "subcategories") {
+    if (searchType === 'all' || searchType === 'subcategories') {
       const subcategoryResults = await searchSubcategories(query, page, limit);
       subcategories = subcategoryResults.subcategories;
       total += subcategoryResults.total;
@@ -570,8 +572,8 @@ export async function advancedSearch(
       searchTime: Date.now() - startTime,
     };
   } catch (error) {
-    console.error("Advanced search error:", error);
-    throw new Error("Search failed");
+    console.error('Advanced search error:', error);
+    throw new Error('Search failed');
   }
 }
 
@@ -579,7 +581,7 @@ async function searchProducts(
   query: string,
   filters: SearchFilters,
   page: number,
-  limit: number,
+  limit: number
 ): Promise<{ products: ProductType[]; total: number }> {
   // Build search query
   const searchQuery: Record<string, unknown> = {};
@@ -588,18 +590,18 @@ async function searchProducts(
   if (query.trim()) {
     // Multi-field search with relevance scoring
     $or.push(
-      { title: { $regex: query, $options: "i" } },
-      { description: { $regex: query, $options: "i" } },
-      { tags: { $in: [new RegExp(query, "i")] } },
-      { sku: { $regex: query, $options: "i" } },
+      { title: { $regex: query, $options: 'i' } },
+      { description: { $regex: query, $options: 'i' } },
+      { tags: { $in: [new RegExp(query, 'i')] } },
+      { sku: { $regex: query, $options: 'i' } }
     );
 
     // Fuzzy search for typos
-    const words = query.split(" ").filter((word) => word.length > 2);
+    const words = query.split(' ').filter((word) => word.length > 2);
     words.forEach((word) => {
       $or.push(
-        { title: { $regex: word, $options: "i" } },
-        { tags: { $in: [new RegExp(word, "i")] } },
+        { title: { $regex: word, $options: 'i' } },
+        { tags: { $in: [new RegExp(word, 'i')] } }
       );
     });
   }
@@ -612,19 +614,19 @@ async function searchProducts(
   if (filters.categories?.length) {
     const categoryIds = await Category.find({
       slug: { $in: filters.categories },
-    }).select("_id");
+    }).select('_id');
     searchQuery.categories = { $in: categoryIds.map((cat) => cat._id) };
   }
 
   if (filters.subcategories?.length) {
     const subcategoryIds = await Subcategory.find({
       slug: { $in: filters.subcategories },
-    }).select("_id");
+    }).select('_id');
     searchQuery.subcategories = { $in: subcategoryIds.map((sub) => sub._id) };
   }
 
   if (filters.priceRange) {
-    searchQuery["price.bdt"] = {
+    searchQuery['price.bdt'] = {
       $gte: filters.priceRange.min,
       $lte: filters.priceRange.max,
     };
@@ -640,18 +642,18 @@ async function searchProducts(
     { $match: searchQuery },
     {
       $lookup: {
-        from: "categories",
-        localField: "categories",
-        foreignField: "_id",
-        as: "categoryDetails",
+        from: 'categories',
+        localField: 'categories',
+        foreignField: '_id',
+        as: 'categoryDetails',
       },
     },
     {
       $lookup: {
-        from: "subcategories",
-        localField: "subcategories",
-        foreignField: "_id",
-        as: "subcategoryDetails",
+        from: 'subcategories',
+        localField: 'subcategories',
+        foreignField: '_id',
+        as: 'subcategoryDetails',
       },
     },
     {
@@ -661,7 +663,7 @@ async function searchProducts(
             {
               $cond: [
                 {
-                  $regexMatch: { input: "$title", regex: query, options: "i" },
+                  $regexMatch: { input: '$title', regex: query, options: 'i' },
                 },
                 10,
                 0,
@@ -671,19 +673,19 @@ async function searchProducts(
               $cond: [
                 {
                   $regexMatch: {
-                    input: "$description",
+                    input: '$description',
                     regex: query,
-                    options: "i",
+                    options: 'i',
                   },
                 },
                 5,
                 0,
               ],
             },
-            { $cond: [{ $in: [query, "$tags"] }, 8, 0] },
+            { $cond: [{ $in: [query, '$tags'] }, 8, 0] },
             {
               $cond: [
-                { $regexMatch: { input: "$sku", regex: query, options: "i" } },
+                { $regexMatch: { input: '$sku', regex: query, options: 'i' } },
                 15,
                 0,
               ],
@@ -698,16 +700,16 @@ async function searchProducts(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const sortStage: any = {};
   switch (filters.sortBy) {
-    case "price_low":
-      sortStage["price.bdt"] = 1;
+    case 'price_low':
+      sortStage['price.bdt'] = 1;
       break;
-    case "price_high":
-      sortStage["price.bdt"] = -1;
+    case 'price_high':
+      sortStage['price.bdt'] = -1;
       break;
-    case "newest":
+    case 'newest':
       sortStage.createdAt = -1;
       break;
-    case "popular":
+    case 'popular':
       sortStage.relevanceScore = -1;
       break;
     default:
@@ -724,7 +726,7 @@ async function searchProducts(
   const products = await Product.aggregate(pipeline);
 
   // Get total count for pagination
-  const countPipeline = [{ $match: searchQuery }, { $count: "total" }];
+  const countPipeline = [{ $match: searchQuery }, { $count: 'total' }];
   const countResult = await Product.aggregate(countPipeline);
   const total = countResult[0]?.total || 0;
 
@@ -737,7 +739,7 @@ async function searchProducts(
 async function searchCategories(
   query: string,
   page: number,
-  limit: number,
+  limit: number
 ): Promise<{ categories: CategoryType[]; total: number }> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const searchQuery: any = {};
@@ -746,17 +748,17 @@ async function searchCategories(
 
   if (query.trim()) {
     $or.push(
-      { name: { $regex: query, $options: "i" } },
-      { title: { $regex: query, $options: "i" } },
-      { description: { $regex: query, $options: "i" } },
+      { name: { $regex: query, $options: 'i' } },
+      { title: { $regex: query, $options: 'i' } },
+      { description: { $regex: query, $options: 'i' } }
     );
 
     // Fuzzy search for typos
-    const words = query.split(" ").filter((word) => word.length > 2);
+    const words = query.split(' ').filter((word) => word.length > 2);
     words.forEach((word) => {
       $or.push(
-        { name: { $regex: word, $options: "i" } },
-        { title: { $regex: word, $options: "i" } },
+        { name: { $regex: word, $options: 'i' } },
+        { title: { $regex: word, $options: 'i' } }
       );
     });
   }
@@ -773,10 +775,10 @@ async function searchCategories(
     { $match: searchQuery },
     {
       $lookup: {
-        from: "subcategories",
-        localField: "_id",
-        foreignField: "category",
-        as: "subcategoryDetails",
+        from: 'subcategories',
+        localField: '_id',
+        foreignField: 'category',
+        as: 'subcategoryDetails',
       },
     },
     {
@@ -785,7 +787,7 @@ async function searchCategories(
           $add: [
             {
               $cond: [
-                { $regexMatch: { input: "$name", regex: query, options: "i" } },
+                { $regexMatch: { input: '$name', regex: query, options: 'i' } },
                 15,
                 0,
               ],
@@ -793,7 +795,7 @@ async function searchCategories(
             {
               $cond: [
                 {
-                  $regexMatch: { input: "$title", regex: query, options: "i" },
+                  $regexMatch: { input: '$title', regex: query, options: 'i' },
                 },
                 10,
                 0,
@@ -803,9 +805,9 @@ async function searchCategories(
               $cond: [
                 {
                   $regexMatch: {
-                    input: "$description",
+                    input: '$description',
                     regex: query,
-                    options: "i",
+                    options: 'i',
                   },
                 },
                 5,
@@ -835,7 +837,7 @@ async function searchCategories(
 async function searchSubcategories(
   query: string,
   page: number,
-  limit: number,
+  limit: number
 ): Promise<{ subcategories: SubcategoryType[]; total: number }> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const searchQuery: any = {};
@@ -844,17 +846,17 @@ async function searchSubcategories(
 
   if (query.trim()) {
     $or.push(
-      { name: { $regex: query, $options: "i" } },
-      { title: { $regex: query, $options: "i" } },
-      { description: { $regex: query, $options: "i" } },
+      { name: { $regex: query, $options: 'i' } },
+      { title: { $regex: query, $options: 'i' } },
+      { description: { $regex: query, $options: 'i' } }
     );
 
     // Fuzzy search for typos
-    const words = query.split(" ").filter((word) => word.length > 2);
+    const words = query.split(' ').filter((word) => word.length > 2);
     words.forEach((word) => {
       $or.push(
-        { name: { $regex: word, $options: "i" } },
-        { title: { $regex: word, $options: "i" } },
+        { name: { $regex: word, $options: 'i' } },
+        { title: { $regex: word, $options: 'i' } }
       );
     });
   }
@@ -871,10 +873,10 @@ async function searchSubcategories(
     { $match: searchQuery },
     {
       $lookup: {
-        from: "categories",
-        localField: "category",
-        foreignField: "_id",
-        as: "categoryDetails",
+        from: 'categories',
+        localField: 'category',
+        foreignField: '_id',
+        as: 'categoryDetails',
       },
     },
     {
@@ -883,7 +885,7 @@ async function searchSubcategories(
           $add: [
             {
               $cond: [
-                { $regexMatch: { input: "$name", regex: query, options: "i" } },
+                { $regexMatch: { input: '$name', regex: query, options: 'i' } },
                 15,
                 0,
               ],
@@ -891,7 +893,7 @@ async function searchSubcategories(
             {
               $cond: [
                 {
-                  $regexMatch: { input: "$title", regex: query, options: "i" },
+                  $regexMatch: { input: '$title', regex: query, options: 'i' },
                 },
                 10,
                 0,
@@ -901,9 +903,9 @@ async function searchSubcategories(
               $cond: [
                 {
                   $regexMatch: {
-                    input: "$description",
+                    input: '$description',
                     regex: query,
-                    options: "i",
+                    options: 'i',
                   },
                 },
                 5,
@@ -943,9 +945,9 @@ export async function getSearchSuggestions(query: string): Promise<string[]> {
       {
         $match: {
           $or: [
-            { title: { $regex: searchTerm, $options: "i" } },
-            { tags: { $in: [new RegExp(searchTerm, "i")] } },
-            { sku: { $regex: searchTerm, $options: "i" } },
+            { title: { $regex: searchTerm, $options: 'i' } },
+            { tags: { $in: [new RegExp(searchTerm, 'i')] } },
+            { sku: { $regex: searchTerm, $options: 'i' } },
           ],
         },
       },
@@ -957,23 +959,23 @@ export async function getSearchSuggestions(query: string): Promise<string[]> {
                 $cond: [
                   {
                     $regexMatch: {
-                      input: "$title",
+                      input: '$title',
                       regex: searchTerm,
-                      options: "i",
+                      options: 'i',
                     },
                   },
                   10,
                   0,
                 ],
               },
-              { $cond: [{ $in: [searchTerm, "$tags"] }, 8, 0] },
+              { $cond: [{ $in: [searchTerm, '$tags'] }, 8, 0] },
               {
                 $cond: [
                   {
                     $regexMatch: {
-                      input: "$sku",
+                      input: '$sku',
                       regex: searchTerm,
-                      options: "i",
+                      options: 'i',
                     },
                   },
                   15,
@@ -994,8 +996,8 @@ export async function getSearchSuggestions(query: string): Promise<string[]> {
       {
         $match: {
           $or: [
-            { name: { $regex: searchTerm, $options: "i" } },
-            { title: { $regex: searchTerm, $options: "i" } },
+            { name: { $regex: searchTerm, $options: 'i' } },
+            { title: { $regex: searchTerm, $options: 'i' } },
           ],
           isActive: true,
         },
@@ -1008,9 +1010,9 @@ export async function getSearchSuggestions(query: string): Promise<string[]> {
                 $cond: [
                   {
                     $regexMatch: {
-                      input: "$name",
+                      input: '$name',
                       regex: searchTerm,
-                      options: "i",
+                      options: 'i',
                     },
                   },
                   12,
@@ -1021,9 +1023,9 @@ export async function getSearchSuggestions(query: string): Promise<string[]> {
                 $cond: [
                   {
                     $regexMatch: {
-                      input: "$title",
+                      input: '$title',
                       regex: searchTerm,
-                      options: "i",
+                      options: 'i',
                     },
                   },
                   10,
@@ -1044,8 +1046,8 @@ export async function getSearchSuggestions(query: string): Promise<string[]> {
       {
         $match: {
           $or: [
-            { name: { $regex: searchTerm, $options: "i" } },
-            { title: { $regex: searchTerm, $options: "i" } },
+            { name: { $regex: searchTerm, $options: 'i' } },
+            { title: { $regex: searchTerm, $options: 'i' } },
           ],
           isActive: true,
         },
@@ -1058,9 +1060,9 @@ export async function getSearchSuggestions(query: string): Promise<string[]> {
                 $cond: [
                   {
                     $regexMatch: {
-                      input: "$name",
+                      input: '$name',
                       regex: searchTerm,
-                      options: "i",
+                      options: 'i',
                     },
                   },
                   12,
@@ -1071,9 +1073,9 @@ export async function getSearchSuggestions(query: string): Promise<string[]> {
                 $cond: [
                   {
                     $regexMatch: {
-                      input: "$title",
+                      input: '$title',
                       regex: searchTerm,
-                      options: "i",
+                      options: 'i',
                     },
                   },
                   10,
@@ -1108,15 +1110,15 @@ export async function getSearchSuggestions(query: string): Promise<string[]> {
         (suggestion, index, self) =>
           index ===
           self.findIndex(
-            (s) => s.text.toLowerCase() === suggestion.text.toLowerCase(),
-          ),
+            (s) => s.text.toLowerCase() === suggestion.text.toLowerCase()
+          )
       )
       .sort((a, b) => b.score - a.score)
       .map((s) => s.text);
 
     return uniqueSuggestions.slice(0, 8);
   } catch (error) {
-    console.error("Search suggestions error:", error);
+    console.error('Search suggestions error:', error);
     return [];
   }
 }
@@ -1126,25 +1128,25 @@ export async function getSearchFacets(query: string) {
     await connectToDB();
 
     // Ensure searchQuery is a valid MongoDB query object
-    const matchQuery = typeof query === "string" ? {} : query || {};
+    const matchQuery = typeof query === 'string' ? {} : query || {};
 
     const [categoryFacets, priceFacets, tagFacets] = await Promise.all([
       // Category facets
       Product.aggregate([
         { $match: matchQuery },
-        { $unwind: "$categories" },
+        { $unwind: '$categories' },
         {
           $lookup: {
-            from: "categories",
-            localField: "categories",
-            foreignField: "_id",
-            as: "category",
+            from: 'categories',
+            localField: 'categories',
+            foreignField: '_id',
+            as: 'category',
           },
         },
-        { $unwind: "$category" },
+        { $unwind: '$category' },
         {
           $group: {
-            _id: "$category.name",
+            _id: '$category.name',
             count: { $sum: 1 },
           },
         },
@@ -1157,9 +1159,9 @@ export async function getSearchFacets(query: string) {
         { $match: matchQuery },
         {
           $bucket: {
-            groupBy: "$price.bdt",
+            groupBy: '$price.bdt',
             boundaries: [0, 1000, 5000, 10000, 50000, 100000],
-            default: "Above 100000",
+            default: 'Above 100000',
             output: {
               count: { $sum: 1 },
             },
@@ -1170,10 +1172,10 @@ export async function getSearchFacets(query: string) {
       // Tag facets
       Product.aggregate([
         { $match: matchQuery },
-        { $unwind: "$tags" },
+        { $unwind: '$tags' },
         {
           $group: {
-            _id: "$tags",
+            _id: '$tags',
             count: { $sum: 1 },
           },
         },
@@ -1188,7 +1190,7 @@ export async function getSearchFacets(query: string) {
       tags: tagFacets.map((f) => ({ name: f._id, count: f.count })),
     };
   } catch (error) {
-    console.error("Facets error:", error);
+    console.error('Facets error:', error);
     return { categories: [], priceRanges: [], tags: [] };
   }
 }
@@ -1197,7 +1199,7 @@ export async function logSearchAnalytics(
   query: string,
   resultCount: number,
   searchTime: number,
-  userId?: string,
+  userId?: string
 ) {
   try {
     const analyticsData = {
@@ -1206,7 +1208,7 @@ export async function logSearchAnalytics(
       resultCount,
       searchTime,
       timestamp: new Date().toISOString(),
-      date: new Date().toISOString().split("T")[0], // YYYY-MM-DD format
+      date: new Date().toISOString().split('T')[0], // YYYY-MM-DD format
       hour: new Date().getHours(),
       dayOfWeek: new Date().getDay(),
     };
@@ -1214,7 +1216,7 @@ export async function logSearchAnalytics(
     // In a production environment, you would save this to a SearchAnalytics collection
     // For now, we'll log it and could implement a simple in-memory cache
 
-    console.log("Search Analytics:", analyticsData);
+    console.log('Search Analytics:', analyticsData);
 
     // TODO: Implement proper analytics storage
     // await SearchAnalytics.create(analyticsData);
@@ -1222,7 +1224,7 @@ export async function logSearchAnalytics(
     // TODO: Update popular searches cache periodically
     // This could be done with a cron job or background task
   } catch (error) {
-    console.error("Analytics logging error:", error);
+    console.error('Analytics logging error:', error);
   }
 }
 
@@ -1237,10 +1239,10 @@ export async function getPopularSearches(limit: number = 10) {
     const popularFromProducts = await Product.aggregate([
       { $sample: { size: 50 } }, // Random sample for variety
       { $project: { title: 1, tags: 1 } },
-      { $unwind: "$tags" },
+      { $unwind: '$tags' },
       {
         $group: {
-          _id: "$title",
+          _id: '$title',
           count: { $sum: 1 },
         },
       },
@@ -1279,21 +1281,21 @@ export async function getPopularSearches(limit: number = 10) {
     // If we don't have enough suggestions, add some fallback popular terms
     if (uniqueSuggestions.length < limit) {
       const fallbackTerms = [
-        "electronics",
-        "clothing",
-        "home decor",
-        "sports",
-        "books",
-        "toys",
-        "kitchen",
-        "garden",
-        "automotive",
-        "health",
-        "fashion",
-        "accessories",
-        "beauty",
-        "jewelry",
-        "shoes",
+        'electronics',
+        'clothing',
+        'home decor',
+        'sports',
+        'books',
+        'toys',
+        'kitchen',
+        'garden',
+        'automotive',
+        'health',
+        'fashion',
+        'accessories',
+        'beauty',
+        'jewelry',
+        'shoes',
       ];
 
       const remainingCount = limit - uniqueSuggestions.length;
@@ -1306,20 +1308,20 @@ export async function getPopularSearches(limit: number = 10) {
 
     return uniqueSuggestions;
   } catch (error) {
-    console.error("Popular searches error:", error);
+    console.error('Popular searches error:', error);
 
     // Fallback to static popular searches if database fails
     return [
-      "electronics",
-      "clothing",
-      "home decor",
-      "sports",
-      "books",
-      "toys",
-      "kitchen",
-      "garden",
-      "automotive",
-      "health",
+      'electronics',
+      'clothing',
+      'home decor',
+      'sports',
+      'books',
+      'toys',
+      'kitchen',
+      'garden',
+      'automotive',
+      'health',
     ].slice(0, limit);
   }
 }
@@ -1330,8 +1332,8 @@ export async function getTrendingProducts(limit: number = 8) {
 
     const trending = await Product.find()
       .populate({
-        path: "categories",
-        select: "name slug",
+        path: 'categories',
+        select: 'name slug',
       })
       .sort({ createdAt: -1 })
       .limit(limit)
@@ -1339,7 +1341,7 @@ export async function getTrendingProducts(limit: number = 8) {
 
     return JSON.parse(JSON.stringify(trending));
   } catch (error) {
-    console.error("Trending products error:", error);
+    console.error('Trending products error:', error);
     return [];
   }
 }
@@ -1351,21 +1353,21 @@ export async function getTrendingSearches(limit: number = 8) {
     // For now, we'll return a mix of popular terms with some randomization
 
     const baseTrendingTerms = [
-      "smartphone",
-      "laptop",
-      "headphones",
-      "watch",
-      "camera",
-      "shoes",
-      "bag",
-      "dress",
-      "shirt",
-      "jeans",
-      "coffee",
-      "tea",
-      "snacks",
-      "beverages",
-      "food",
+      'smartphone',
+      'laptop',
+      'headphones',
+      'watch',
+      'camera',
+      'shoes',
+      'bag',
+      'dress',
+      'shirt',
+      'jeans',
+      'coffee',
+      'tea',
+      'snacks',
+      'beverages',
+      'food',
     ];
 
     // Shuffle array to simulate trending changes
@@ -1373,7 +1375,7 @@ export async function getTrendingSearches(limit: number = 8) {
 
     return shuffled.slice(0, limit);
   } catch (error) {
-    console.error("Trending searches error:", error);
+    console.error('Trending searches error:', error);
     return [];
   }
 }
